@@ -29,16 +29,16 @@ const LoginPage = () => {
             <div className="flex flex-col items-center justify-center flex-1 min-h-[calc(100vh-6rem)] py-12">
                 <div className="flex flex-col items-center justify-center gap-6 pb-16">
                     {/* Welcome Section */}
-                    <h1 className="text-3xl/normal md:text-4xl/normal lg:text-5xl/normal font-light">
+                    <h1 className="text-3xl/normal md:text-4xl/normal lg:text-5xl/normal font-light text-center flex flex-col md:flex-row md:gap-3">
                         Welcome to{' '}
                         <span className={gradientTextClass}>
                             Why Should I Care
                         </span>
                     </h1>
-                    <p className="text-lg md:text-xl font-light text-foreground/60">
+                    <p className="text-lg md:text-xl font-light">
                         Sign in to discover what matters most
                     </p>
-                    <Separator className="bg-gradient-to-r from-transparent via-foreground to-transparent" />
+                    <Separator />
                     {/* Google Sign-in Button */}
                     <GoogleSignInButton
                         onSignIn={handleSignInStart}
