@@ -4,6 +4,10 @@ import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
 
 import "./globals.css";
 import Footer from "@/components/Footer";
+import { Toaster } from "sonner";
+import TopBar from "@/components/TopBar";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -15,11 +19,15 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   return (
     <html lang="en">
       <head>
@@ -33,8 +41,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.className} antialiased`}
       >
-        <div className="flex flex-col gap-8 min-h-[100dvh] p-4 relative z-10 bg-background">{children}</div>
+        <div className="flex flex-col gap-8 min-h-[100dvh] p-4 relative z-10 bg-background">
+          <TopBar session={session} />
+          <div>{children}</div>
+        </div>
         <Footer />
+        <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
       </body>
     </html>
   );

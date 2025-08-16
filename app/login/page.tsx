@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import TopBar from "@/components/TopBar";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ const LoginPage = () => {
 
     return (
         <>
-            <TopBar />
             <div className="flex flex-col items-center justify-center flex-1 min-h-[calc(100vh-6rem)] py-12">
                 <div className="flex flex-col items-center justify-center gap-6 pb-16">
                     {/* Welcome Section */}

@@ -1,15 +1,26 @@
-import TopBar from "@/components/TopBar";
 import SuggestedTopics from "@/components/SuggestedTopics";
 import Block from "@/components/Block";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { CALLBACK_URL } from "@/constants/common";
 
-const Home = () => {
+const Home = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  // If user is authenticated, navigate to dashboard page
+  if (session) {
+    redirect(CALLBACK_URL);
+  }
+
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
 
   return (
     <>
-      <TopBar />
       {/* Search box */}
       <div className="flex flex-col items-center justify-center flex-1 py-12 min-h-[calc(100vh-6rem)]">
         <div className="flex flex-col pb-16 sm:max-w-[90%]">
