@@ -70,7 +70,7 @@ const Home = () => {
           />
           <Block
             imageUrl="https://media.istockphoto.com/id/182062885/photo/space-station-in-earth-orbit.jpg?s=612x612&w=0&k=20&c=F_P2YJ3QDbSW2n6dWkh6JNYeQGI1-2q-wOBk9-sw_Xo="
-            title="Space Exploration In Cosmos"
+            title="Space Exploration"
             description="Discovering the cosmos and humanity's journey beyond Earth's boundaries."
             likes={1560}
             shares={380}

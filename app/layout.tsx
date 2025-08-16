@@ -33,7 +33,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.className} antialiased`}
       >
-        <div className="flex flex-col gap-8 min-h-[100dvh] p-4 relative z-10 bg-background">{children}</div>
+        <div className="flex flex-col gap-8 min-h-screen p-4 relative z-10 bg-background">{children}</div>
         <Footer />
       </body>
     </html>
