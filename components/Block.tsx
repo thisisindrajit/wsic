@@ -32,7 +32,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/75 to-transparent" />
             </div>
             {/* Content Overlay */}
-            <div className="relative z-10 p-6 h-full flex flex-col justify-end min-h-[400px]">
+            <div className="relative z-10 p-6 h-full flex flex-col justify-end aspect-[2/2.5]">
                 <div className="space-y-3">
                     <h3 className="text-2xl/normal font-medium text-background drop-shadow-lg line-clamp-2">{title}</h3>
                     <p className="text-background/90 text-sm leading-relaxed drop-shadow-md line-clamp-2">
