@@ -22,7 +22,7 @@ const SuggestedTopics: React.FC<SuggestedTopicsProps> = ({
                 <Button
                     key={index}
                     variant="outline"
-                    className="px-4 py-2 rounded-full text-sm border-foreground hover:text-indigo-500 hover:border-indigo-500 hover:bg-transparent transition-all font-normal"
+                    className="px-4 py-2 rounded-full text-sm border-foreground hover:border-teal-500 hover:bg-transparent transition-all font-normal cursor-pointer hover:scale-[1.1] hover:shadow-lg"
                 >
                     {topic}
                 </Button>

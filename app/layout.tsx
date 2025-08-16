@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
 
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -32,7 +33,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.className} antialiased`}
       >
-        <div className="flex flex-col gap-8 min-h-screen p-4 ">{children}</div>
+        <div className="flex flex-col gap-8 min-h-screen p-4 relative z-10 bg-background">{children}</div>
+        <Footer />
       </body>
     </html>
   );
