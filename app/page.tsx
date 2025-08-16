@@ -12,7 +12,7 @@ const Home = () => {
       <TopBar />
       {/* Search box */}
       <div className="flex flex-col items-center justify-center flex-1 py-12 min-h-[calc(100vh-6rem)]">
-        <div className="flex flex-col pb-8 sm:max-w-[90%]">
+        <div className="flex flex-col pb-16 sm:max-w-[90%]">
           <div className="text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light">
             <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
           </div>
