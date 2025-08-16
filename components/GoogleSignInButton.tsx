@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
 import { CALLBACK_URL, NEW_USER_CALLBACK_URL } from "@/constants/common";
@@ -12,7 +12,7 @@ interface GoogleSignInButtonProps {
   disabled?: boolean;
 }
 
-const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
+const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   isLoading: externalLoading = false,
   onSignIn,
   onError,
@@ -76,13 +76,13 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
       disabled={isLoadingState || disabled}
       variant="outline"
       size="lg"
-      className="text-base p-6 font-normal border-foreground"
+      className="text-base p-6 font-normal border-foreground hover:border-teal-500 hover:bg-transparent hover:scale-[1.1] rounded-3xl cursor-pointer"
     >
       <div className="flex items-center justify-center gap-3">
         {isLoadingState ? (
           <>
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-foreground border-t-transparent" />
-            <span>Signing in...</span>
+            <span>Signing in with Google...</span>
           </>
         ) : (
           <>

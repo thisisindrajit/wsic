@@ -56,7 +56,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
             return (
                 <>
                     {isLoggingOut && (
-                        <div className="border border-foreground/50 border-dashed text-sm h-8 p-2 flex items-center justify-center">
+                        <div className="border border-foreground/50 border-dashed text-sm h-9 p-2 flex items-center justify-center">
                             Logging out...
                         </div>
                     )}
@@ -121,7 +121,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
                     <div>C</div>
                 </div>
             </Link>
-            <div>{showLoginOrUserButton()}</div>
+            <div className="flex items-center gap-3">{showLoginOrUserButton()}</div>
         </div>
     )
 }
