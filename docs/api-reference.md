@@ -263,6 +263,82 @@ Better Auth automatically manages the following tables in PostgreSQL:
 - `account` - OAuth provider accounts
 - `verification` - Email verification tokens (if used)
 
+## Topic Search API
+
+### Search Functionality
+
+The TopicSearch component handles client-side search operations with plans for backend integration.
+
+**Current Implementation:**
+```typescript
+const handleSearch = (topic: string) => {
+  // TODO: Implement search functionality
+  console.log('Searching for:', topic);
+};
+```
+
+**Planned API Endpoints:**
+
+**Search Topics:**
+```
+POST /api/search/topics
+Content-Type: application/json
+
+{
+  "query": "climate change",
+  "userId": "user_id_here" // Optional for personalization
+}
+```
+
+**Response:**
+```typescript
+interface SearchResponse {
+  results: {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    relevanceScore: number;
+    tags: string[];
+  }[];
+  suggestions: string[];
+  totalResults: number;
+}
+```
+
+**Generate Content Block:**
+```
+POST /api/content/generate
+Content-Type: application/json
+
+{
+  "topic": "artificial intelligence",
+  "userId": "user_id_here"
+}
+```
+
+**Client-Side Integration:**
+```typescript
+const handleSearch = async (topic: string) => {
+  setIsSubmitting(true);
+  
+  try {
+    const response = await fetch('/api/search/topics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: topic })
+    });
+    
+    const results = await response.json();
+    // Handle search results
+  } catch (error) {
+    console.error('Search error:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+```
+
 ## Security Considerations
 
 - Sessions expire after inactivity
@@ -270,3 +346,5 @@ Better Auth automatically manages the following tables in PostgreSQL:
 - CSRF protection enabled by default
 - Secure cookie settings
 - SQL injection protection via parameterized queries
+- Search queries sanitized and rate-limited
+- User-specific content generation tracking

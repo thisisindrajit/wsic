@@ -17,11 +17,13 @@ Welcome to the WSIC project documentation. This directory contains comprehensive
 WSIC is a Next.js 15 application that helps users discover and understand topics they might not initially find interesting. The platform presents information in an engaging, accessible format to spark curiosity and learning.
 
 ### Key Features
-- Topic exploration with search functionality
-- Google OAuth authentication
-- Content blocks with trending topics
-- Personalized user dashboard
-- Social engagement features (likes, saves, shares)
+- **Topic Search**: Main search interface with "Why Should I Care about" branding
+- **Google OAuth Authentication**: Secure sign-in with Better Auth
+- **Content Blocks**: Glassmorphism-styled topic cards with engagement metrics
+- **Responsive Dashboard**: 3-column grid layout with navigation and trending content
+- **Suggested Topics**: Quick access to popular search topics
+- **Mobile-First Design**: Responsive layout with mobile bottom navigation
+- **Real-Time Sync**: Convex integration for live data updates
 
 ### Technology Stack
 - **Frontend**: Next.js 15.4.6, React 19.1.0, TypeScript 5

@@ -39,7 +39,8 @@ app/
 │   └── page.tsx           # Login page with Google OAuth
 └── user/
     └── dashboard/
-        └── page.tsx       # Protected user dashboard
+        ├── layout.tsx     # Dashboard layout wrapper
+        └── page.tsx       # Protected user dashboard with 3-column grid
 ```
 
 **Key Files:**
@@ -49,7 +50,7 @@ app/
 
 ### `/components` - Reusable UI Components
 
-Component library organized by functionality:
+Component library organized by functionality and usage patterns:
 
 ```
 components/
@@ -59,17 +60,32 @@ components/
 │   ├── dropdown-menu.tsx  # Dropdown menu primitives
 │   ├── input.tsx          # Input field component
 │   └── separator.tsx      # Visual separator
-├── Block.tsx              # Content block component
-├── Footer.tsx             # Site footer
-├── GoogleSignInButton.tsx # Google OAuth sign-in button
-├── SuggestedTopics.tsx    # Topic suggestions component
-└── TopBar.tsx             # Navigation header
+├── layout/                # Layout components
+│   ├── TopBar.tsx         # Navigation header
+│   └── Footer.tsx         # Site footer
+├── navigation/            # Navigation components
+│   ├── NavigationSidebar.tsx      # Desktop sidebar navigation
+│   └── MobileBottomNavigation.tsx # Mobile bottom navigation
+├── content/               # Content display components
+│   ├── Block.tsx          # Content block component
+│   ├── TrendingTopics.tsx # Trending topics display
+│   └── SuggestedTopics.tsx # Topic suggestions component
+├── features/              # Feature-specific components
+│   ├── TopicSearch.tsx    # Main topic search functionality
+│   └── SubscriptionCard.tsx # Subscription management card
+├── auth/                  # Authentication components
+│   └── GoogleSignInButton.tsx # Google OAuth sign-in button
+├── index.ts               # Main component exports
+└── README.md              # Component structure documentation
 ```
 
 **Component Categories:**
 - **UI Components**: Base components from Shadcn/ui library
-- **Feature Components**: Application-specific components
-- **Layout Components**: TopBar, Footer for page structure
+- **Layout Components**: Page structure and layout components
+- **Navigation Components**: Sidebar and mobile navigation
+- **Content Components**: Content display and management
+- **Feature Components**: Application-specific functionality
+- **Auth Components**: Authentication-related components
 
 ### `/lib` - Utility Libraries
 

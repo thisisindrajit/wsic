@@ -105,6 +105,53 @@ import { Separator } from "@/components/ui/separator";
 
 ## Feature Components
 
+### TopicSearch (`TopicSearch.tsx`)
+
+Main search component for topic exploration with "Why Should I Care about" branding.
+
+```typescript
+interface TopicSearchProps {
+  onSearch?: (topic: string) => void;
+  className?: string;
+}
+
+<TopicSearch 
+  onSearch={(topic) => console.log('Searching for:', topic)}
+  className="custom-class"
+/>
+```
+
+**Features:**
+- Branded "Why Should I Care about" heading with gradient text effects
+- Large, responsive input field with custom styling
+- Submit button with arrow icon and loading states
+- Form validation (prevents empty submissions)
+- Integrated suggested topics component
+- Async search handling with error management
+- Responsive design for mobile and desktop
+- Touch-optimized interactions
+- Auto-capitalization and spell-check enabled
+
+**Styling Details:**
+- Gradient text effects on key letters (W, S, I, C)
+- Borderless input with bottom border focus states
+- Teal color scheme matching app branding
+- Responsive typography scaling (2xl → 3xl → 4xl)
+- Custom focus states with teal accent colors
+- Disabled states with opacity and cursor changes
+
+**Form Behavior:**
+- Prevents submission of empty/whitespace-only searches
+- Shows loading state during async operations
+- Calls onSearch callback with trimmed topic string
+- Integrates with SuggestedTopics for quick topic selection
+- Supports both form submission and suggested topic clicks
+
+**Implementation Notes:**
+- The `onSearch` callback is currently synchronous but wrapped in async/await for future API integration
+- TypeScript may show a hint about `await` having no effect - this is intentional for forward compatibility
+- Error handling is implemented for future async search operations
+
 ### Block (`Block.tsx`)
 
 Content block component for displaying topic information with glassmorphism design.
@@ -170,33 +217,35 @@ interface GoogleSignInButtonProps {
 
 ### SuggestedTopics (`SuggestedTopics.tsx`)
 
-Component displaying suggested search topics as interactive buttons.
+Component displaying suggested search topics as interactive buttons with click handling.
 
 ```typescript
 interface SuggestedTopicsProps {
-  topics?: string[];
+  topics: string[];
+  onTopicClick?: (topic: string) => void;
 }
 
 <SuggestedTopics 
   topics={["Climate Change", "AI", "Mental Health"]}
+  onTopicClick={(topic) => handleTopicSelection(topic)}
 />
 ```
 
 **Features:**
-- Default curated topic suggestions
 - Customizable topic list via props
+- Click handler for topic selection
 - Interactive button styling with hover effects
-- Responsive flexbox layout
+- Responsive flexbox layout with wrapping
 - Scale animation on hover
 - Teal accent color on hover
 - Rounded pill design
+- Integration with TopicSearch component
 
-**Default Topics:**
-- Climate Change
-- Artificial Intelligence
-- Mental Health
-- Cryptocurrency
-- Space Exploration
+**Usage in TopicSearch:**
+- Automatically populates search input when topic is clicked
+- Triggers search callback immediately on topic selection
+- Provides quick access to popular topics
+- Enhances user experience with suggested content
 
 ## Layout Components
 
@@ -237,6 +286,57 @@ Site footer with branding and links.
 - Social media links (GitHub, Twitter)
 - Responsive typography
 - Gradient background
+
+## Page Implementations
+
+### User Dashboard (`/user/dashboard/page.tsx`)
+
+The main user dashboard implements a responsive 3-column grid layout:
+
+```typescript
+const UserDashboard = () => {
+  const handleSearch = (topic: string) => {
+    // TODO: Implement search functionality
+    console.log('Searching for:', topic);
+  };
+
+  return (
+    <div className="max-w-6xl m-auto pb-24 md:pb-0">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6">
+        {/* Left: Navigation Sidebar (desktop only) */}
+        <div className="hidden lg:block lg:col-span-3">
+          <NavigationSidebar />
+        </div>
+        
+        {/* Center: Topic Search and Content Blocks */}
+        <div className="lg:col-span-5">
+          <TopicSearch onSearch={handleSearch} />
+          {/* Content blocks... */}
+        </div>
+        
+        {/* Right: Subscription and Trending (responsive) */}
+        <div className="hidden md:block lg:col-span-4">
+          <SubscriptionCard />
+          <TrendingTopics />
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+**Layout Features:**
+- Responsive 12-column grid system
+- Mobile-first design with progressive enhancement
+- Sticky sidebar navigation on desktop
+- Mobile bottom navigation overlay
+- Responsive content reorganization for tablet/mobile
+- Custom scrollbar styling for sidebar overflow
+
+**Responsive Behavior:**
+- **Mobile**: Single column with bottom navigation
+- **Tablet**: Two-column layout (center + right sidebar horizontal)
+- **Desktop**: Three-column layout with sticky sidebars
 
 ## Component Patterns
 
