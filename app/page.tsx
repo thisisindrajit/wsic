@@ -23,7 +23,7 @@ const Home = async () => {
     <>
       {/* Search box */}
       <div className="flex flex-col items-center justify-center flex-1 py-12 min-h-[calc(100dvh-5rem)]">
-        <div className="flex flex-col sm:max-w-[90%] pb-24">
+        <div className="flex flex-col sm:max-w-[90%] lg:max-w-[80%] xl:max-w-[70%] pb-24">
           <div className="text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light">
             <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
           </div>
@@ -35,7 +35,7 @@ const Home = async () => {
               maxLength={256}
             />
             <div className="bg-teal-500 flex items-center justify-center self-end md:self-auto h-14 md:h-auto mr-0 w-14 md:w-20 xl:w-26 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500">
-              <ArrowRight className="h-6 w-6 md:h-8 md:w-8 xl:h-10 xl:w-10" />
+              <ArrowRight className="size-6 md:size-8 xl:size-10" />
             </div>
           </div>
           <div className="mt-4 md:mt-10 text-lg font-light flex flex-col gap-3">

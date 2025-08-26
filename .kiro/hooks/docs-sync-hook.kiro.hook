@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Listens to TypeScript source files, components, and configuration changes to automatically update documentation in the /docs folder",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "package.json",
+      "tsconfig.json",
+      "next.config.ts",
+      "middleware.ts",
+      "components.json",
+      "README.md",
+      "**/*.ts, **/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source code has been modified in this Next.js TypeScript project. Please analyze the changes and update the documentation in the /docs folder accordingly. Focus on:\n\n1. API changes and new endpoints\n2. Component updates and new components\n3. Configuration changes\n4. New features or functionality\n5. Updated dependencies or project structure\n\nEnsure the documentation remains accurate, comprehensive, and helpful for developers working on this project. Create or update relevant documentation files in the /docs folder as needed."
+  }
+}

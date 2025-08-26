@@ -1,0 +1,93 @@
+"use client"
+
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { ArrowRight } from 'lucide-react';
+import SuggestedTopics from '@/components/SuggestedTopics';
+import { Button } from './ui/button';
+
+interface TopicSearchProps {
+  onSearch?: (topic: string) => void;
+  className?: string;
+}
+
+const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
+  const [searchTopic, setSearchTopic] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate input
+    const trimmedTopic = searchTopic.trim();
+    if (!trimmedTopic) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      if (onSearch) {
+        await onSearch(trimmedTopic);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSuggestedTopicClick = (topic: string) => {
+    setSearchTopic(topic);
+    if (onSearch) {
+      onSearch(topic);
+    }
+  };
+
+  const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
+
+  return (
+    <div className={className}>
+      <form onSubmit={handleSubmit} className="flex flex-col">
+        <div className="text-4xl/normal font-light mb-4">
+          <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
+        </div>
+        
+        <div className="flex flex-col md:flex-row items-stretch gap-4 mb-6">
+          <Input
+            type="text"
+            placeholder="type in any topic..."
+            value={searchTopic}
+            onChange={(e) => setSearchTopic(e.target.value)}
+            className="h-auto border-x-0 border-t-0 border-foreground lg:text-4xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all"
+            maxLength={256}
+            disabled={isSubmitting}
+          />
+          <Button
+            type="submit"
+            disabled={!searchTopic.trim() || isSubmitting}
+            className="bg-teal-500 flex items-center justify-center h-14 w-14 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowRight className="size-6" />
+          </Button>
+        </div>
+
+        <div className="text-lg font-light flex flex-col gap-3">
+          <div>Suggested topics</div>
+          <SuggestedTopics 
+            topics={[
+              "Climate Change",
+              "Artificial Intelligence", 
+              "Mental Health",
+              "Cryptocurrency",
+              "Space Exploration"
+            ]}
+            onTopicClick={handleSuggestedTopicClick}
+          />
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default TopicSearch;

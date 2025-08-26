@@ -114,7 +114,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
         <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href={session ? CALLBACK_URL : "/"}>
-                <div className="h-9 w-9 grid grid-cols-2 grid-rows-2 font-medium border border-foreground p-0.5 text-xs place-items-center cursor-pointer">
+                <div className="h-9 w-9 grid grid-cols-2 grid-rows-2 font-medium border border-foreground p-0.5 text-xs place-items-center cursor-pointer select-none">
                     <div>W</div>
                     <div>S</div>
                     <div>I</div>

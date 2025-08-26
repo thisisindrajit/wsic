@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { Bookmark, Heart, Share } from 'lucide-react';
 
 interface TrendingBlockProps {
     imageUrl: string;
@@ -43,13 +44,25 @@ const Block: React.FC<TrendingBlockProps> = ({
                         <span><strong className="text-background">{likes}</strong> Likes</span>
                         <span><strong className="text-background">{shares}</strong> Shares</span>
                     </div>
-                    {/* View Button */}
-                    <Button
-                        className="w-full rounded-full backdrop-blur-md bg-background/10 border border-background/20 text-background hover:text-background hover:bg-background/20 hover:border-background/30 transition-all duration-200 shadow-lg"
-                        variant="ghost"
-                    >
-                        View
-                    </Button>
+                    <div className="flex items-center gap-2 w-full">
+                        <Button className="rounded-full backdrop-blur-md bg-background/10 border border-background/20 text-background hover:text-background hover:bg-background/20 hover:border-background/30 transition-all duration-200 shadow-lg"
+                            variant="ghost"
+                            size="icon"
+                        >
+                            <Heart className="w-5 h-5 text-background" />
+                        </Button>
+                        <Button className="rounded-full backdrop-blur-md bg-background/10 border border-background/20 text-background hover:text-background hover:bg-background/20 hover:border-background/30 transition-all duration-200 shadow-lg"
+                            variant="ghost"
+                            size="icon"
+                        >
+                            <Bookmark className="w-5 h-5 text-background" />
+                        </Button>
+                        <Button className="flex-1 rounded-full backdrop-blur-md bg-background/10 border border-background/20 text-background hover:text-background hover:bg-background/20 hover:border-background/30 transition-all duration-200 shadow-lg"
+                            variant="ghost"
+                        >
+                            View
+                        </Button>
+                    </div>
                 </div>
             </div>
             {/* Additional glassmorphism glow */}

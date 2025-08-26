@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
-
-import "./globals.css";
 import Footer from "@/components/Footer";
 import { Toaster } from "sonner";
 import TopBar from "@/components/TopBar";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+
+import "./globals.css";
 
 const geistSans = Geist({
   subsets: ["latin"],
