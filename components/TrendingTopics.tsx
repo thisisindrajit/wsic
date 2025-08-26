@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, Minus } from 'lucide-react';
 
 interface TrendingTopic {
   id: string;
@@ -67,7 +67,7 @@ const getTrendIcon = (trend: TrendingTopic['trend']) => {
 export default function TrendingTopics({ className = '' }: TrendingTopicsProps) {
   return (
     <div className={`border border-border rounded-md p-6 bg-card ${className}`}>
-      <h3 className="text-lg font-medium mb-4">What's happening</h3>
+      <h3 className="text-lg font-medium mb-4">{`What's happening`}</h3>
       
       <div className="flex flex-col gap-4">
         {mockTrendingData.map((topic) => (

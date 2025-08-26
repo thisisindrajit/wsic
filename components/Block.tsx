@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Bookmark, Heart, Share } from 'lucide-react';
+import { Bookmark, Heart } from 'lucide-react';
 
 interface TrendingBlockProps {
     imageUrl: string;
