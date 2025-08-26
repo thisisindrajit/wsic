@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 

@@ -1,5 +1,5 @@
-import SuggestedTopics from "@/components/SuggestedTopics";
-import Block from "@/components/Block";
+import SuggestedTopics from "@/components/content/SuggestedTopics";
+import Block from "@/components/content/Block";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
 import { auth } from "@/lib/auth";

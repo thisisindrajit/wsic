@@ -44,7 +44,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
             
             <Button 
                 onClick={handleSubscribe}
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white touch-manipulation min-h-[44px] active:scale-95 transition-transform"
             >
                 Subscribe
             </Button>

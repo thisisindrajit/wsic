@@ -73,9 +73,9 @@ export default function TrendingTopics({ className = '' }: TrendingTopicsProps) 
         {mockTrendingData.map((topic) => (
           <div
             key={topic.id}
-            className="group cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors"
+            className="group cursor-pointer hover:bg-muted/50 rounded-md p-3 -m-3 transition-colors touch-manipulation active:bg-muted/70 min-h-[44px] flex items-center"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between w-full">
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">{topic.category}</p>
                 <p className="font-medium text-sm text-foreground group-hover:text-teal-600 transition-colors">

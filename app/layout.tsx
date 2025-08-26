@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
-import Footer from "@/components/Footer";
+import Footer from "@/components/layout/Footer";
 import { Toaster } from "sonner";
-import TopBar from "@/components/TopBar";
+import TopBar from "@/components/layout/TopBar";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -17,6 +17,12 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: APP_NAME,
   description: APP_DESCRIPTION,
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default async function RootLayout({
