@@ -41,9 +41,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.className} antialiased max-w-[1440px] mx-auto`}
       >
-        <div className="flex flex-col gap-8 min-h-[100dvh] p-4 relative z-10 bg-background">
-          <TopBar session={session} />
-          <div>{children}</div>
+        <TopBar session={session} />
+        <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
+          {children}
         </div>
         <Footer />
         <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />

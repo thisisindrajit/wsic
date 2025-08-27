@@ -7,6 +7,7 @@ export const APP_DESCRIPTION =
   "Discover and understand topics you might not initially find interesting. WSIC presents information in an engaging, accessible format to spark curiosity and learning.";
 export const CALLBACK_URL = "/user/dashboard";
 export const NEW_USER_CALLBACK_URL = "/user/dashboard?newUser=1";
+export const TOPBAR_SCROLL_THRESHOLD = 5;
 export const navigationItems: NavigationItem[] = [
   {
     id: "home",
