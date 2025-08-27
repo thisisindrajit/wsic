@@ -3,61 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { 
-  Home, 
-  Compass, 
-  Bookmark, 
-  GraduationCap, 
-  User 
-} from "lucide-react";
-
-interface NavigationItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const navigationItems: NavigationItem[] = [
-  {
-    id: "home",
-    label: "Home",
-    href: "/user/dashboard",
-    icon: Home,
-  },
-  {
-    id: "explore",
-    label: "Explore",
-    href: "/explore",
-    icon: Compass,
-  },
-  {
-    id: "saved",
-    label: "Saved",
-    href: "/user/saved",
-    icon: Bookmark,
-  },
-  {
-    id: "courses",
-    label: "Courses",
-    href: "/user/courses",
-    icon: GraduationCap,
-  },
-  {
-    id: "profile",
-    label: "Profile",
-    href: "/user/profile",
-    icon: User,
-  },
-];
+import { mobileNavigationItems } from "@/constants/common";
 
 const MobileBottomNavigation: React.FC = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:hidden pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border lg:hidden pb-safe">
       <div className="flex items-center justify-around px-2 py-2 pb-2">
-        {navigationItems.map((item) => {
+        {mobileNavigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           

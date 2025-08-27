@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowRight } from 'lucide-react';
 import SuggestedTopics from '@/components/content/SuggestedTopics';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface TopicSearchProps {
   onSearch?: (topic: string) => void;
@@ -47,9 +48,9 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
 
   return (
-    <div className={className}>
+    <div className={cn("flex flex-col gap-4 mb-4", className)}>
       <form onSubmit={handleSubmit} className="flex flex-col">
-        <div className="text-2xl sm:text-3xl lg:text-4xl/normal font-light mb-4">
+        <div className="text-2xl xs:text-4xl lg:text-4xl/normal font-light mb-4">
           <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
         </div>
         
@@ -59,7 +60,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
             placeholder="type in any topic..."
             value={searchTopic}
             onChange={(e) => setSearchTopic(e.target.value)}
-            className="h-auto border-x-0 border-t-0 border-foreground text-xl sm:text-2xl lg:text-4xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all touch-manipulation"
+            className="h-auto border-x-0 border-t-0 border-foreground text-2xl/normal xs:text-4xl/normal md:text-4xl/normal lg:text-4xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all touch-manipulation"
             maxLength={256}
             disabled={isSubmitting}
             autoComplete="off"
@@ -69,13 +70,14 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
           <Button
             type="submit"
             disabled={!searchTopic.trim() || isSubmitting}
-            className="bg-teal-500 flex items-center justify-center h-12 w-full sm:h-14 sm:w-14 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+            className="bg-teal-500 flex items-center justify-center h-12 w-12 m-auto mr-0 sm:h-14 sm:w-14 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             <ArrowRight className="size-5 sm:size-6" />
           </Button>
         </div>
+      </form>
 
-        <div className="text-base sm:text-lg font-light flex flex-col gap-3">
+      <div className="text-base sm:text-lg font-light flex flex-col gap-3">
           <div>Suggested topics</div>
           <SuggestedTopics 
             topics={[
@@ -88,7 +90,6 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
             onTopicClick={handleSuggestedTopicClick}
           />
         </div>
-      </form>
     </div>
   );
 };

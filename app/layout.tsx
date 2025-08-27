@@ -45,7 +45,7 @@ export default async function RootLayout({
         <link rel="manifest" href="/favicons/site.webmanifest" />
       </head>
       <body
-        className={`${geistSans.className} antialiased`}
+        className={`${geistSans.className} antialiased max-w-[1440px] mx-auto`}
       >
         <div className="flex flex-col gap-8 min-h-[100dvh] p-4 relative z-10 bg-background">
           <TopBar session={session} />

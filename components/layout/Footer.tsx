@@ -15,7 +15,7 @@ const Footer = () => {
                         <li className="hover:underline cursor-pointer">X (Twitter)</li>
                     </ul>
                 </div>
-                <h2 className="absolute bottom-0 left-0 translate-y-1/3 sm:text-[192px] text-[80px] text-background">
+                <h2 className="hidden lg:block absolute bottom-0 left-0 translate-y-1/3 sm:text-[192px] text-[80px] text-background">
                     {APP_SHORT_NAME}
                 </h2>
             </div>

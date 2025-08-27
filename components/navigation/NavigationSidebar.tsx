@@ -3,58 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { 
-  Home, 
-  Compass, 
-  Bookmark, 
-  GraduationCap, 
-  User 
-} from "lucide-react";
-
-interface NavigationItem {
-  id: string;
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import { navigationItems } from "@/constants/common";
 
 interface NavigationSidebarProps {
   currentPath?: string;
   className?: string;
 }
-
-const navigationItems: NavigationItem[] = [
-  {
-    id: "home",
-    label: "Home",
-    href: "/user/dashboard",
-    icon: Home,
-  },
-  {
-    id: "explore",
-    label: "Explore",
-    href: "/explore",
-    icon: Compass,
-  },
-  {
-    id: "saved",
-    label: "Saved Items",
-    href: "/user/saved",
-    icon: Bookmark,
-  },
-  {
-    id: "courses",
-    label: "My Courses",
-    href: "/user/courses",
-    icon: GraduationCap,
-  },
-  {
-    id: "profile",
-    label: "Profile",
-    href: "/user/profile",
-    icon: User,
-  },
-];
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ 
   currentPath, 
