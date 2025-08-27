@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-    title: `Login - ${APP_NAME}`,
+    title: `Login - ${APP_NAME}`
 };
 
 export default async function LoginLayout({

@@ -16,13 +16,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: APP_DESCRIPTION,
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  description: APP_DESCRIPTION
 };
 
 export default async function RootLayout({
@@ -57,3 +51,10 @@ export default async function RootLayout({
     </html>
   );
 }
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+};
