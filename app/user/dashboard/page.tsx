@@ -19,12 +19,12 @@ const UserDashboard = () => {
 
     return (
         <>
-            <div className="max-w-6xl m-auto mt-2">
+            <div className="max-w-6xl m-auto mt-4">
                 {/* Responsive layout */}
                 <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6">
                     {/* Left Sidebar - Navigation (hidden on mobile and tablet) */}
                     <div className={cn(
-                        "hidden lg:block lg:col-span-3 h-[calc(100dvh-7rem)] sticky mt-3 transition-all",
+                        "hidden lg:block lg:col-span-3 h-[calc(100dvh-8rem)] sticky mt-3 transition-all",
                         isTopBarVisible ? "top-20" : "top-4"
                     )}>
                         <NavigationSidebar />
@@ -74,7 +74,7 @@ const UserDashboard = () => {
 
                     {/* Right Sidebar - Subscription and Trending (hidden on mobile, horizontal on tablet) */}
                     <div className={cn(
-                        "hidden lg:block lg:col-span-4 lg:h-[calc(100dvh-7rem)] lg:sticky lg:overflow-auto pr-3 mt-3 transition-all [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500",
+                        "hidden lg:block lg:col-span-4 lg:h-[calc(100dvh-8rem)] lg:sticky lg:overflow-auto pr-3 mt-3 transition-all [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500",
                         isTopBarVisible ? "top-20" : "top-4"
                     )}>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">

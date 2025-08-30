@@ -161,7 +161,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
             // Show/hide based on scroll direction (only when not at top)
             !isAtTop && !isVisible && "-translate-y-full"
         )}>
-            <div className="container mx-auto px-4 py-3">
+            <div className="mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link href={session ? CALLBACK_URL : "/"}>
