@@ -27,7 +27,7 @@ The main application structure using Next.js 15 App Router:
 ```
 app/
 ├── layout.tsx             # Root layout with TopBar, Footer, Toaster
-├── page.tsx               # Landing page with search and trending blocks
+├── page.tsx               # Landing page with search and trending topics
 ├── globals.css            # Global styles and Tailwind imports
 ├── favicon.ico            # App favicon
 ├── api/
@@ -45,7 +45,7 @@ app/
 
 **Key Files:**
 - `layout.tsx`: Root layout that includes TopBar, Footer, and Toaster components
-- `page.tsx`: Landing page with search functionality and trending blocks
+- `page.tsx`: Landing page with search functionality and trending topics
 - `globals.css`: Global styles including Tailwind CSS imports (moved to end of imports in layout.tsx)
 
 ### `/components` - Reusable UI Components

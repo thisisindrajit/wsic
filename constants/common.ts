@@ -28,9 +28,9 @@ export const navigationItems: NavigationItem[] = [
     icon: Bookmark,
   },
   {
-    id: "courses",
-    label: "My blocks",
-    href: "/user/courses",
+    id: "topics",
+    label: "My Topics",
+    href: "/user/topics",
     icon: Blocks,
   },
   {

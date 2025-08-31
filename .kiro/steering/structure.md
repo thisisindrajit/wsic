@@ -14,7 +14,7 @@
 ### `/app` - Next.js App Router
 
 - **`layout.tsx`** - Root layout with TopBar, Footer, and Toaster
-- **`page.tsx`** - Landing page with search and trending blocks
+- **`page.tsx`** - Landing page with search and trending topics
 - **`globals.css`** - Global styles and Tailwind imports
 - **`/api/auth/[...all]/`** - Better Auth API routes
 - **`/login/`** - Authentication pages

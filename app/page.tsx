@@ -31,7 +31,7 @@ const Home = async () => {
             <Input
               type="text"
               placeholder="type in any topic..."
-              className="h-auto border-x-0 border-t-0 border-foreground text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all"
+              className="h-auto border-x-0 border-t-0 border-foreground text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pb-2 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all"
               maxLength={256}
             />
             <div className="bg-teal-500 flex items-center justify-center self-end md:self-auto h-14 md:h-auto mr-0 w-14 md:w-20 xl:w-26 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500">
@@ -44,10 +44,10 @@ const Home = async () => {
           </div>
         </div>
       </div>
-      {/* Trending Blocks */}
+      {/* Trending Topics */}
       <div className="flex flex-col gap-4">
         <div className="text-2xl/normal font-medium">
-          <span className="font-light uppercase">Trending</span> Blocks
+          <span className="font-light uppercase">Trending</span> Topics
         </div>
         {/* Blocks Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">

@@ -18,7 +18,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate input
     const trimmedTopic = searchTopic.trim();
     if (!trimmedTopic) {
@@ -26,7 +26,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       if (onSearch) {
         await onSearch(trimmedTopic);
@@ -76,18 +76,18 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
         </div>
       </form>
       <div className="text-lg font-light flex flex-col gap-3">
-          <div>Suggested topics</div>
-          <SuggestedTopics 
-            topics={[
-              "Climate Change",
-              "Artificial Intelligence", 
-              "Mental Health",
-              "Cryptocurrency",
-              "Space Exploration"
-            ]}
-            onTopicClick={handleSuggestedTopicClick}
-          />
-        </div>
+        <div>Suggested topics</div>
+        <SuggestedTopics
+          topics={[
+            "Climate Change",
+            "Artificial Intelligence",
+            "Mental Health",
+            "Cryptocurrency",
+            "Space Exploration"
+          ]}
+          onTopicClick={handleSuggestedTopicClick}
+        />
+      </div>
     </div>
   );
 };

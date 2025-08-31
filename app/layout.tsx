@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 import "./globals.css";
+import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -41,12 +42,14 @@ export default async function RootLayout({
       <body
         className={`${geistSans.className} antialiased max-w-[1440px] mx-auto`}
       >
-        <TopBar session={session} />
-        <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
-          {children}
-        </div>
-        <Footer />
-        <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+        <ConvexClientProvider>
+          <TopBar session={session} />
+          <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
+            {children}
+          </div>
+          <Footer />
+          <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+        </ConvexClientProvider>
       </body>
     </html>
   );

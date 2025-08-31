@@ -1,4 +1,18 @@
 {
   "mcpServers": {
+    "convex": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "convex@latest",
+        "mcp",
+        "start"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "functionSpec",
+        "run"
+      ]
+    }
   }
 }
