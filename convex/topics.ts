@@ -1,12 +1,9 @@
 import {
   query,
-  mutation,
-  internalQuery,
   internalMutation,
 } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { Id } from "./_generated/dataModel";
 
 /**
  * Get trending topics for the homepage

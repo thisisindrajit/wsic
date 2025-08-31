@@ -15,7 +15,9 @@ export * from './auth';
 
 // UI components (re-export for convenience)
 export * from './ui/avatar';
+export * from './ui/badge';
 export * from './ui/button';
 export * from './ui/dropdown-menu';
 export * from './ui/input';
+export * from './layout/Notification';
 export * from './ui/separator';

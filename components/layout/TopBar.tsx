@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Notification from "@/components/layout/Notification";
 
 interface TopBarProps {
     session: Session | null;
@@ -37,7 +38,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
         const currentScrollY = window.scrollY;
         setLastScrollY(currentScrollY);
         setIsAtTop(currentScrollY < TOPBAR_SCROLL_THRESHOLD);
-        
+
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
 
@@ -101,6 +102,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
                             Logging out...
                         </div>
                     )}
+                    <Notification userId={session.user?.id} />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild><Avatar className="size-10">
                             <AvatarImage src={session.user?.image ?? undefined} />
@@ -155,8 +157,8 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
         <div className={cn(
             "fixed top-0 left-0 right-0 z-50 transition-all ease-in-out",
             // Background and border styling based on scroll position
-            isAtTop 
-                ? "bg-transparent" 
+            isAtTop
+                ? "bg-transparent"
                 : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b",
             // Show/hide based on scroll direction (only when not at top)
             !isAtTop && !isVisible && "-translate-y-full"

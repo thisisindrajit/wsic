@@ -23,7 +23,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     id: "saved",
-    label: "Saved Items",
+    label: "Saved",
     href: "/user/saved",
     icon: Bookmark,
   },

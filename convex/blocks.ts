@@ -1,6 +1,5 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 /**
  * Get blocks for a specific topic

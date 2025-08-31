@@ -1,6 +1,5 @@
-import { query, internalQuery, internalMutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 /**
  * Get trending topics by period

@@ -21,8 +21,10 @@ import type * as notifications from "../notifications.js";
 import type * as recommendations from "../recommendations.js";
 import type * as rewards from "../rewards.js";
 import type * as search from "../search.js";
+import type * as seed from "../seed.js";
 import type * as tags from "../tags.js";
 import type * as topics from "../topics.js";
+import type * as updateTopics from "../updateTopics.js";
 import type * as users from "../users.js";
 
 /**
@@ -42,8 +44,10 @@ declare const fullApi: ApiFromModules<{
   recommendations: typeof recommendations;
   rewards: typeof rewards;
   search: typeof search;
+  seed: typeof seed;
   tags: typeof tags;
   topics: typeof topics;
+  updateTopics: typeof updateTopics;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

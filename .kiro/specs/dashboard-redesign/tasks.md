@@ -2,7 +2,7 @@
 
 - [x] 1. Create navigation sidebar component
 
-  - Create `components/NavigationSidebar.tsx` with navigation items (Home, Explore, Saved Items, My Courses, Profile)
+  - Create `components/NavigationSidebar.tsx` with navigation items (Home, Explore, Saved, My Courses, Profile)
   - Implement navigation item highlighting for current page
   - Add Lucide icons for each navigation item
   - Style with minimal design using existing Tailwind patterns

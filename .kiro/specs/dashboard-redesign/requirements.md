@@ -47,7 +47,7 @@ This feature redesigns the user dashboard page to provide a more engaging and fu
 #### Acceptance Criteria
 
 1. WHEN the dashboard loads THEN the system SHALL display a left sidebar with navigation menu
-2. WHEN the navigation menu is shown THEN the system SHALL include "Home", "Explore", "Saved Items", "My Courses", and "Profile" options
+2. WHEN the navigation menu is shown THEN the system SHALL include "Home", "Explore", "Saved", "My Courses", and "Profile" options
 3. WHEN a user clicks a navigation item THEN the system SHALL navigate to the corresponding page
 4. WHEN the current page is the dashboard THEN the system SHALL highlight the "Home" navigation item
 

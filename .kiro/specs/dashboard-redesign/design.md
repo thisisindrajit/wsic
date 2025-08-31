@@ -64,7 +64,7 @@ interface NavigationSidebarProps {
 **Navigation Items**:
 - Home (dashboard) - `/user/dashboard`
 - Explore - `/explore` 
-- Saved Items - `/user/saved`
+- Saved - `/user/saved`
 - My Courses - `/user/courses`
 - Profile - `/user/profile`
 
