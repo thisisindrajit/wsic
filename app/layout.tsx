@@ -6,9 +6,10 @@ import { Toaster } from "sonner";
 import TopBar from "@/components/layout/TopBar";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
 import "./globals.css";
-import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -30,7 +31,7 @@ export default async function RootLayout({
   });
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
@@ -42,14 +43,21 @@ export default async function RootLayout({
       <body
         className={`${geistSans.className} antialiased max-w-[1440px] mx-auto`}
       >
-        <ConvexClientProvider>
-          <TopBar session={session} />
-          <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
-            {children}
-          </div>
-          <Footer />
-          <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
-        </ConvexClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ConvexClientProvider>
+            <TopBar session={session} />
+            <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
+              {children}
+            </div>
+            <Footer />
+            <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+          </ConvexClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

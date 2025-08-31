@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Notification from "@/components/layout/Notification";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 interface TopBarProps {
     session: Session | null;
@@ -98,13 +99,14 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
             return (
                 <>
                     {isLoggingOut && (
-                        <div className="border border-foreground/50 border-dashed text-sm h-9 p-2 flex items-center justify-center">
+                        <div className="hidden xs:flex border border-foreground/50 border-dashed text-sm h-9 p-2 items-center justify-center">
                             Logging out...
                         </div>
                     )}
+                    <ThemeToggle />
                     <Notification userId={session.user?.id} />
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Avatar className="size-10">
+                        <DropdownMenuTrigger asChild><Avatar className="size-10 touch-manipulation">
                             <AvatarImage src={session.user?.image ?? undefined} />
                             <AvatarFallback>
                                 {session.user?.name.substring(0, 1) ?? ":)"}
@@ -143,12 +145,15 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
             switch (pathname) {
                 case "/":
                     return (
-                        <Link href="/login">
-                            <Button className="uppercase cursor-pointer">Login</Button>
-                        </Link>
+                        <>
+                            <ThemeToggle />
+                            <Link href="/login">
+                                <Button className="uppercase cursor-pointer">Login</Button>
+                            </Link>
+                        </>
                     );
                 default:
-                    return null;
+                    return <ThemeToggle />;
             }
         }
     }
@@ -174,7 +179,9 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
                             <div>C</div>
                         </div>
                     </Link>
-                    <div className="flex items-center gap-3">{showLoginOrUserButton()}</div>
+                    <div className="flex items-center gap-3">
+                        {showLoginOrUserButton()}
+                    </div>
                 </div>
             </div>
         </div>

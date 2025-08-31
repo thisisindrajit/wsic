@@ -56,7 +56,7 @@ const getTrendIcon = (trend: TrendingTopic['trend']) => {
     case 'trending':
       return <TrendingUp className="h-3 w-3 text-teal-500" />;
     case 'rising':
-      return <TrendingUp className="h-3 w-3 text-green-500" />;
+      return <TrendingUp className="h-3 w-3 text-orange-500" />;
     case 'stable':
       return <Minus className="h-3 w-3 text-gray-400" />;
     default:

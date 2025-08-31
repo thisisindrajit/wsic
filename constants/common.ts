@@ -60,9 +60,9 @@ export const mobileNavigationItems: NavigationItem[] = [
     icon: Bookmark,
   },
   {
-    id: "courses",
-    label: "Blocks",
-    href: "/user/courses",
+    id: "topics",
+    label: "My Topics",
+    href: "/user/topics",
     icon: Blocks,
   },
   {

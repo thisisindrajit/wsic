@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -21,30 +22,35 @@ interface NotificationButtonProps {
 }
 
 const Notification: FC<NotificationButtonProps> = ({ userId }) => {
-    // Don't render if no userId
-    if (!userId) return null;
     const [isOpen, setIsOpen] = useState(false);
     
     // Get unread count
-    const unreadCount = useQuery(api.notifications.getUnreadNotificationCount, {
-        userId,
-    });
+    const unreadCount = useQuery(
+        api.notifications.getUnreadNotificationCount,
+        userId ? { userId } : "skip"
+    );
     
     // Get notifications
-    const notifications = useQuery(api.notifications.getUserNotifications, {
-        userId,
-        includeRead: false,
-        limit: 10,
-    });
+    const notifications = useQuery(
+        api.notifications.getUserNotifications,
+        userId ? {
+            userId,
+            includeRead: false,
+            limit: 10,
+        } : "skip"
+    );
     
     // Mutations
     const markAsRead = useMutation(api.notifications.markNotificationAsRead);
     const markAllAsRead = useMutation(api.notifications.markAllNotificationsAsRead);
     
+    // Don't render if no userId
+    if (!userId) return null;
+    
     const handleNotificationClick = async (notificationId: string) => {
         try {
             await markAsRead({
-                notificationId: notificationId as any,
+                notificationId: notificationId as Id<"notifications">,
                 userId,
             });
         } catch (error) {
@@ -81,7 +87,7 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
-                    className="relative p-2 size-10 rounded-full"
+                    className="relative p-2 size-10 rounded-full touch-manipulation"
                 >
                     <Bell className="h-5 w-5" />
                 </Button>
@@ -91,7 +97,7 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
                 align="end"
                 sideOffset={10}
             >
-                <div className="flex items-center justify-between px-2 py-1">
+                <div className="flex items-center justify-between px-2 py-1 text-sm font-medium">
                     <DropdownMenuLabel className="p-0">
                         Notifications
                     </DropdownMenuLabel>
