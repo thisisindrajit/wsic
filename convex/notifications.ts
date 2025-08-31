@@ -1,14 +1,22 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Create a new notification for a user
-export const createNotification = mutation({
+// Create a new notification for a user (internal function)
+export const createNotification = internalMutation({
   args: {
     userId: v.string(),
     notificationTypeKey: v.string(),
     title: v.string(),
     message: v.string(),
-    data: v.optional(v.any()),
+    data: v.optional(
+      v.object({
+        rewardId: v.optional(v.id("rewards")),
+        topicId: v.optional(v.id("topics")),
+        actionUrl: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        metadata: v.optional(v.any()),
+      })
+    ),
     expiresAt: v.optional(v.number()),
   },
   returns: v.id("notifications"),
@@ -18,9 +26,11 @@ export const createNotification = mutation({
       .query("notificationTypes")
       .withIndex("by_key", (q) => q.eq("key", args.notificationTypeKey))
       .unique();
-    
+
     if (!notificationType) {
-      throw new Error(`Notification type '${args.notificationTypeKey}' not found`);
+      throw new Error(
+        `Notification type '${args.notificationTypeKey}' not found`
+      );
     }
 
     return await ctx.db.insert("notifications", {
@@ -44,37 +54,52 @@ export const getUserNotifications = query({
     includeArchived: v.optional(v.boolean()),
     limit: v.optional(v.number()),
   },
-  returns: v.array(v.object({
-    _id: v.id("notifications"),
-    _creationTime: v.number(),
-    userId: v.string(),
-    notificationTypeKey: v.string(),
-    title: v.string(),
-    message: v.string(),
-    isRead: v.boolean(),
-    isArchived: v.boolean(),
-    data: v.optional(v.any()),
-    expiresAt: v.optional(v.number()),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("notifications"),
+      _creationTime: v.number(),
+      userId: v.string(),
+      notificationTypeKey: v.string(),
+      title: v.string(),
+      message: v.string(),
+      isRead: v.boolean(),
+      isArchived: v.boolean(),
+      data: v.optional(
+        v.object({
+          rewardId: v.optional(v.id("rewards")),
+          topicId: v.optional(v.id("topics")),
+          actionUrl: v.optional(v.string()),
+          imageUrl: v.optional(v.string()),
+          metadata: v.optional(v.any()),
+        })
+      ),
+      expiresAt: v.optional(v.number()),
+    })
+  ),
   handler: async (ctx, args) => {
-    const { userId, includeRead = true, includeArchived = false, limit = 50 } = args;
-    
+    const {
+      userId,
+      includeRead = true,
+      includeArchived = false,
+      limit = 50,
+    } = args;
+
     let query = ctx.db
       .query("notifications")
       .withIndex("by_user", (q) => q.eq("userId", userId));
 
     const notifications = await query.collect();
-    
+
     // Filter based on read/archived status
-    const filtered = notifications.filter(notification => {
+    const filtered = notifications.filter((notification) => {
       if (!includeRead && notification.isRead) return false;
       if (!includeArchived && notification.isArchived) return false;
-      
+
       // Check if notification has expired
       if (notification.expiresAt && notification.expiresAt < Date.now()) {
         return false;
       }
-      
+
       return true;
     });
 
@@ -94,19 +119,21 @@ export const markNotificationAsRead = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const notification = await ctx.db.get(args.notificationId);
-    
+
     if (!notification) {
       throw new Error("Notification not found");
     }
-    
+
     if (notification.userId !== args.userId) {
-      throw new Error("Unauthorized: Cannot modify another user's notification");
+      throw new Error(
+        "Unauthorized: Cannot modify another user's notification"
+      );
     }
 
     await ctx.db.patch(args.notificationId, {
       isRead: true,
     });
-    
+
     return null;
   },
 });
@@ -120,7 +147,7 @@ export const markAllNotificationsAsRead = mutation({
   handler: async (ctx, args) => {
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user_and_read", (q) => 
+      .withIndex("by_user_and_read", (q) =>
         q.eq("userId", args.userId).eq("isRead", false)
       )
       .collect();
@@ -130,7 +157,7 @@ export const markAllNotificationsAsRead = mutation({
         isRead: true,
       });
     }
-    
+
     return null;
   },
 });
@@ -144,20 +171,22 @@ export const archiveNotification = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const notification = await ctx.db.get(args.notificationId);
-    
+
     if (!notification) {
       throw new Error("Notification not found");
     }
-    
+
     if (notification.userId !== args.userId) {
-      throw new Error("Unauthorized: Cannot modify another user's notification");
+      throw new Error(
+        "Unauthorized: Cannot modify another user's notification"
+      );
     }
 
     await ctx.db.patch(args.notificationId, {
       isArchived: true,
       isRead: true, // Archive implies read
     });
-    
+
     return null;
   },
 });
@@ -171,13 +200,13 @@ export const getUnreadNotificationCount = query({
   handler: async (ctx, args) => {
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user_and_read", (q) => 
+      .withIndex("by_user_and_read", (q) =>
         q.eq("userId", args.userId).eq("isRead", false)
       )
       .collect();
 
     // Filter out expired notifications
-    const validNotifications = notifications.filter(notification => {
+    const validNotifications = notifications.filter((notification) => {
       if (notification.expiresAt && notification.expiresAt < Date.now()) {
         return false;
       }
@@ -197,17 +226,19 @@ export const deleteNotification = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const notification = await ctx.db.get(args.notificationId);
-    
+
     if (!notification) {
       throw new Error("Notification not found");
     }
-    
+
     if (notification.userId !== args.userId) {
-      throw new Error("Unauthorized: Cannot delete another user's notification");
+      throw new Error(
+        "Unauthorized: Cannot delete another user's notification"
+      );
     }
 
     await ctx.db.delete(args.notificationId);
-    
+
     return null;
   },
 });
@@ -232,9 +263,11 @@ export const createRewardNotification = mutation({
       isArchived: false,
       data: {
         rewardId: args.rewardId,
-        points: args.points,
-        rewardTitle: args.rewardTitle,
-        rewardDescription: args.rewardDescription,
+        metadata: {
+          points: args.points,
+          rewardTitle: args.rewardTitle,
+          rewardDescription: args.rewardDescription,
+        },
       },
     });
   },
@@ -258,9 +291,11 @@ export const createAchievementNotification = mutation({
       isRead: false,
       isArchived: false,
       data: {
-        achievementTitle: args.achievementTitle,
-        achievementDescription: args.achievementDescription,
         topicId: args.topicId,
+        metadata: {
+          achievementTitle: args.achievementTitle,
+          achievementDescription: args.achievementDescription,
+        },
       },
     });
   },
