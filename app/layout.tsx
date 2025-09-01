@@ -9,6 +9,8 @@ import { headers } from "next/headers";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
 
@@ -58,6 +60,8 @@ export default async function RootLayout({
             </div>
             <Footer />
             <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+            <Analytics />
+            <SpeedInsights />
           </ConvexClientProvider>
         </ThemeProvider>
       </body>
