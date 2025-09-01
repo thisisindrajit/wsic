@@ -107,7 +107,7 @@ lib/
 
 ```
 constants/
-└── common.ts              # App name, descriptions, callback URLs
+└── common.ts              # App name, descriptions, callback URLs, navigation
 ```
 
 **Exports:**
@@ -116,6 +116,63 @@ constants/
 - `APP_DESCRIPTION`: Application description
 - `CALLBACK_URL`: "/user/dashboard"
 - `NEW_USER_CALLBACK_URL`: "/user/dashboard?newUser=1"
+- `TOPBAR_SCROLL_THRESHOLD`: Scroll threshold for TopBar visibility
+- `navigationItems`: Desktop navigation configuration
+- `mobileNavigationItems`: Mobile navigation configuration
+
+### `/convex` - Convex Database Functions
+
+```
+convex/
+├── _generated/            # Auto-generated Convex files
+│   ├── api.d.ts          # API type definitions
+│   ├── api.js            # API client
+│   ├── dataModel.d.ts    # Data model types
+│   ├── server.d.ts       # Server function types
+│   └── server.js         # Server runtime
+├── schema.ts             # Database schema definition
+├── blocks.ts             # Block content management
+├── categories.ts         # Category management
+├── topics.ts             # Topic queries and mutations
+├── users.ts              # User interaction tracking
+├── notifications.ts      # Notification system
+├── rewards.ts            # Gamification and rewards
+├── recommendations.ts    # Content recommendation engine
+├── search.ts             # Search functionality
+├── tags.ts               # Tag management
+├── seed.ts               # Database seeding functions
+├── constants.ts          # Convex-specific constants
+└── index.ts              # Main exports
+```
+
+**Key Files:**
+- `schema.ts`: Defines all database tables, indexes, and relationships
+- `topics.ts`: Core content queries including search and trending topics
+- `users.ts`: User interaction tracking and engagement metrics
+- `notifications.ts`: Real-time notification system with Convex integration
+- `blocks.ts`: Content block management for topics (text, exercises, media, code)
+
+### `/interfaces` - TypeScript Interfaces
+
+```
+interfaces/
+└── NavigationItem.ts      # Navigation item type definitions
+```
+
+### `/hooks` - Custom React Hooks
+
+```
+hooks/
+└── useTopBarVisibility.ts # TopBar scroll-based visibility hook
+```
+
+### `/providers` - React Context Providers
+
+```
+providers/
+├── ConvexClientProvider.tsx # Convex client configuration
+└── ThemeProvider.tsx        # Theme management provider
+```
 
 ### `/public` - Static Assets
 
@@ -184,16 +241,28 @@ import { APP_NAME } from "@/constants/common";
 
 ## Recent Changes
 
-**Constants Update:**
-- Added proper APP_DESCRIPTION to replace TODO placeholder
-- Description now reflects the application's purpose and functionality
+**Convex Integration:**
+- Comprehensive database schema with 12+ tables for topics, blocks, users, notifications
+- Real-time notification system with unread count and mark-as-read functionality
+- User interaction tracking for likes, saves, shares, and completions
+- Gamification system with rewards and achievement notifications
+- Full-text search capabilities with filtering and categorization
+- Content generation request tracking and status management
 
 **Component Enhancements:**
 - Block component now features glassmorphism design with backdrop blur effects
 - SuggestedTopics component includes default topics and customizable props
+- Notification component with real-time Convex integration and dropdown interface
 - Enhanced hover animations and visual effects across components
+- MetaThemeAndBgColor component for dynamic browser UI theming
 
 **Configuration Updates:**
 - TypeScript target updated to ES2017
 - PostCSS configuration simplified for Tailwind CSS 4
 - All configuration files aligned with latest Next.js 15 standards
+- Convex 1.26.2 integration with type-safe API generation
+
+**Navigation System:**
+- Comprehensive navigation constants with desktop and mobile configurations
+- NavigationSidebar and MobileBottomNavigation components
+- TopBar visibility hook for scroll-based interactions

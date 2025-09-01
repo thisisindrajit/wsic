@@ -6,9 +6,10 @@ This guide will help you set up the WSIC project for local development.
 
 - Node.js 18+ 
 - npm or yarn
-- PostgreSQL database
+- PostgreSQL database (for Better Auth sessions)
 - Google OAuth credentials
-- Convex account (for main data storage)
+- Convex account (for main application data)
+- Convex CLI installed globally: `npm install -g convex`
 
 ## Installation
 
@@ -53,9 +54,30 @@ This guide will help you set up the WSIC project for local development.
 
 4. **Database Setup**
    
+   **PostgreSQL (Better Auth):**
    Ensure your PostgreSQL database is running and accessible. Better Auth will automatically create the necessary tables on first run.
 
-5. **Start Development Server**
+   **Convex Setup:**
+   ```bash
+   # Initialize Convex project (if not already done)
+   npx convex dev
+   
+   # This will:
+   # 1. Create a new Convex project (if needed)
+   # 2. Deploy your schema and functions
+   # 3. Generate type-safe API files
+   # 4. Start the development server
+   ```
+
+   Follow the Convex setup prompts to create your deployment and get your deployment URL.
+
+5. **Seed Development Data (Optional)**
+   ```bash
+   # Seed the database with sample categories, tags, and topics
+   npx convex run seed:seedDatabase
+   ```
+
+6. **Start Development Server**
    ```bash
    npm run dev
    ```
@@ -71,8 +93,14 @@ npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 
-# Database migrations (if needed)
-# Better Auth handles migrations automatically
+# Convex Development
+npx convex dev       # Start Convex development server
+npx convex deploy    # Deploy schema and functions to Convex
+npx convex dashboard # Open Convex dashboard in browser
+
+# Database Operations
+# Better Auth handles PostgreSQL migrations automatically
+# Convex handles schema migrations automatically on deploy
 ```
 
 ## Project Structure Overview
@@ -86,19 +114,32 @@ wsic/
 │   ├── layout.tsx         # Root layout
 │   └── page.tsx           # Landing page
 ├── components/            # React components
-│   └── ui/               # Base UI components
+│   ├── ui/               # Base UI components
+│   ├── layout/           # Layout components
+│   ├── auth/             # Authentication components
+│   └── features/         # Feature-specific components
+├── convex/               # Convex database functions
+│   ├── schema.ts         # Database schema
+│   ├── topics.ts         # Topic management
+│   ├── users.ts          # User interactions
+│   └── notifications.ts  # Notification system
 ├── lib/                  # Utilities and configurations
 ├── constants/            # Application constants
+├── providers/            # React context providers
+├── hooks/                # Custom React hooks
+├── interfaces/           # TypeScript interfaces
 ├── public/               # Static assets
 └── docs/                 # Documentation
 ```
 
 ## First Steps
 
-1. Visit `http://localhost:3000` to see the landing page
+1. Visit `http://localhost:3000` to see the landing page with search interface
 2. Try the Google sign-in flow at `/login`
-3. Explore the protected dashboard at `/user/dashboard`
-4. Check the component library in `/components`
+3. Explore the protected dashboard at `/user/dashboard` with real-time features
+4. Check the Convex dashboard to see your database tables and functions
+5. Test the notification system and user interactions
+6. Explore the component library in `/components`
 
 ## Troubleshooting
 
@@ -109,6 +150,12 @@ wsic/
 - Check connection credentials in `.env`
 - Ensure database exists and is accessible
 
+**Convex Issues**
+- Ensure Convex CLI is installed: `npm install -g convex`
+- Check Convex deployment URL in `.env`
+- Verify schema deployment: `npx convex deploy`
+- Check Convex dashboard for function errors
+
 **Google OAuth Issues**
 - Verify client ID and secret are correct
 - Check OAuth redirect URIs in Google Console
@@ -116,5 +163,13 @@ wsic/
 
 **Build Issues**
 - Clear `.next` folder: `rm -rf .next`
+- Clear Convex cache: `rm -rf .convex`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 - Check TypeScript errors: `npx tsc --noEmit`
+- Redeploy Convex functions: `npx convex deploy`
+
+**Real-Time Features Not Working**
+- Ensure Convex development server is running: `npx convex dev`
+- Check browser console for WebSocket connection errors
+- Verify Convex deployment URL is correct
+- Check network connectivity and firewall settings

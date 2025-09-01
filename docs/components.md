@@ -136,7 +136,7 @@ interface TopicSearchProps {
 - Gradient text effects on key letters (W, S, I, C)
 - Borderless input with bottom border focus states
 - Teal color scheme matching app branding
-- Responsive typography scaling (2xl → 3xl → 4xl)
+- Responsive typography scaling (4xl → 5xl → 6xl)
 - Custom focus states with teal accent colors
 - Disabled states with opacity and cursor changes
 
@@ -151,6 +151,84 @@ interface TopicSearchProps {
 - The `onSearch` callback is currently synchronous but wrapped in async/await for future API integration
 - TypeScript may show a hint about `await` having no effect - this is intentional for forward compatibility
 - Error handling is implemented for future async search operations
+
+### Notification (`Notification.tsx`)
+
+Real-time notification system with dropdown interface and Convex integration.
+
+```typescript
+interface NotificationButtonProps {
+  userId: string | undefined;
+}
+
+<Notification userId={session?.user?.id} />
+```
+
+**Features:**
+- Real-time notification updates via Convex
+- Unread notification count badge
+- Dropdown interface with notification list
+- Mark individual notifications as read
+- Mark all notifications as read
+- Time-based notification formatting ("2h ago", "Just now")
+- Automatic filtering of expired notifications
+- Responsive design with mobile optimization
+
+**Convex Integration:**
+- Uses `useQuery` for real-time notification fetching
+- Uses `useMutation` for marking notifications as read
+- Automatically updates when new notifications arrive
+- Handles notification expiration and archiving
+
+**Notification Display:**
+- Shows title, message, and timestamp
+- Visual indicator for unread notifications (blue dot)
+- Truncated content with line clamping
+- Smooth animations and hover effects
+- Error handling with toast notifications
+
+### ThemeToggle (`ThemeToggle.tsx`)
+
+Theme switching component with system preference support.
+
+```typescript
+<ThemeToggle />
+```
+
+**Features:**
+- Light, dark, and system theme options
+- Animated icon transitions
+- Dropdown menu interface
+- Persistent theme selection
+- System preference detection
+- Smooth theme transitions
+
+**Theme Integration:**
+- Uses `next-themes` for theme management
+- Integrates with `MetaThemeAndBgColor` for browser UI theming
+- Supports CSS custom properties for theme colors
+- Maintains theme state across page reloads
+
+### MetaThemeAndBgColor (`MetaThemeAndBgColor.tsx`)
+
+Dynamic meta tag management for browser UI theming.
+
+```typescript
+<MetaThemeAndBgColor />
+```
+
+**Features:**
+- Dynamic theme-color meta tag updates
+- Background-color meta tag management
+- Responsive to theme changes
+- Browser UI color synchronization
+- Mobile browser address bar theming
+
+**Implementation:**
+- Uses `useLayoutEffect` for immediate DOM updates
+- Removes existing meta tags before adding new ones
+- Converts theme colors to hex values for browser compatibility
+- Supports both light and dark theme colors
 
 ### Block (`Block.tsx`)
 
@@ -289,14 +367,108 @@ Site footer with branding and links.
 
 ## Page Implementations
 
+### Home Page (`/app/page.tsx` & `components/pages/Home.tsx`)
+
+The landing page implementation with search interface and trending content.
+
+```typescript
+const Home = () => {
+  const [searchTopic, setSearchTopic] = useState('');
+  const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedTopic = searchTopic.trim();
+    if (!trimmedTopic) return;
+    // Handle search logic here
+    console.log('Searching for:', trimmedTopic);
+  };
+
+  return (
+    <>
+      {/* Main search interface */}
+      <div className="flex flex-col items-center justify-center flex-1 py-12 min-h-[calc(100dvh-5rem)] relative">
+        <div className="flex flex-col sm:max-w-[90%] lg:max-w-[80%] xl:max-w-[70%] pb-24">
+          <div className="text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light">
+            <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row items-stretch gap-4">
+            <Input
+              type="text"
+              placeholder="type in any topic..."
+              value={searchTopic}
+              onChange={(e) => setSearchTopic(e.target.value)}
+              className="dark:bg-background h-auto border-x-0 border-t-0 border-foreground text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pb-2 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all"
+              maxLength={256}
+              autoComplete="off"
+              autoCapitalize="words"
+              spellCheck="true"
+            />
+            <Button
+              type="submit"
+              disabled={!searchTopic.trim()}
+              className="bg-teal-500 flex items-center justify-center self-end md:self-auto h-14 md:h-auto mr-0 w-14 md:w-20 xl:w-24 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-500"
+            >
+              <ArrowRight className="size-6 md:size-8 xl:size-10" />
+            </Button>
+          </form>
+          <div className="mt-4 md:mt-10 text-lg font-light flex flex-col gap-3">
+            <div>Suggested topics</div>
+            <SuggestedTopics onTopicClick={handleSuggestedTopicClick} />
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="hidden md:flex absolute bottom-8 left-1/2 transform -translate-x-1/2 items-center gap-2 animate-bounce cursor-pointer text-neutral-500">
+          <Mouse className="size-5" />
+          <span className="text-sm font-medium">Trending topics</span>
+        </div>
+      </div>
+      
+      {/* Trending Topics Grid */}
+      <div id="trending-topics" className="flex flex-col gap-4">
+        <div className="text-2xl/normal font-medium">
+          <span className="font-light uppercase">Trending</span> Topics
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
+          {/* Block components with sample data */}
+        </div>
+      </div>
+    </>
+  );
+};
+```
+
+**Layout Features:**
+- Full-height hero section with centered search interface
+- Responsive typography scaling (4xl → 5xl → 6xl)
+- Gradient text effects on brand letters (W, S, I, C)
+- Custom input styling with borderless design and focus states
+- Responsive button sizing and positioning
+- Smooth scroll indicator with mouse icon
+- Grid-based trending topics section
+
+**Interactive Elements:**
+- Form validation preventing empty submissions
+- Suggested topics integration with click handlers
+- Smooth scrolling to trending section
+- Responsive design for mobile and desktop
+- Touch-optimized interactions
+
+**User Flow:**
+- Anonymous users can browse and search
+- Search attempts trigger authentication requirement
+- Trending topics provide quick exploration options
+- Responsive design ensures mobile-first experience
+
 ### User Dashboard (`/user/dashboard/page.tsx`)
 
-The main user dashboard implements a responsive 3-column grid layout:
+Protected user dashboard with personalized content and navigation.
 
 ```typescript
 const UserDashboard = () => {
   const handleSearch = (topic: string) => {
-    // TODO: Implement search functionality
+    // TODO: Implement search functionality with Convex
     console.log('Searching for:', topic);
   };
 
@@ -311,7 +483,7 @@ const UserDashboard = () => {
         {/* Center: Topic Search and Content Blocks */}
         <div className="lg:col-span-5">
           <TopicSearch onSearch={handleSearch} />
-          {/* Content blocks... */}
+          {/* Content blocks and user-specific content */}
         </div>
         
         {/* Right: Subscription and Trending (responsive) */}
@@ -337,6 +509,12 @@ const UserDashboard = () => {
 - **Mobile**: Single column with bottom navigation
 - **Tablet**: Two-column layout (center + right sidebar horizontal)
 - **Desktop**: Three-column layout with sticky sidebars
+
+**Authentication Integration:**
+- Protected route via middleware
+- Session-based content personalization
+- User-specific notifications and interactions
+- Convex integration for real-time updates
 
 ## Component Patterns
 

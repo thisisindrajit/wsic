@@ -1,0 +1,757 @@
+# Convex Integration Guide
+
+This document provides comprehensive information about the Convex database integration in the WSIC application.
+
+## Overview
+
+WSIC uses Convex as the primary database for application data, providing real-time synchronization and a type-safe API. The integration handles topics, blocks, user interactions, notifications, and gamification features.
+
+## Database Schema
+
+### Core Tables
+
+#### Topics (`topics`)
+Main content entities that users explore and learn about.
+
+```typescript
+interface Topic {
+  _id: Id<"topics">;
+  _creationTime: number;
+  title: string;
+  description: string;
+  slug: string; // URL-friendly identifier
+  categoryId?: Id<"categories">;
+  tagIds: Id<"tags">[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  estimatedReadTime: number; // in minutes
+  isPublished: boolean;
+  isTrending: boolean;
+  viewCount: number;
+  likeCount: number;
+  shareCount: number;
+  createdBy?: string; // Better Auth user ID
+  lastUpdated: number;
+  isAIGenerated: boolean;
+  generationPrompt?: string;
+  sources?: string[];
+  metadata?: {
+    wordCount: number;
+    readingLevel: string;
+    estimatedTime?: number; // minutes to complete
+    exerciseCount?: number;
+  };
+}
+```
+
+**Indexes:**
+- `by_slug`: Fast lookup by URL slug
+- `by_category`: Filter by category
+- `by_trending`: Get trending topics
+- `by_published`: Filter published content
+- `by_created_by`: User-created content
+- `search_topics`: Full-text search on title
+
+#### Blocks (`blocks`)
+Individual content pieces within topics (text, exercises, media, code).
+
+```typescript
+interface Block {
+  _id: Id<"blocks">;
+  _creationTime: number;
+  topicId: Id<"topics">;
+  content: TextBlock | ExerciseBlock | MediaBlock | CodeBlock;
+  order: number; // Display order within topic
+}
+
+type TextBlock = {
+  type: "text";
+  data: {
+    content: {
+      text: string;
+      formatting?: any; // Custom formatting data
+    };
+    styleKey?: string; // References contentTypes.key
+  };
+};
+
+type ExerciseBlock = {
+  type: "exercise";
+  data: {
+    exerciseType: "multiple_choice" | "fill_in_blank" | "drag_drop" | "true_false" | "short_answer" | "reflection";
+    question: string;
+    options?: { id: string; text: string; }[];
+    correctAnswer: string;
+    explanation?: string;
+    hints?: string[];
+    points?: number;
+  };
+};
+
+type MediaBlock = {
+  type: "media";
+  data: {
+    mediaType: "image" | "video" | "audio" | "diagram";
+    url?: string;
+    diagramCode?: string; // Mermaid diagram code
+    caption?: string;
+    altText?: string;
+    thumbnail?: string;
+  };
+};
+
+type CodeBlock = {
+  type: "code";
+  data: {
+    code: string;
+    language?: string;
+    title?: string;
+    explanation?: string;
+    runnable?: boolean;
+  };
+};
+```
+
+**Indexes:**
+- `by_topic_and_order`: Ordered blocks within a topic
+- `by_topic`: All blocks for a topic
+
+#### Categories (`categories`)
+Topic categorization system.
+
+```typescript
+interface Category {
+  _id: Id<"categories">;
+  _creationTime: number;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string; // Hex color for UI
+  icon?: string; // Icon identifier
+}
+```
+
+**Indexes:**
+- `by_slug`: Fast lookup by slug
+- `by_name`: Alphabetical sorting
+
+#### Tags (`tags`)
+Topic tagging system for flexible organization.
+
+```typescript
+interface Tag {
+  _id: Id<"tags">;
+  _creationTime: number;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string; // Hex color for UI
+}
+```
+
+**Indexes:**
+- `by_slug`: Fast lookup by slug
+- `by_name`: Alphabetical sorting
+
+### User Interaction Tables
+
+#### User Topic Interactions (`userTopicInteractions`)
+Tracks user engagement with topics.
+
+```typescript
+interface UserTopicInteraction {
+  _id: Id<"userTopicInteractions">;
+  _creationTime: number;
+  userId: string; // Better Auth user ID
+  topicId: Id<"topics">;
+  interactionType: "view" | "like" | "save" | "share" | "complete";
+  metadata?: {
+    timeSpent?: number; // seconds spent on topic
+    completionPercentage?: number; // 0-100
+    shareDestination?: string; // for shares
+    notes?: string; // user notes
+  };
+}
+```
+
+**Indexes:**
+- `by_user_and_topic`: User-specific topic interactions
+- `by_user_and_type`: User interactions by type
+- `by_topic_and_type`: Topic interactions by type
+- `by_user`: All user interactions
+- `by_topic`: All topic interactions
+
+#### Generation Requests (`generationRequests`)
+Tracks AI content generation requests and status.
+
+```typescript
+interface GenerationRequest {
+  _id: Id<"generationRequests">;
+  _creationTime: number;
+  userId: string; // Better Auth user ID
+  topicQuery: string; // Original search query
+  status: "pending" | "processing" | "completed" | "failed";
+  topicId?: Id<"topics">; // Created topic ID when completed
+  errorMessage?: string;
+  processingStartedAt?: number;
+  completedAt?: number;
+  metadata?: {
+    estimatedBlocks: number;
+    targetDifficulty: string;
+    requestedSections: string[];
+  };
+}
+```
+
+**Indexes:**
+- `by_user`: User's generation requests
+- `by_status`: Filter by processing status
+- `by_topic_query`: Search by query
+
+### Gamification Tables
+
+#### Rewards (`rewards`)
+User rewards for engagement and achievements.
+
+```typescript
+interface Reward {
+  _id: Id<"rewards">;
+  _creationTime: number;
+  userId: string; // Better Auth user ID
+  rewardTypeKey: string; // References rewardTypes.key
+  points: number; // Points awarded
+  title: string; // Display title
+  description: string; // Achievement description
+  metadata?: {
+    streakCount?: number; // For streak rewards
+    topicId?: Id<"topics">; // For topic-specific rewards
+    achievementDate?: number; // When unlocked
+  };
+}
+```
+
+#### Reward Types (`rewardTypes`)
+Constant table defining available reward types.
+
+```typescript
+interface RewardType {
+  _id: Id<"rewardTypes">;
+  _creationTime: number;
+  key: string; // Unique identifier like "daily_checkin"
+  name: string; // Display name
+  description: string;
+  points: number; // Default points for this reward type
+  iconUrl?: string;
+  category?: string; // "achievement", "streak", "social", etc.
+  isRepeatable: boolean; // Can user get this multiple times
+}
+```
+
+#### Notifications (`notifications`)
+User notification system.
+
+```typescript
+interface Notification {
+  _id: Id<"notifications">;
+  _creationTime: number;
+  userId: string; // Better Auth user ID
+  notificationTypeKey: string; // References notificationTypes.key
+  title: string;
+  message: string;
+  isRead: boolean;
+  isArchived: boolean;
+  data?: {
+    rewardId?: Id<"rewards">;
+    topicId?: Id<"topics">;
+    actionUrl?: string;
+    imageUrl?: string;
+    metadata?: any;
+  };
+  expiresAt?: number; // Optional expiration timestamp
+}
+```
+
+**Indexes:**
+- `by_user`: User's notifications
+- `by_user_and_read`: Filter by read status
+- `by_user_and_archived`: Filter by archived status
+- `by_notification_type`: Filter by type
+- `by_expires_at`: Handle expiration
+
+### Analytics Tables
+
+#### Trending Topics (`trendingTopics`)
+Calculated trending data for topics.
+
+```typescript
+interface TrendingTopic {
+  _id: Id<"trendingTopics">;
+  _creationTime: number;
+  topicId: Id<"topics">;
+  score: number; // Trending score based on engagement
+  period: "daily" | "weekly" | "monthly";
+  calculatedAt: number;
+  metrics: {
+    viewsInPeriod: number;
+    likesInPeriod: number;
+    sharesInPeriod: number;
+    completionsInPeriod: number;
+  };
+}
+```
+
+**Indexes:**
+- `by_period_and_score`: Trending topics by timeframe
+- `by_topic`: Topic trending history
+- `by_calculated_at`: Cleanup old calculations
+
+## API Functions
+
+### Query Functions
+
+#### Topics
+
+**Get Trending Topics:**
+```typescript
+// convex/topics.ts
+export const getTrendingTopics = query({
+  args: {
+    limit: v.optional(v.number()),
+    categoryId: v.optional(v.id("categories")),
+  },
+  handler: async (ctx, args) => {
+    // Returns trending topics for homepage display
+  },
+});
+```
+
+**Search Topics:**
+```typescript
+export const searchTopics = query({
+  args: {
+    searchTerm: v.string(),
+    categoryId: v.optional(v.id("categories")),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    )),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search with filtering options
+  },
+});
+```
+
+**Get Topic by Slug:**
+```typescript
+export const getTopicBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    // Returns topic with associated blocks
+  },
+});
+```
+
+**Get Paginated Topics:**
+```typescript
+export const getTopics = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    categoryId: v.optional(v.id("categories")),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    )),
+  },
+  handler: async (ctx, args) => {
+    // Paginated topic browsing
+  },
+});
+```
+
+#### Blocks
+
+**Get Blocks by Topic:**
+```typescript
+// convex/blocks.ts
+export const getBlocksByTopic = query({
+  args: { topicId: v.id("topics") },
+  handler: async (ctx, args) => {
+    // Returns ordered blocks for a topic
+  },
+});
+```
+
+#### Categories and Tags
+
+**Get All Categories:**
+```typescript
+// convex/categories.ts
+export const getCategories = query({
+  args: {},
+  handler: async (ctx, args) => {
+    // Returns all categories for navigation
+  },
+});
+```
+
+**Get Category by Slug:**
+```typescript
+export const getCategoryBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    // Returns specific category details
+  },
+});
+```
+
+#### Notifications
+
+**Get User Notifications:**
+```typescript
+// convex/notifications.ts
+export const getUserNotifications = query({
+  args: {
+    userId: v.string(),
+    includeRead: v.optional(v.boolean()),
+    includeArchived: v.optional(v.boolean()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Returns filtered user notifications
+  },
+});
+```
+
+**Get Unread Notification Count:**
+```typescript
+export const getUnreadNotificationCount = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    // Returns count for notification badge
+  },
+});
+```
+
+### Mutation Functions
+
+#### User Interactions
+
+**Record User Interaction:**
+```typescript
+// convex/users.ts
+export const recordInteraction = mutation({
+  args: {
+    userId: v.string(),
+    topicId: v.id("topics"),
+    interactionType: v.union(
+      v.literal("view"),
+      v.literal("like"),
+      v.literal("save"),
+      v.literal("share"),
+      v.literal("complete")
+    ),
+    metadata: v.optional(v.object({
+      timeSpent: v.optional(v.number()),
+      completionPercentage: v.optional(v.number()),
+      shareDestination: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    // Records interaction and triggers rewards
+  },
+});
+```
+
+#### Notifications
+
+**Mark Notification as Read:**
+```typescript
+// convex/notifications.ts
+export const markNotificationAsRead = mutation({
+  args: {
+    notificationId: v.id("notifications"),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Marks individual notification as read
+  },
+});
+```
+
+**Mark All Notifications as Read:**
+```typescript
+export const markAllNotificationsAsRead = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    // Marks all user notifications as read
+  },
+});
+```
+
+### Internal Functions
+
+Internal functions are used for content generation, analytics, and system operations.
+
+#### Topic Management
+
+**Create Topic:**
+```typescript
+// convex/topics.ts (internal)
+export const createTopic = internalMutation({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    slug: v.string(),
+    // ... other topic fields
+  },
+  handler: async (ctx, args) => {
+    // Creates new topic (used by AI generation)
+  },
+});
+```
+
+**Update Topic Metrics:**
+```typescript
+export const updateTopicMetrics = internalMutation({
+  args: {
+    topicId: v.id("topics"),
+    metric: v.union(v.literal("view"), v.literal("like"), v.literal("share")),
+    increment: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // Updates topic engagement metrics
+  },
+});
+```
+
+#### Block Management
+
+**Create Block:**
+```typescript
+// convex/blocks.ts (internal)
+export const createBlock = internalMutation({
+  args: {
+    topicId: v.id("topics"),
+    content: /* block content union */,
+    order: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // Creates new content block
+  },
+});
+```
+
+## Client Integration
+
+### React Hooks
+
+**Using Convex Queries:**
+```typescript
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+function TrendingTopics() {
+  const trendingTopics = useQuery(api.topics.getTrendingTopics, {
+    limit: 10
+  });
+
+  if (trendingTopics === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      {trendingTopics.map(topic => (
+        <div key={topic._id}>{topic.title}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+**Using Convex Mutations:**
+```typescript
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+function LikeButton({ topicId, userId }: { topicId: string; userId: string }) {
+  const recordInteraction = useMutation(api.users.recordInteraction);
+
+  const handleLike = async () => {
+    await recordInteraction({
+      userId,
+      topicId: topicId as Id<"topics">,
+      interactionType: "like"
+    });
+  };
+
+  return (
+    <button onClick={handleLike}>
+      Like Topic
+    </button>
+  );
+}
+```
+
+**Conditional Queries:**
+```typescript
+function SearchResults({ searchTerm }: { searchTerm: string }) {
+  const searchResults = useQuery(
+    api.topics.searchTopics,
+    searchTerm ? { searchTerm, limit: 20 } : "skip"
+  );
+
+  // Query only runs when searchTerm is provided
+  return searchResults ? (
+    <div>{/* Render results */}</div>
+  ) : (
+    <div>Enter a search term</div>
+  );
+}
+```
+
+### Real-Time Updates
+
+Convex provides automatic real-time updates:
+
+```typescript
+function NotificationBell({ userId }: { userId: string }) {
+  // Automatically updates when new notifications arrive
+  const unreadCount = useQuery(api.notifications.getUnreadNotificationCount, {
+    userId
+  });
+
+  return (
+    <div className="relative">
+      <BellIcon />
+      {unreadCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs px-1">
+          {unreadCount}
+        </span>
+      )}
+    </div>
+  );
+}
+```
+
+### Error Handling
+
+```typescript
+function TopicList() {
+  const topics = useQuery(api.topics.getTrendingTopics, { limit: 10 });
+  const recordInteraction = useMutation(api.users.recordInteraction);
+
+  const handleView = async (topicId: string) => {
+    try {
+      await recordInteraction({
+        userId: "user_id",
+        topicId: topicId as Id<"topics">,
+        interactionType: "view"
+      });
+    } catch (error) {
+      console.error("Failed to record view:", error);
+      // Handle error (show toast, etc.)
+    }
+  };
+
+  if (topics === undefined) {
+    return <div>Loading topics...</div>;
+  }
+
+  return (
+    <div>
+      {topics.map(topic => (
+        <div key={topic._id} onClick={() => handleView(topic._id)}>
+          {topic.title}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Performance Considerations
+
+### Query Optimization
+
+1. **Use Indexes**: Always query using indexed fields for better performance
+2. **Limit Results**: Use `take()` or pagination to limit query results
+3. **Conditional Queries**: Use "skip" to avoid unnecessary queries
+4. **Batch Operations**: Group related mutations when possible
+
+### Real-Time Efficiency
+
+1. **Selective Subscriptions**: Only subscribe to data you need
+2. **Component Splitting**: Split components to minimize re-renders
+3. **Memoization**: Use React.memo() for expensive components
+4. **Debounced Queries**: Debounce search queries to reduce load
+
+### Data Modeling Best Practices
+
+1. **Denormalization**: Store computed values (like counts) for fast access
+2. **Hierarchical Data**: Use proper indexing for nested queries
+3. **Cleanup Jobs**: Implement cleanup for expired notifications and old data
+4. **Batch Updates**: Use internal functions for bulk operations
+
+## Development Workflow
+
+### Local Development
+
+1. **Start Convex Dev Server:**
+   ```bash
+   npx convex dev
+   ```
+
+2. **Deploy Schema Changes:**
+   ```bash
+   npx convex deploy
+   ```
+
+3. **Seed Development Data:**
+   ```bash
+   npx convex run seed:seedDatabase
+   ```
+
+### Testing
+
+1. **Query Testing:**
+   ```typescript
+   // Test queries in Convex dashboard or with test functions
+   export const testQuery = query({
+     args: {},
+     handler: async (ctx) => {
+       const topics = await ctx.db.query("topics").take(5);
+       return topics;
+     },
+   });
+   ```
+
+2. **Mutation Testing:**
+   ```typescript
+   // Test mutations with proper validation
+   export const testMutation = mutation({
+     args: { userId: v.string() },
+     handler: async (ctx, args) => {
+       // Test mutation logic
+     },
+   });
+   ```
+
+### Production Deployment
+
+1. **Environment Variables**: Configure production Convex deployment URL
+2. **Schema Validation**: Ensure all schema changes are backward compatible
+3. **Data Migration**: Use internal functions for data migrations
+4. **Monitoring**: Monitor query performance and error rates
+
+## Security Considerations
+
+1. **User Authorization**: Always validate user permissions in mutations
+2. **Input Validation**: Use Convex validators for all function arguments
+3. **Rate Limiting**: Implement rate limiting for expensive operations
+4. **Data Privacy**: Ensure user data is properly isolated and protected
+5. **Audit Logging**: Log important user actions for security auditing

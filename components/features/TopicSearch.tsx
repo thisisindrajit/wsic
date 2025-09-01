@@ -15,6 +15,7 @@ interface TopicSearchProps {
 const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
   const [searchTopic, setSearchTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +60,12 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
             placeholder="type in any topic..."
             value={searchTopic}
             onChange={(e) => setSearchTopic(e.target.value)}
-            className="dark:bg-background h-auto border-x-0 border-t-0 border-foreground text-2xl/normal xs:text-4xl/normal md:text-4xl/normal lg:text-4xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all touch-manipulation pb-2"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            className={cn(
+              "dark:bg-background h-auto border-x-0 border-t-0 text-2xl/normal xs:text-4xl/normal md:text-4xl/normal lg:text-4xl/normal font-light p-0 focus-visible:ring-none focus-visible:ring-[0px] transition-all touch-manipulation pb-2",
+              (isFocused || searchTopic.trim()) ? "border-teal-500 focus-visible:border-teal-500" : ""
+            )}
             maxLength={256}
             disabled={isSubmitting}
             autoComplete="off"

@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mouse } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Home = () => {
   const [searchTopic, setSearchTopic] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +40,12 @@ const Home = () => {
               placeholder="type in any topic..."
               value={searchTopic}
               onChange={(e) => setSearchTopic(e.target.value)}
-              className="dark:bg-background h-auto border-x-0 border-t-0 border-foreground text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pb-2 focus-visible:ring-none focus-visible:ring-[0px] focus-visible:border-teal-500 focus-visible:text-teal-500 transition-all"
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className={cn(
+                "dark:bg-background h-auto border-x-0 border-t-0 text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pb-2 focus-visible:ring-none focus-visible:ring-[0px] transition-all",
+                (isFocused || searchTopic.trim()) ? "border-teal-500 focus-visible:border-teal-500" : ""
+              )}
               maxLength={256}
               autoComplete="off"
               autoCapitalize="words"

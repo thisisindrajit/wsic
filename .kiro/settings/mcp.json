@@ -13,7 +13,8 @@
         "functionSpec",
         "run",
         "status",
-        "data"
+        "data",
+        "tables"
       ]
     }
   }

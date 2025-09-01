@@ -263,81 +263,210 @@ Better Auth automatically manages the following tables in PostgreSQL:
 - `account` - OAuth provider accounts
 - `verification` - Email verification tokens (if used)
 
-## Topic Search API
+## Convex API Integration
 
-### Search Functionality
+WSIC uses Convex for real-time data management and API operations. The application integrates with Convex through React hooks and server functions.
 
-The TopicSearch component handles client-side search operations with plans for backend integration.
+### Convex Functions
 
-**Current Implementation:**
-```typescript
-const handleSearch = (topic: string) => {
-  // TODO: Implement search functionality
-  console.log('Searching for:', topic);
-};
-```
-
-**Planned API Endpoints:**
+#### Topics API
 
 **Search Topics:**
-```
-POST /api/search/topics
-Content-Type: application/json
-
-{
-  "query": "climate change",
-  "userId": "user_id_here" // Optional for personalization
-}
-```
-
-**Response:**
 ```typescript
-interface SearchResponse {
-  results: {
-    id: string;
-    title: string;
-    description: string;
-    imageUrl: string;
-    relevanceScore: number;
-    tags: string[];
-  }[];
-  suggestions: string[];
-  totalResults: number;
-}
+// convex/topics.ts
+export const searchTopics = query({
+  args: {
+    searchTerm: v.string(),
+    categoryId: v.optional(v.id("categories")),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"), 
+      v.literal("advanced")
+    )),
+    limit: v.optional(v.number()),
+  },
+  // Returns array of topic objects with metadata
+});
 ```
 
-**Generate Content Block:**
-```
-POST /api/content/generate
-Content-Type: application/json
-
-{
-  "topic": "artificial intelligence",
-  "userId": "user_id_here"
-}
-```
-
-**Client-Side Integration:**
+**Get Trending Topics:**
 ```typescript
-const handleSearch = async (topic: string) => {
-  setIsSubmitting(true);
-  
-  try {
-    const response = await fetch('/api/search/topics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: topic })
+export const getTrendingTopics = query({
+  args: {
+    limit: v.optional(v.number()),
+    categoryId: v.optional(v.id("categories")),
+  },
+  // Returns trending topics for homepage display
+});
+```
+
+**Get Topic by Slug:**
+```typescript
+export const getTopicBySlug = query({
+  args: { slug: v.string() },
+  // Returns topic with associated blocks for detailed view
+});
+```
+
+#### User Interactions API
+
+**Record User Interaction:**
+```typescript
+// convex/users.ts
+export const recordInteraction = mutation({
+  args: {
+    userId: v.string(),
+    topicId: v.id("topics"),
+    interactionType: v.union(
+      v.literal("view"),
+      v.literal("like"),
+      v.literal("save"),
+      v.literal("share"),
+      v.literal("complete")
+    ),
+    metadata: v.optional(v.object({
+      timeSpent: v.optional(v.number()),
+      completionPercentage: v.optional(v.number()),
+      shareDestination: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    })),
+  },
+  // Records user interaction and triggers reward system
+});
+```
+
+#### Notifications API
+
+**Get User Notifications:**
+```typescript
+// convex/notifications.ts
+export const getUserNotifications = query({
+  args: {
+    userId: v.string(),
+    includeRead: v.optional(v.boolean()),
+    includeArchived: v.optional(v.boolean()),
+    limit: v.optional(v.number()),
+  },
+  // Returns user notifications with filtering options
+});
+```
+
+**Mark Notification as Read:**
+```typescript
+export const markNotificationAsRead = mutation({
+  args: {
+    notificationId: v.id("notifications"),
+    userId: v.string(),
+  },
+  // Marks individual notification as read
+});
+```
+
+### Client-Side Integration
+
+**Using Convex Hooks:**
+```typescript
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+// Query trending topics
+const trendingTopics = useQuery(api.topics.getTrendingTopics, {
+  limit: 10
+});
+
+// Search topics
+const searchResults = useQuery(
+  api.topics.searchTopics,
+  searchTerm ? { searchTerm, limit: 20 } : "skip"
+);
+
+// Record user interaction
+const recordInteraction = useMutation(api.users.recordInteraction);
+
+const handleLike = async (topicId: string) => {
+  if (session?.user?.id) {
+    await recordInteraction({
+      userId: session.user.id,
+      topicId,
+      interactionType: "like"
     });
-    
-    const results = await response.json();
-    // Handle search results
-  } catch (error) {
-    console.error('Search error:', error);
-  } finally {
-    setIsSubmitting(false);
   }
 };
 ```
+
+### Data Models
+
+#### Topic Structure
+```typescript
+interface Topic {
+  _id: Id<"topics">;
+  title: string;
+  description: string;
+  slug: string;
+  categoryId?: Id<"categories">;
+  tagIds: Id<"tags">[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  estimatedReadTime: number;
+  isPublished: boolean;
+  isTrending: boolean;
+  viewCount: number;
+  likeCount: number;
+  shareCount: number;
+  createdBy?: string; // Better Auth user ID
+  lastUpdated: number;
+  isAIGenerated: boolean;
+  generationPrompt?: string;
+  sources?: string[];
+  metadata?: {
+    wordCount: number;
+    readingLevel: string;
+    estimatedTime?: number;
+    exerciseCount?: number;
+  };
+}
+```
+
+#### Block Structure
+```typescript
+interface Block {
+  _id: Id<"blocks">;
+  topicId: Id<"topics">;
+  content: TextBlock | ExerciseBlock | MediaBlock | CodeBlock;
+  order: number;
+}
+
+type TextBlock = {
+  type: "text";
+  data: {
+    content: {
+      text: string;
+      formatting?: any;
+    };
+    styleKey?: string;
+  };
+};
+
+type ExerciseBlock = {
+  type: "exercise";
+  data: {
+    exerciseType: "multiple_choice" | "fill_in_blank" | "drag_drop" | "true_false" | "short_answer" | "reflection";
+    question: string;
+    options?: { id: string; text: string; }[];
+    correctAnswer: string;
+    explanation?: string;
+    hints?: string[];
+    points?: number;
+  };
+};
+```
+
+### Real-Time Features
+
+Convex provides real-time updates for:
+- **Live Notifications**: New notifications appear instantly
+- **Topic Metrics**: View counts, likes, and shares update in real-time
+- **User Interactions**: Social features sync across devices
+- **Content Updates**: New topics and blocks appear without refresh
 
 ## Security Considerations
 
