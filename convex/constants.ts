@@ -102,12 +102,12 @@ export const initializeRewardTypes = mutation({
         .query("rewardTypes")
         .withIndex("by_key", (q) => q.eq("key", rewardType.key))
         .unique();
-      
+
       if (!existing) {
         await ctx.db.insert("rewardTypes", rewardType);
       }
     }
-    
+
     return null;
   },
 });
@@ -167,12 +167,12 @@ export const initializeContentTypes = mutation({
         .query("contentTypes")
         .withIndex("by_key", (q) => q.eq("key", type.key))
         .unique();
-      
+
       if (!existing) {
         await ctx.db.insert("contentTypes", type);
       }
     }
-    
+
     return null;
   },
 });
@@ -189,7 +189,8 @@ export const initializeNotificationTypes = mutation({
         description: "User earned a new reward",
         priority: 2,
         defaultTitle: "Reward Earned!",
-        defaultMessage: "You've earned a new reward for your learning progress!",
+        defaultMessage:
+          "You've earned a new reward for your learning progress!",
       },
       {
         key: "streak_milestone",
@@ -238,12 +239,12 @@ export const initializeNotificationTypes = mutation({
         .query("notificationTypes")
         .withIndex("by_key", (q) => q.eq("key", notificationType.key))
         .unique();
-      
+
       if (!existing) {
         await ctx.db.insert("notificationTypes", notificationType);
       }
     }
-    
+
     return null;
   },
 });
@@ -251,16 +252,18 @@ export const initializeNotificationTypes = mutation({
 // Query functions for constant tables
 export const getRewardTypes = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("rewardTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.string(),
-    points: v.number(),
-    iconUrl: v.optional(v.string()),
-    category: v.optional(v.string()),
-    isRepeatable: v.boolean(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("rewardTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.string(),
+      points: v.number(),
+      iconUrl: v.optional(v.string()),
+      category: v.optional(v.string()),
+      isRepeatable: v.boolean(),
+    })
+  ),
   handler: async (ctx) => {
     return await ctx.db.query("rewardTypes").collect();
   },
@@ -268,13 +271,15 @@ export const getRewardTypes = query({
 
 export const getContentTypes = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("contentTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.optional(v.string()),
-    cssClass: v.optional(v.string()),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("contentTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.optional(v.string()),
+      cssClass: v.optional(v.string()),
+    })
+  ),
   handler: async (ctx) => {
     return await ctx.db.query("contentTypes").collect();
   },
@@ -282,16 +287,18 @@ export const getContentTypes = query({
 
 export const getNotificationTypes = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("notificationTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.string(),
-    iconUrl: v.optional(v.string()),
-    priority: v.number(),
-    defaultTitle: v.optional(v.string()),
-    defaultMessage: v.optional(v.string()),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("notificationTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.string(),
+      iconUrl: v.optional(v.string()),
+      priority: v.number(),
+      defaultTitle: v.optional(v.string()),
+      defaultMessage: v.optional(v.string()),
+    })
+  ),
   handler: async (ctx) => {
     return await ctx.db.query("notificationTypes").collect();
   },
@@ -300,16 +307,19 @@ export const getNotificationTypes = query({
 // Get specific constant by key
 export const getRewardTypeByKey = query({
   args: { key: v.string() },
-  returns: v.union(v.object({
-    _id: v.id("rewardTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.string(),
-    points: v.number(),
-    iconUrl: v.optional(v.string()),
-    category: v.optional(v.string()),
-    isRepeatable: v.boolean(),
-  }), v.null()),
+  returns: v.union(
+    v.object({
+      _id: v.id("rewardTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.string(),
+      points: v.number(),
+      iconUrl: v.optional(v.string()),
+      category: v.optional(v.string()),
+      isRepeatable: v.boolean(),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("rewardTypes")
@@ -320,13 +330,16 @@ export const getRewardTypeByKey = query({
 
 export const getContentTypeByKey = query({
   args: { key: v.string() },
-  returns: v.union(v.object({
-    _id: v.id("contentTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.optional(v.string()),
-    cssClass: v.optional(v.string()),
-  }), v.null()),
+  returns: v.union(
+    v.object({
+      _id: v.id("contentTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.optional(v.string()),
+      cssClass: v.optional(v.string()),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("contentTypes")
@@ -337,16 +350,19 @@ export const getContentTypeByKey = query({
 
 export const getNotificationTypeByKey = query({
   args: { key: v.string() },
-  returns: v.union(v.object({
-    _id: v.id("notificationTypes"),
-    key: v.string(),
-    name: v.string(),
-    description: v.string(),
-    iconUrl: v.optional(v.string()),
-    priority: v.number(),
-    defaultTitle: v.optional(v.string()),
-    defaultMessage: v.optional(v.string()),
-  }), v.null()),
+  returns: v.union(
+    v.object({
+      _id: v.id("notificationTypes"),
+      key: v.string(),
+      name: v.string(),
+      description: v.string(),
+      iconUrl: v.optional(v.string()),
+      priority: v.number(),
+      defaultTitle: v.optional(v.string()),
+      defaultMessage: v.optional(v.string()),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     return await ctx.db
       .query("notificationTypes")

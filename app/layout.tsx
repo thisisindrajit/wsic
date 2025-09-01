@@ -7,6 +7,7 @@ import TopBar from "@/components/layout/TopBar";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { QueryClientProvider } from "@/providers/QueryClientProvider";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
 import { Analytics } from "@vercel/analytics/next";
@@ -53,16 +54,18 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <MetaThemeAndBgColor />
-          <ConvexClientProvider>
-            <TopBar session={session} />
-            <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
-              {children}
-            </div>
-            <Footer />
-            <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
-            <Analytics />
-            <SpeedInsights />
-          </ConvexClientProvider>
+          <QueryClientProvider>
+            <ConvexClientProvider>
+              <TopBar session={session} />
+              <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
+                {children}
+              </div>
+              <Footer />
+              <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+              <Analytics />
+              <SpeedInsights />
+            </ConvexClientProvider>
+          </QueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

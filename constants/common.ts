@@ -72,3 +72,19 @@ export const mobileNavigationItems: NavigationItem[] = [
     icon: User,
   },
 ];
+
+// Difficulty color mappings
+export const DIFFICULTY_COLORS = {
+  beginner: {
+    text: 'text-green-500',
+    pill: 'bg-green-500/40 text-green-200 border border-green-500/40',
+  },
+  intermediate: {
+    text: 'text-purple-500',
+    pill: 'bg-purple-500/40 text-purple-200 border border-purple-500/40',
+  },
+  advanced: {
+    text: 'text-fuchsia-500',
+    pill: 'bg-fuchsia-500/40 text-fuchsia-200 border border-fuchsia-500/40',
+  },
+} as const;
