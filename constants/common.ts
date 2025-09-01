@@ -1,5 +1,5 @@
 import { NavigationItem } from "@/interfaces/NavigationItem";
-import { Home, Compass, Bookmark, Blocks, User } from "lucide-react";
+import { Home, Compass, Bookmark, FileText, Users, User } from "lucide-react";
 
 export const APP_SHORT_NAME = "WSIC";
 export const APP_NAME = "Why Should I Care";
@@ -28,16 +28,16 @@ export const navigationItems: NavigationItem[] = [
     icon: Bookmark,
   },
   {
-    id: "topics",
-    label: "My Topics",
-    href: "/user/topics",
-    icon: Blocks,
+    id: "notes",
+    label: "Notes",
+    href: "/user/notes",
+    icon: FileText,
   },
   {
-    id: "profile",
-    label: "Profile",
-    href: "/user/profile",
-    icon: User,
+    id: "communities",
+    label: "Communities",
+    href: "/user/communities",
+    icon: Users,
   },
 ];
 export const mobileNavigationItems: NavigationItem[] = [
@@ -60,10 +60,16 @@ export const mobileNavigationItems: NavigationItem[] = [
     icon: Bookmark,
   },
   {
-    id: "topics",
-    label: "My Topics",
-    href: "/user/topics",
-    icon: Blocks,
+    id: "notes",
+    label: "Notes",
+    href: "/user/notes",
+    icon: FileText,
+  },
+  {
+    id: "communities",
+    label: "Communities",
+    href: "/user/communities",
+    icon: Users,
   },
   {
     id: "profile",
