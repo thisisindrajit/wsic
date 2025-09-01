@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
+import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
 
 import "./globals.css";
 
@@ -49,6 +50,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <MetaThemeAndBgColor />
           <ConvexClientProvider>
             <TopBar session={session} />
             <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
