@@ -30,6 +30,7 @@ export default defineSchema({
     slug: v.string(), // URL-friendly identifier
     categoryId: v.optional(v.id("categories")),
     tagIds: v.array(v.id("tags")),
+    imageUrl: v.optional(v.string()), // URL for the topic's image
     difficulty: v.union(
       v.literal("beginner"),
       v.literal("intermediate"),

@@ -18,7 +18,7 @@ export const navigationItems: NavigationItem[] = [
   {
     id: "explore",
     label: "Explore",
-    href: "/explore",
+    href: "/user/explore",
     icon: Compass,
   },
   {
@@ -50,7 +50,7 @@ export const mobileNavigationItems: NavigationItem[] = [
   {
     id: "explore",
     label: "Explore",
-    href: "/explore",
+    href: "/user/explore",
     icon: Compass,
   },
   {
@@ -80,8 +80,8 @@ export const DIFFICULTY_COLORS = {
     pill: 'bg-green-500/40 text-green-200 border border-green-500/40',
   },
   intermediate: {
-    text: 'text-purple-500',
-    pill: 'bg-purple-500/40 text-purple-200 border border-purple-500/40',
+    text: 'text-orange-500',
+    pill: 'bg-orange-500/40 text-orange-200 border border-orange-500/40',
   },
   advanced: {
     text: 'text-fuchsia-500',

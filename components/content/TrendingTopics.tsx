@@ -72,7 +72,7 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
                   <div className="text-xs text-muted-foreground">
                     {topic.estimatedReadTime} min read
                   </div>
-                  <p className="font-medium text-sm text-foreground group-hover:text-teal-600 transition-colors line-clamp-2">
+                  <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-1">
                     {topic.title}
                   </p>
                   <div className="flex items-center gap-3">
@@ -84,8 +84,8 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
                     </span>
                   </div>
                 </div>
-                <div className="flex-shrink-0 ml-3">
-                  <TrendingUp className="h-3 w-3 text-teal-500" />
+                <div className="flex-shrink-0 ml-4">
+                  <TrendingUp className="size-4 text-teal-500" />
                 </div>
               </div>
             </Link>

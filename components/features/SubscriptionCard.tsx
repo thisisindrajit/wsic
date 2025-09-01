@@ -18,7 +18,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
             <h3 className="text-lg font-medium mb-4">Subscribe to Premium</h3>
             
             <div className="space-y-3 mb-6">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm/relaxed text-muted-foreground">
                     Unlock unlimited access to premium content and features:
                 </p>
                 
@@ -44,7 +44,8 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
             
             <Button 
                 onClick={handleSubscribe}
-                className="w-full bg-teal-500 hover:bg-teal-600 touch-manipulation min-h-[44px] active:scale-95 transition-transform"
+                size="lg"
+                className="w-full touch-manipulation"
             >
                 Subscribe
             </Button>

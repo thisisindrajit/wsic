@@ -7,7 +7,7 @@ import { Bookmark, Heart, Clock, Eye } from 'lucide-react';
 import { DIFFICULTY_COLORS } from '@/constants/common';
 
 interface TrendingBlockProps {
-    imageUrl: string;
+    imageUrl?: string;
     title: string;
     description: string;
     likes: number;

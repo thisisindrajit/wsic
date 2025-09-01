@@ -1,4 +1,5 @@
 import { APP_SHORT_NAME } from "@/constants/common";
+import Link from "next/link";
 
 const Footer = () => {
     return (
@@ -11,7 +12,9 @@ const Footer = () => {
                         <li className="hover:underline cursor-pointer">Comps</li>
                     </ul> */}
                     <ul>
-                        <li className="hover:underline cursor-pointer">Github</li>
+                        <Link href="https://github.com/thisisindrajit/wsic" target="_blank">
+                            <li className="hover:underline cursor-pointer">Github</li>
+                        </Link>
                         <li className="hover:underline cursor-pointer">X (Twitter)</li>
                     </ul>
                 </div>
