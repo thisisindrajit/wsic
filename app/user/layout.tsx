@@ -104,7 +104,7 @@ export default function UserLayout({
                         getSidebarTop(),
                         getSidebarHeight()
                     )}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                             <SubscriptionCard />
                             <TrendingTopics />
                         </div>

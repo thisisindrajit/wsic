@@ -86,7 +86,7 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
 
     return (
         <div className={cn(
-            "fixed top-0 left-0 right-0 z-50 transition-all ease-in-out",
+            "fixed top-0 left-0 right-0 z-50 transition-all ease-in-out max-w-[1440px] mx-auto",
             // Background and border styling based on scroll position
             isAtTop
                 ? "bg-transparent"
