@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Bookmark, Heart } from 'lucide-react';
@@ -20,16 +20,22 @@ const Block: React.FC<TrendingBlockProps> = ({
     likes,
     shares
 }) => {
+    const [imageError, setImageError] = useState(false);
     return (
         <div className="group relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-neutral-200 dark:border-neutral-900 hover:bg-white/20 dark:hover:bg-black/30 transition-all w-full shadow-xl">
             {/* Full Background Image with Overlay */}
             <div className="absolute inset-0 rounded-3xl overflow-hidden">
-                <Image
-                    src={imageUrl}
-                    alt={title}
-                    fill
-                    className="object-cover transition-transform duration-400 group-hover:scale-110"
-                />
+                {!imageError && imageUrl ? (
+                    <Image
+                        src={imageUrl}
+                        alt={title}
+                        fill
+                        className="object-cover transition-transform duration-400 group-hover:scale-110"
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-teal-400 via-teal-500 to-teal-600 dark:from-teal-500 dark:via-teal-600 dark:to-teal-700 transition-transform duration-400 group-hover:scale-110" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent dark:from-black/98 dark:via-black/80 dark:to-transparent" />
             </div>
             {/* Content Overlay */}

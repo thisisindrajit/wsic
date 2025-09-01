@@ -87,7 +87,7 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
-                    className="relative p-2 size-10 rounded-full touch-manipulation"
+                    className="relative p-2 size-10 rounded-full touch-manipulation bg-background/60"
                 >
                     <Bell className="h-5 w-5" />
                 </Button>
