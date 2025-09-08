@@ -8,14 +8,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface TopicSearchProps {
-  onSearch?: (topic: string) => void;
   className?: string;
 }
 
-const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
+const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
   const [searchTopic, setSearchTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  const handleSearch = (topic: string) => {
+    // TODO: Implement search functionality
+    console.log('Searching for:', topic);
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +33,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
     setIsSubmitting(true);
 
     try {
-      if (onSearch) {
-        await onSearch(trimmedTopic);
-      }
+      handleSearch(trimmedTopic);
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -41,9 +43,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ onSearch, className }) => {
 
   const handleSuggestedTopicClick = (topic: string) => {
     setSearchTopic(topic);
-    if (onSearch) {
-      onSearch(topic);
-    }
+    handleSearch(topic);
   };
 
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";

@@ -1,0 +1,9 @@
+# Core dependencies
+google-adk>=0.2.0
+pydantic
+exa-py
+
+# TODO: Add these when implementing actual API integrations
+# exa-py  # For Exa AI search
+# google-search-results  # For Google Search API
+# requests  # For Serper API calls
