@@ -1,483 +1,369 @@
 import { internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
- * Seed the database with sample data
- * Run this once to populate your database with initial data
+ * Seed the database with notification types
  */
-export const seedDatabase = internalMutation({
+export const seedNotificationTypes = internalMutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    console.log("🌱 Starting database seeding...");
+    // First, clear existing notification types
+    const existingTypes = await ctx.db.query("notificationTypes").collect();
+    for (const type of existingTypes) {
+      await ctx.db.delete(type._id);
+    }
 
-    // 1. Create Categories
-    console.log("Creating categories...");
-    const scienceCategory = await ctx.db.insert("categories", {
-      name: "Science",
-      slug: "science",
-      description: "Explore the wonders of scientific discovery",
-      color: "#3B82F6",
-      icon: "🔬",
-    });
-
-    const technologyCategory = await ctx.db.insert("categories", {
-      name: "Technology",
-      slug: "technology", 
-      description: "Understanding modern technology and innovation",
-      color: "#10B981",
-      icon: "💻",
-    });
-
-    const historyCategory = await ctx.db.insert("categories", {
-      name: "History",
-      slug: "history",
-      description: "Journey through time and historical events",
-      color: "#F59E0B",
-      icon: "📚",
-    });
-
-    const artCategory = await ctx.db.insert("categories", {
-      name: "Art & Culture",
-      slug: "art-culture",
-      description: "Discover artistic expressions and cultural heritage",
-      color: "#EF4444",
-      icon: "🎨",
-    });
-
-    // 2. Create Tags
-    console.log("Creating tags...");
-    const beginnerTag = await ctx.db.insert("tags", {
-      name: "Beginner Friendly",
-      slug: "beginner-friendly",
-      description: "Perfect for those new to the topic",
-      color: "#22C55E",
-    });
-
-    const interactiveTag = await ctx.db.insert("tags", {
-      name: "Interactive",
-      slug: "interactive",
-      description: "Hands-on learning experience",
-      color: "#8B5CF6",
-    });
-
-    const visualTag = await ctx.db.insert("tags", {
-      name: "Visual Learning",
-      slug: "visual-learning",
-      description: "Learn through images and diagrams",
-      color: "#F97316",
-    });
-
-    const quickReadTag = await ctx.db.insert("tags", {
-      name: "Quick Read",
-      slug: "quick-read",
-      description: "Can be completed in under 10 minutes",
-      color: "#06B6D4",
-    });
-
-    // 3. Create Reward Types
-    console.log("Creating reward types...");
-    await ctx.db.insert("rewardTypes", {
-      key: "first_like",
-      name: "First Like",
-      description: "Liked your first topic",
-      points: 10,
-      iconUrl: "❤️",
-      category: "social",
-      isRepeatable: false,
-    });
-
-    await ctx.db.insert("rewardTypes", {
-      key: "first_share",
-      name: "First Share",
-      description: "Shared your first topic",
-      points: 15,
-      iconUrl: "📤",
-      category: "social",
-      isRepeatable: false,
-    });
-
-    await ctx.db.insert("rewardTypes", {
-      key: "first_topic_complete",
-      name: "Topic Explorer",
-      description: "Completed your first topic",
-      points: 25,
-      iconUrl: "🎯",
-      category: "achievement",
-      isRepeatable: false,
-    });
-
-    await ctx.db.insert("rewardTypes", {
-      key: "daily_checkin",
-      name: "Daily Visitor",
-      description: "Visited the platform today",
-      points: 5,
-      iconUrl: "📅",
-      category: "streak",
-      isRepeatable: true,
-    });
-
-    // 4. Create Content Types
-    console.log("Creating content types...");
-    await ctx.db.insert("contentTypes", {
-      key: "paragraph",
-      name: "Paragraph",
-      description: "Standard paragraph text",
-      cssClass: "prose-paragraph",
-    });
-
-    await ctx.db.insert("contentTypes", {
-      key: "heading",
-      name: "Heading",
-      description: "Section heading",
-      cssClass: "prose-heading",
-    });
-
-    await ctx.db.insert("contentTypes", {
-      key: "callout",
-      name: "Callout",
-      description: "Important information highlight",
-      cssClass: "prose-callout",
-    });
-
-    await ctx.db.insert("contentTypes", {
-      key: "quote",
-      name: "Quote",
-      description: "Inspirational or informative quote",
-      cssClass: "prose-quote",
-    });
-
-    // 5. Create Notification Types
-    console.log("Creating notification types...");
-    await ctx.db.insert("notificationTypes", {
-      key: "reward_earned",
-      name: "Reward Earned",
-      description: "User earned a new reward",
-      iconUrl: "🎉",
-      priority: 1,
-      defaultTitle: "Congratulations!",
-      defaultMessage: "You've earned a new reward!",
-    });
-
-    await ctx.db.insert("notificationTypes", {
-      key: "achievement_unlocked",
-      name: "Achievement Unlocked",
-      description: "User unlocked a new achievement",
-      iconUrl: "🏆",
-      priority: 1,
-      defaultTitle: "Achievement Unlocked!",
-      defaultMessage: "You've unlocked a new achievement!",
-    });
-
-    await ctx.db.insert("notificationTypes", {
-      key: "new_topic_available",
-      name: "New Topic Available",
-      description: "A new topic matching user interests is available",
-      iconUrl: "📚",
-      priority: 2,
-      defaultTitle: "New Topic Available",
-      defaultMessage: "Check out this new topic we think you'll love!",
-    });
-
-    // 6. Create Sample Topics
-    console.log("Creating sample topics...");
-    
-    // Topic 1: Quantum Physics
-    const quantumTopic = await ctx.db.insert("topics", {
-      title: "Why Should I Care About Quantum Physics?",
-      description: "Discover how quantum physics affects your daily life and why it's revolutionizing technology",
-      slug: "quantum-physics-daily-life",
-      categoryId: scienceCategory,
-      tagIds: [beginnerTag, visualTag],
-      difficulty: "beginner" as const,
-      estimatedReadTime: 8,
-      isPublished: true,
-      isTrending: true,
-      viewCount: 1247,
-      likeCount: 89,
-      shareCount: 23,
-      lastUpdated: Date.now(),
-      isAIGenerated: true,
-      generationPrompt: "Explain quantum physics in simple terms for beginners",
-      sources: ["MIT Physics Department", "Quantum Computing Research"],
-      metadata: {
-        wordCount: 1200,
-        readingLevel: "Grade 8",
-        estimatedTime: 8,
-        exerciseCount: 2,
+    // Define notification types
+    const notificationTypes = [
+      {
+        key: "bad_topic",
+        name: "Invalid Topic",
+        description: "Notification for when a submitted topic is invalid or inappropriate",
+        iconUrl: "❌",
+        priority: 2, // medium priority
+        defaultTitle: "Invalid Topic Submitted",
+        defaultMessage: "The topic you submitted was not suitable for content generation."
       },
-    });
+      {
+        key: "topic_generated",
+        name: "Topic Generated",
+        description: "Notification for when a topic has been successfully generated",
+        iconUrl: "✅",
+        priority: 1, // high priority
+        defaultTitle: "Topic Generated Successfully",
+        defaultMessage: "Your topic has been generated and is ready to explore!"
+      }
+    ];
 
-    // Topic 2: AI and Machine Learning
-    const aiTopic = await ctx.db.insert("topics", {
-      title: "Why Should I Care About Artificial Intelligence?",
-      description: "Understanding AI's impact on jobs, creativity, and the future of human society",
-      slug: "artificial-intelligence-impact",
-      categoryId: technologyCategory,
-      tagIds: [beginnerTag, interactiveTag],
-      difficulty: "intermediate" as const,
-      estimatedReadTime: 12,
-      isPublished: true,
-      isTrending: true,
-      viewCount: 2156,
-      likeCount: 156,
-      shareCount: 45,
-      lastUpdated: Date.now(),
-      isAIGenerated: true,
-      generationPrompt: "Explain AI impact on society for general audience",
-      sources: ["Stanford AI Lab", "MIT Technology Review"],
-      metadata: {
-        wordCount: 1800,
-        readingLevel: "Grade 10",
-        estimatedTime: 12,
-        exerciseCount: 3,
-      },
-    });
+    // Insert all notification types
+    for (const type of notificationTypes) {
+      await ctx.db.insert("notificationTypes", type);
+    }
 
-    // Topic 3: Renaissance Art
-    const renaissanceTopic = await ctx.db.insert("topics", {
-      title: "Why Should I Care About Renaissance Art?",
-      description: "How Renaissance art techniques still influence modern design, movies, and digital art",
-      slug: "renaissance-art-modern-influence",
-      categoryId: artCategory,
-      tagIds: [visualTag, quickReadTag],
-      difficulty: "beginner" as const,
-      estimatedReadTime: 6,
-      isPublished: true,
-      isTrending: false,
-      viewCount: 834,
-      likeCount: 67,
-      shareCount: 12,
-      lastUpdated: Date.now(),
-      isAIGenerated: false,
-      sources: ["Art History Institute", "Metropolitan Museum"],
-      metadata: {
-        wordCount: 900,
-        readingLevel: "Grade 7",
-        estimatedTime: 6,
-        exerciseCount: 1,
-      },
-    });
-
-    // 7. Create Sample Blocks for Quantum Physics Topic
-    console.log("Creating sample blocks...");
-    
-    await ctx.db.insert("blocks", {
-      topicId: quantumTopic,
-      content: {
-        type: "text",
-        data: {
-          content: {
-            text: "You might think quantum physics is just abstract science for physicists in lab coats, but it's actually powering the technology you use every day. From the GPS in your phone to the LED lights in your home, quantum mechanics is quietly revolutionizing our world.",
-            formatting: null,
-          },
-          styleKey: "paragraph",
-        },
-      },
-      order: 1,
-    });
-
-    await ctx.db.insert("blocks", {
-      topicId: quantumTopic,
-      content: {
-        type: "text",
-        data: {
-          content: {
-            text: "What makes quantum physics so special?",
-            formatting: { bold: true, size: "large" },
-          },
-          styleKey: "heading",
-        },
-      },
-      order: 2,
-    });
-
-    await ctx.db.insert("blocks", {
-      topicId: quantumTopic,
-      content: {
-        type: "exercise",
-        data: {
-          exerciseType: "multiple_choice",
-          question: "Which everyday technology relies on quantum physics?",
-          options: [
-            { id: "a", text: "GPS navigation" },
-            { id: "b", text: "LED lights" },
-            { id: "c", text: "Computer processors" },
-            { id: "d", text: "All of the above" },
-          ],
-          correctAnswer: "d",
-          explanation: "All of these technologies depend on quantum mechanical principles to function properly!",
-          points: 10,
-        },
-      },
-      order: 3,
-    });
-
-    await ctx.db.insert("blocks", {
-      topicId: quantumTopic,
-      content: {
-        type: "text",
-        data: {
-          content: {
-            text: "💡 Fun Fact: Without quantum physics, your smartphone wouldn't exist! The transistors that make up computer chips rely on quantum tunneling to switch on and off billions of times per second.",
-            formatting: null,
-          },
-          styleKey: "callout",
-        },
-      },
-      order: 4,
-    });
-
-    // 8. Create Sample Blocks for AI Topic
-    await ctx.db.insert("blocks", {
-      topicId: aiTopic,
-      content: {
-        type: "text",
-        data: {
-          content: {
-            text: "Artificial Intelligence isn't just science fiction anymore—it's reshaping how we work, create, and connect with each other. But should you be excited or worried about this technological revolution?",
-            formatting: null,
-          },
-          styleKey: "paragraph",
-        },
-      },
-      order: 1,
-    });
-
-    await ctx.db.insert("blocks", {
-      topicId: aiTopic,
-      content: {
-        type: "exercise",
-        data: {
-          exerciseType: "reflection",
-          question: "Think about your daily routine. How many AI-powered tools do you already use without realizing it?",
-          correctAnswer: "reflection",
-          explanation: "From recommendation algorithms on social media to voice assistants and autocorrect, AI is already deeply integrated into our daily lives!",
-          hints: ["Consider your phone, social media, shopping apps, and streaming services"],
-          points: 15,
-        },
-      },
-      order: 2,
-    });
-
-    // 9. Create Trending Topics Data
-    console.log("Creating trending data...");
-    await ctx.db.insert("trendingTopics", {
-      topicId: quantumTopic,
-      score: 95.5,
-      period: "weekly",
-      calculatedAt: Date.now(),
-      metrics: {
-        viewsInPeriod: 1247,
-        likesInPeriod: 89,
-        sharesInPeriod: 23,
-        completionsInPeriod: 156,
-      },
-    });
-
-    await ctx.db.insert("trendingTopics", {
-      topicId: aiTopic,
-      score: 87.2,
-      period: "weekly",
-      calculatedAt: Date.now(),
-      metrics: {
-        viewsInPeriod: 2156,
-        likesInPeriod: 156,
-        sharesInPeriod: 45,
-        completionsInPeriod: 234,
-      },
-    });
-
-    console.log("✅ Database seeding completed successfully!");
-    console.log("📊 Created:");
-    console.log("  - 4 categories");
-    console.log("  - 4 tags");
-    console.log("  - 4 reward types");
-    console.log("  - 4 content types");
-    console.log("  - 3 notification types");
-    console.log("  - 3 sample topics");
-    console.log("  - 6 content blocks");
-    console.log("  - 2 trending topic entries");
-
+    console.log(`Successfully seeded ${notificationTypes.length} notification types`);
     return null;
   },
 });
+
 /**
- 
-* Create test notifications for a specific user
- * This is useful for testing the notification system
+ * Seed the database with 25 generic categories that cover any topic in the world
  */
-export const createTestNotifications = internalMutation({
-  args: {
-    userId: v.string(),
-  },
+export const seedCategories = internalMutation({
+  args: {},
   returns: v.null(),
-  handler: async (ctx, args) => {
-    console.log(`🔔 Creating test notifications for user: ${args.userId}`);
+  handler: async (ctx) => {
+    // First, clear existing categories
+    const existingCategories = await ctx.db.query("categories").collect();
+    for (const category of existingCategories) {
+      await ctx.db.delete(category._id);
+    }
 
-    // Create a few test notifications
-    await ctx.db.insert("notifications", {
-      userId: args.userId,
-      notificationTypeKey: "reward_earned",
-      title: "🎉 Welcome Reward!",
-      message: "You've earned 25 points for joining WSIC! Start exploring topics to earn more rewards.",
-      isRead: false,
-      isArchived: false,
-      data: {
-        metadata: {
-          points: 25,
-          rewardTitle: "Welcome Bonus",
-        },
+    // Define 25 comprehensive categories with colors and icons
+    const categories = [
+      {
+        name: "Technology",
+        slug: "technology",
+        description:
+          "Computing, software, AI, programming, and digital innovation",
+        color: "#3B82F6", // Blue
+        icon: "💻",
       },
-    });
-
-    await ctx.db.insert("notifications", {
-      userId: args.userId,
-      notificationTypeKey: "achievement_unlocked",
-      title: "🏆 First Steps!",
-      message: "Achievement unlocked: You've taken your first step into the world of curious learning!",
-      isRead: false,
-      isArchived: false,
-      data: {
-        metadata: {
-          achievementTitle: "First Steps",
-          achievementDescription: "Joined the platform",
-        },
+      {
+        name: "Science",
+        slug: "science",
+        description:
+          "Physics, chemistry, biology, astronomy, and scientific research",
+        color: "#10B981", // Green
+        icon: "🔬",
       },
-    });
-
-    await ctx.db.insert("notifications", {
-      userId: args.userId,
-      notificationTypeKey: "new_topic_available",
-      title: "📚 New Topic: Quantum Physics",
-      message: "We think you'll love our new topic about quantum physics and its impact on daily life!",
-      isRead: true, // This one is already read
-      isArchived: false,
-      data: {
-        actionUrl: "/topics/quantum-physics-daily-life",
-        metadata: {
-          topicTitle: "Why Should I Care About Quantum Physics?",
-        },
+      {
+        name: "Health & Medicine",
+        slug: "health-medicine",
+        description:
+          "Healthcare, medical research, wellness, and human biology",
+        color: "#EF4444", // Red
+        icon: "🏥",
       },
-    });
-
-    // Create an older notification
-    await ctx.db.insert("notifications", {
-      userId: args.userId,
-      notificationTypeKey: "reward_earned",
-      title: "🎯 Daily Visitor",
-      message: "You've earned 5 points for visiting WSIC today. Keep up the great work!",
-      isRead: false,
-      isArchived: false,
-      data: {
-        metadata: {
-          points: 5,
-          rewardTitle: "Daily Visitor",
-        },
+      {
+        name: "Business & Finance",
+        slug: "business-finance",
+        description:
+          "Economics, entrepreneurship, investing, and corporate strategy",
+        color: "#F59E0B", // Amber
+        icon: "💼",
       },
-    });
+      {
+        name: "Education & Learning",
+        slug: "education-learning",
+        description:
+          "Teaching methods, academic subjects, and skill development",
+        color: "#8B5CF6", // Purple
+        icon: "📚",
+      },
+      {
+        name: "Arts & Culture",
+        slug: "arts-culture",
+        description:
+          "Visual arts, music, literature, theater, and cultural studies",
+        color: "#EC4899", // Pink
+        icon: "🎨",
+      },
+      {
+        name: "History",
+        slug: "history",
+        description: "Historical events, civilizations, and cultural heritage",
+        color: "#92400E", // Brown
+        icon: "🏛️",
+      },
+      {
+        name: "Environment & Nature",
+        slug: "environment-nature",
+        description:
+          "Ecology, climate change, conservation, and natural sciences",
+        color: "#059669", // Emerald
+        icon: "🌱",
+      },
+      {
+        name: "Psychology & Mental Health",
+        slug: "psychology-mental-health",
+        description: "Human behavior, cognitive science, and mental wellness",
+        color: "#7C3AED", // Violet
+        icon: "🧠",
+      },
+      {
+        name: "Sports & Fitness",
+        slug: "sports-fitness",
+        description: "Athletics, exercise science, and physical wellness",
+        color: "#DC2626", // Red
+        icon: "⚽",
+      },
+      {
+        name: "Food & Nutrition",
+        slug: "food-nutrition",
+        description: "Culinary arts, dietary science, and food culture",
+        color: "#D97706", // Orange
+        icon: "🍎",
+      },
+      {
+        name: "Travel & Geography",
+        slug: "travel-geography",
+        description: "World cultures, destinations, and geographical studies",
+        color: "#0891B2", // Cyan
+        icon: "🌍",
+      },
+      {
+        name: "Language & Communication",
+        slug: "language-communication",
+        description: "Linguistics, foreign languages, and communication skills",
+        color: "#7C2D12", // Orange-Brown
+        icon: "💬",
+      },
+      {
+        name: "Philosophy & Ethics",
+        slug: "philosophy-ethics",
+        description:
+          "Philosophical thought, moral reasoning, and ethical frameworks",
+        color: "#374151", // Gray
+        icon: "🤔",
+      },
+      {
+        name: "Mathematics",
+        slug: "mathematics",
+        description:
+          "Pure and applied mathematics, statistics, and mathematical concepts",
+        color: "#1F2937", // Dark Gray
+        icon: "📐",
+      },
+      {
+        name: "Engineering",
+        slug: "engineering",
+        description:
+          "Mechanical, electrical, civil, and other engineering disciplines",
+        color: "#4B5563", // Gray
+        icon: "⚙️",
+      },
+      {
+        name: "Social Sciences",
+        slug: "social-sciences",
+        description:
+          "Sociology, anthropology, political science, and social studies",
+        color: "#6366F1", // Indigo
+        icon: "👥",
+      },
+      {
+        name: "Law & Government",
+        slug: "law-government",
+        description: "Legal systems, governance, politics, and public policy",
+        color: "#1E40AF", // Blue
+        icon: "⚖️",
+      },
+      {
+        name: "Religion & Spirituality",
+        slug: "religion-spirituality",
+        description:
+          "World religions, spiritual practices, and theological studies",
+        color: "#7C3AED", // Violet
+        icon: "🕊️",
+      },
+      {
+        name: "Media & Entertainment",
+        slug: "media-entertainment",
+        description: "Film, television, gaming, journalism, and digital media",
+        color: "#DB2777", // Pink
+        icon: "🎬",
+      },
+      {
+        name: "Architecture & Design",
+        slug: "architecture-design",
+        description:
+          "Building design, urban planning, and aesthetic principles",
+        color: "#0F766E", // Teal
+        icon: "🏗️",
+      },
+      {
+        name: "Agriculture & Farming",
+        slug: "agriculture-farming",
+        description:
+          "Crop science, livestock, sustainable farming, and food production",
+        color: "#65A30D", // Lime
+        icon: "🚜",
+      },
+      {
+        name: "Transportation",
+        slug: "transportation",
+        description:
+          "Vehicles, logistics, urban mobility, and transportation systems",
+        color: "#0369A1", // Sky Blue
+        icon: "🚗",
+      },
+      {
+        name: "Energy & Resources",
+        slug: "energy-resources",
+        description:
+          "Renewable energy, fossil fuels, and natural resource management",
+        color: "#CA8A04", // Yellow
+        icon: "⚡",
+      },
+      {
+        name: "Personal Development",
+        slug: "personal-development",
+        description:
+          "Self-improvement, productivity, leadership, and life skills",
+        color: "#BE185D", // Rose
+        icon: "🌟",
+      },
+      {
+        name: "Other",
+        slug: "other",
+        description:
+          "Miscellaneous topics that don't fit into other categories",
+        color: "#6B7280", // Gray
+        icon: "📂",
+      },
+    ];
 
-    console.log("✅ Test notifications created successfully!");
+    // Insert all categories
+    for (const category of categories) {
+      await ctx.db.insert("categories", category);
+    }
+
+    console.log(`Successfully seeded ${categories.length} categories`);
+    return null;
+  },
+});
+
+/**
+ * Clear all existing data (use with caution!)
+ */
+export const clearAllData = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    // Clear topics and their blocks
+    const topics = await ctx.db.query("topics").collect();
+    for (const topic of topics) {
+      // Delete associated blocks first
+      const blocks = await ctx.db
+        .query("blocks")
+        .withIndex("by_topic", (q) => q.eq("topicId", topic._id))
+        .collect();
+
+      for (const block of blocks) {
+        await ctx.db.delete(block._id);
+      }
+
+      // Delete associated embeddings
+      const embeddings = await ctx.db
+        .query("embeddings")
+        .withIndex("by_topic", (q) => q.eq("topicId", topic._id))
+        .collect();
+
+      for (const embedding of embeddings) {
+        await ctx.db.delete(embedding._id);
+      }
+
+      // Delete the topic
+      await ctx.db.delete(topic._id);
+    }
+
+    // Clear categories
+    const categories = await ctx.db.query("categories").collect();
+    for (const category of categories) {
+      await ctx.db.delete(category._id);
+    }
+
+    // Clear other tables if needed
+    const userInteractions = await ctx.db
+      .query("userTopicInteractions")
+      .collect();
+    for (const interaction of userInteractions) {
+      await ctx.db.delete(interaction._id);
+    }
+
+
+
+    const trendingTopics = await ctx.db.query("trendingTopics").collect();
+    for (const trending of trendingTopics) {
+      await ctx.db.delete(trending._id);
+    }
+
+    console.log("Successfully cleared all data");
+    return null;
+  },
+});
+
+/**
+ * Initialize the database with fresh categories and notification types
+ */
+export const initializeDatabase = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    // Clear existing data
+    await ctx.runMutation(internal.seed.clearAllData, {});
+
+    // Seed with new categories
+    await ctx.runMutation(internal.seed.seedCategories, {});
+
+    // Seed with notification types
+    await ctx.runMutation(internal.seed.seedNotificationTypes, {});
+
+    console.log("Database initialized successfully");
+    return null;
+  },
+});
+
+/**
+ * Seed only notification types (useful for adding new notification types)
+ */
+export const seedNotificationTypesOnly = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    await ctx.runMutation(internal.seed.seedNotificationTypes, {});
+    console.log("Notification types seeded successfully");
     return null;
   },
 });

@@ -11,30 +11,23 @@ export {
 } from "./blocks";
 
 export {
+  createEmbedding,
+  getEmbeddingsByTopic,
+  searchSimilarTopics,
+  deleteEmbeddingsByTopic,
+} from "./embeddings";
+
+export {
   getCategories,
   getCategoryBySlug,
 } from "./categories";
 
 export {
-  getTags,
-  getTagBySlug,
-  getTagsByIds,
-} from "./tags";
-
-export {
   recordInteraction,
 } from "./users";
 
-export {
-  createGenerationRequest,
-} from "./search";
 
 export {
   getTrendingByPeriod,
 } from "./recommendations";
 
-export {
-  getUserRewards,
-  getUserTotalPoints,
-  getRewardLeaderboard,
-} from "./rewards";

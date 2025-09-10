@@ -13,23 +13,13 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_name", ["name"]),
 
-  // Tags - Topic tags
-  tags: defineTable({
-    name: v.string(),
-    slug: v.string(),
-    description: v.optional(v.string()),
-    color: v.optional(v.string()), // Hex color for UI
-  })
-    .index("by_slug", ["slug"])
-    .index("by_name", ["name"]),
-
   // Topics - Main content entities that users explore
   topics: defineTable({
     title: v.string(),
     description: v.string(),
     slug: v.string(), // URL-friendly identifier
     categoryId: v.optional(v.id("categories")),
-    tagIds: v.array(v.id("tags")),
+    tagIds: v.array(v.string()), // Array of tag strings
     imageUrl: v.optional(v.string()), // URL for the topic's image
     difficulty: v.union(
       v.literal("beginner"),
@@ -51,7 +41,7 @@ export default defineSchema({
     metadata: v.optional(
       v.object({
         wordCount: v.number(),
-        readingLevel: v.string(),
+        readingLevel: v.any(),
         estimatedTime: v.optional(v.number()), // minutes to complete
         exerciseCount: v.optional(v.number()),
       })
@@ -67,9 +57,33 @@ export default defineSchema({
       filterFields: ["categoryId", "isPublished", "isTrending"],
     }),
 
+  // Embeddings - Vector embeddings for semantic search
+  embeddings: defineTable({
+    topicId: v.id("topics"), // Foreign key reference to topics table
+    embedding: v.array(v.float64()), // Vector embedding (typically 1536 dimensions for OpenAI)
+    contentType: v.union(
+      v.literal("research_brief"),
+      v.literal("research_deep"),
+      v.literal("combined_content")
+    ), // Type of content that was embedded
+    difficulty: v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    ), // Copy of topic difficulty for filtering
+    categoryId: v.optional(v.id("categories")), // Copy of topic category for filtering
+  })
+    .index("by_topic", ["topicId"])
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536, // OpenAI text-embedding-3-small or Gemini embedding dimensions
+      filterFields: ["difficulty", "categoryId", "contentType"],
+    }),
+
   // Blocks - Individual content pieces within topics
   blocks: defineTable({
     topicId: v.id("topics"),
+    type: v.union(v.literal("information"), v.literal("activity")), // Block type for categorization
     content: v.union(
       // Text content block
       v.object({
@@ -78,9 +92,9 @@ export default defineSchema({
           content: v.object({
             // JSON-based content for custom formatters
             text: v.string(),
-            formatting: v.optional(v.any()), // Custom formatting data
+            formatting: v.optional(v.any()), // Custom formatting data as JSON
           }),
-          styleKey: v.optional(v.string()), // references contentTypes.key
+          styleKey: v.optional(v.string()), // Style identifier for content formatting
         }),
       }),
       // Interactive exercise block
@@ -93,9 +107,12 @@ export default defineSchema({
             v.literal("drag_drop"),
             v.literal("true_false"),
             v.literal("short_answer"),
-            v.literal("reflection")
+            v.literal("reflection"),
+            v.literal("quiz_group"),
+            v.literal("reorder_group"),
+            v.literal("final_quiz_group")
           ),
-          question: v.string(),
+          question: v.optional(v.string()),
           options: v.optional(
             v.array(
               v.object({
@@ -104,10 +121,14 @@ export default defineSchema({
               })
             )
           ),
-          correctAnswer: v.string(), // Only store correct answer
+          correctAnswer: v.optional(v.string()), // Only store correct answer
           explanation: v.optional(v.string()),
           hints: v.optional(v.array(v.string())),
           points: v.optional(v.number()),
+          // Additional fields for grouped exercises
+          quizData: v.optional(v.any()),
+          reorderData: v.optional(v.any()),
+          finalQuizData: v.optional(v.any()),
         }),
       }),
       // Media content block
@@ -170,32 +191,6 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_topic", ["topicId"]),
 
-  // Content generation requests and status
-  generationRequests: defineTable({
-    userId: v.string(), // Better Auth user ID
-    topicQuery: v.string(), // Original search query
-    status: v.union(
-      v.literal("pending"),
-      v.literal("processing"),
-      v.literal("completed"),
-      v.literal("failed")
-    ),
-    topicId: v.optional(v.id("topics")), // Created topic ID when completed
-    errorMessage: v.optional(v.string()),
-    processingStartedAt: v.optional(v.number()),
-    completedAt: v.optional(v.number()),
-    metadata: v.optional(
-      v.object({
-        estimatedBlocks: v.number(),
-        targetDifficulty: v.string(),
-        requestedSections: v.array(v.string()),
-      })
-    ),
-  })
-    .index("by_user", ["userId"])
-    .index("by_status", ["status"])
-    .index("by_topic_query", ["topicQuery"]),
-
   // Trending and recommendation data
   trendingTopics: defineTable({
     topicId: v.id("topics"),
@@ -217,30 +212,9 @@ export default defineSchema({
     .index("by_topic", ["topicId"])
     .index("by_calculated_at", ["calculatedAt"]),
 
-  // Reward types - constant table for reward types
-  rewardTypes: defineTable({
-    key: v.string(), // unique identifier like "daily_checkin"
-    name: v.string(), // display name
-    description: v.string(),
-    points: v.number(), // default points for this reward type
-    iconUrl: v.optional(v.string()),
-    category: v.optional(v.string()), // "achievement", "streak", "social", etc.
-    isRepeatable: v.boolean(), // can user get this reward multiple times
-  })
-    .index("by_key", ["key"])
-    .index("by_category", ["category"]),
-
-  // Content types - constant table for content types
-  contentTypes: defineTable({
-    key: v.string(), // unique identifier like "paragraph"
-    name: v.string(), // display name
-    description: v.optional(v.string()),
-    cssClass: v.optional(v.string()), // CSS class for styling
-  }).index("by_key", ["key"]),
-
   // Notification types - constant table for notification types
   notificationTypes: defineTable({
-    key: v.string(), // unique identifier like "reward_earned"
+    key: v.string(), // unique identifier like "bad_topic", "topic_generated"
     name: v.string(), // display name
     description: v.string(),
     iconUrl: v.optional(v.string()),
@@ -251,43 +225,15 @@ export default defineSchema({
     .index("by_key", ["key"])
     .index("by_priority", ["priority"]),
 
-  // User rewards for gamification
-  rewards: defineTable({
-    userId: v.string(), // Better Auth user ID
-    rewardTypeKey: v.string(), // references rewardTypes.key
-    points: v.number(), // Points awarded for this reward
-    title: v.string(), // Display title for the reward
-    description: v.string(), // Description of what was achieved
-    metadata: v.optional(
-      v.object({
-        streakCount: v.optional(v.number()), // For streak rewards
-        topicId: v.optional(v.id("topics")), // For topic-specific rewards
-        achievementDate: v.optional(v.number()), // When the achievement was unlocked
-      })
-    ),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_and_type", ["userId", "rewardTypeKey"])
-    .index("by_reward_type", ["rewardTypeKey"]),
-
   // User notifications
   notifications: defineTable({
     userId: v.string(), // Better Auth user ID
-    notificationTypeKey: v.string(), // references notificationTypes.key
+    notificationTypeKey: v.id("notificationTypes"), // references notificationTypes._id
     title: v.string(),
     message: v.string(),
     isRead: v.boolean(),
     isArchived: v.boolean(),
-    data: v.optional(
-      v.object({
-        // Flexible data structure for different notification types
-        rewardId: v.optional(v.id("rewards")),
-        topicId: v.optional(v.id("topics")),
-        actionUrl: v.optional(v.string()),
-        imageUrl: v.optional(v.string()),
-        metadata: v.optional(v.any()),
-      })
-    ),
+    data: v.optional(v.any()),
     expiresAt: v.optional(v.number()), // Optional expiration timestamp
   })
     .index("by_user", ["userId"])

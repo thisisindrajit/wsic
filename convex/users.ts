@@ -45,13 +45,6 @@ export const recordInteraction = mutation({
     // Create new interaction
     await ctx.db.insert("userTopicInteractions", args);
     
-    // Check for first-time rewards
-    await ctx.scheduler.runAfter(0, internal.rewards.checkAndAwardFirstTimeRewards, {
-      userId: args.userId,
-      interactionType: args.interactionType,
-      topicId: args.topicId,
-    });
-    
     return null;
   },
 });

@@ -22,7 +22,7 @@ interface TrendingTopic {
   shareCount: number;
   slug: string;
   categoryId?: Id<"categories">;
-  tagIds: Id<"tags">[];
+  tagIds: string[];
 }
 
 const formatCount = (count: number): string => {

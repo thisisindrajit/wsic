@@ -1,7 +1,4 @@
-import {
-  query,
-  internalMutation,
-} from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 
@@ -21,7 +18,8 @@ export const getTrendingTopics = query({
       description: v.string(),
       slug: v.string(),
       categoryId: v.optional(v.id("categories")),
-      tagIds: v.array(v.id("tags")),
+      tagIds: v.array(v.string()),
+      imageUrl: v.optional(v.string()),
       difficulty: v.union(
         v.literal("beginner"),
         v.literal("intermediate"),
@@ -81,7 +79,8 @@ export const searchTopics = query({
       description: v.string(),
       slug: v.string(),
       categoryId: v.optional(v.id("categories")),
-      tagIds: v.array(v.id("tags")),
+      tagIds: v.array(v.string()),
+      imageUrl: v.optional(v.string()),
       difficulty: v.union(
         v.literal("beginner"),
         v.literal("intermediate"),
@@ -134,7 +133,8 @@ export const getTopicBySlug = query({
         description: v.string(),
         slug: v.string(),
         categoryId: v.optional(v.id("categories")),
-        tagIds: v.array(v.id("tags")),
+        tagIds: v.array(v.string()),
+        imageUrl: v.optional(v.string()),
         difficulty: v.union(
           v.literal("beginner"),
           v.literal("intermediate"),
@@ -154,7 +154,7 @@ export const getTopicBySlug = query({
         metadata: v.optional(
           v.object({
             wordCount: v.number(),
-            readingLevel: v.string(),
+            readingLevel: v.any(),
             estimatedTime: v.optional(v.number()),
             exerciseCount: v.optional(v.number()),
           })
@@ -165,6 +165,7 @@ export const getTopicBySlug = query({
           _id: v.id("blocks"),
           _creationTime: v.number(),
           topicId: v.id("topics"),
+          type: v.union(v.literal("information"), v.literal("activity")),
           content: v.union(
             // Text content block
             v.object({
@@ -304,15 +305,16 @@ export const getTopics = query({
 });
 
 /**
- * Create a new topic (internal function for content generation)
+ * Create a new topic (public function for content generation)
  */
-export const createTopic = internalMutation({
+export const createTopic = mutation({
   args: {
     title: v.string(),
     description: v.string(),
     slug: v.string(),
     categoryId: v.optional(v.id("categories")),
-    tagIds: v.array(v.id("tags")),
+    tagIds: v.array(v.string()),
+    imageUrl: v.optional(v.string()),
     difficulty: v.union(
       v.literal("beginner"),
       v.literal("intermediate"),
@@ -326,7 +328,7 @@ export const createTopic = internalMutation({
     metadata: v.optional(
       v.object({
         wordCount: v.number(),
-        readingLevel: v.string(),
+        readingLevel: v.any(),
         estimatedTime: v.optional(v.number()),
         exerciseCount: v.optional(v.number()),
       })
@@ -385,7 +387,7 @@ export const updateTopicMetrics = internalMutation({
 /**
  * Publish a topic (make it visible to users)
  */
-export const publishTopic = internalMutation({
+export const publishTopic = mutation({
   args: {
     topicId: v.id("topics"),
   },

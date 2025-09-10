@@ -1,4 +1,4 @@
-import { query, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -11,6 +11,7 @@ export const getBlocksByTopic = query({
       _id: v.id("blocks"),
       _creationTime: v.number(),
       topicId: v.id("topics"),
+      type: v.union(v.literal("information"), v.literal("activity")),
       content: v.union(
         // Text content block
         v.object({
@@ -33,9 +34,12 @@ export const getBlocksByTopic = query({
               v.literal("drag_drop"),
               v.literal("true_false"),
               v.literal("short_answer"),
-              v.literal("reflection")
+              v.literal("reflection"),
+              v.literal("quiz_group"),
+              v.literal("reorder_group"),
+              v.literal("final_quiz_group")
             ),
-            question: v.string(),
+            question: v.optional(v.string()),
             options: v.optional(
               v.array(
                 v.object({
@@ -44,10 +48,14 @@ export const getBlocksByTopic = query({
                 })
               )
             ),
-            correctAnswer: v.string(),
+            correctAnswer: v.optional(v.string()),
             explanation: v.optional(v.string()),
             hints: v.optional(v.array(v.string())),
             points: v.optional(v.number()),
+            // Additional fields for grouped exercises
+            quizData: v.optional(v.any()),
+            reorderData: v.optional(v.any()),
+            finalQuizData: v.optional(v.any()),
           }),
         }),
         // Media content block
@@ -94,9 +102,10 @@ export const getBlocksByTopic = query({
 /**
  * Create a new block for a topic
  */
-export const createBlock = internalMutation({
+export const createBlock = mutation({
   args: {
     topicId: v.id("topics"),
+    type: v.union(v.literal("information"), v.literal("activity")),
     content: v.union(
       // Text content block
       v.object({
@@ -119,9 +128,12 @@ export const createBlock = internalMutation({
             v.literal("drag_drop"),
             v.literal("true_false"),
             v.literal("short_answer"),
-            v.literal("reflection")
+            v.literal("reflection"),
+            v.literal("quiz_group"),
+            v.literal("reorder_group"),
+            v.literal("final_quiz_group")
           ),
-          question: v.string(),
+          question: v.optional(v.string()),
           options: v.optional(
             v.array(
               v.object({
@@ -130,10 +142,14 @@ export const createBlock = internalMutation({
               })
             )
           ),
-          correctAnswer: v.string(),
+          correctAnswer: v.optional(v.string()),
           explanation: v.optional(v.string()),
           hints: v.optional(v.array(v.string())),
           points: v.optional(v.number()),
+          // Additional fields for grouped exercises
+          quizData: v.optional(v.any()),
+          reorderData: v.optional(v.any()),
+          finalQuizData: v.optional(v.any()),
         }),
       }),
       // Media content block

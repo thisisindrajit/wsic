@@ -16,13 +16,11 @@ import type {
 import type * as blocks from "../blocks.js";
 import type * as categories from "../categories.js";
 import type * as constants from "../constants.js";
+import type * as embeddings from "../embeddings.js";
 import type * as index from "../index.js";
 import type * as notifications from "../notifications.js";
 import type * as recommendations from "../recommendations.js";
-import type * as rewards from "../rewards.js";
-import type * as search from "../search.js";
 import type * as seed from "../seed.js";
-import type * as tags from "../tags.js";
 import type * as topics from "../topics.js";
 import type * as users from "../users.js";
 
@@ -38,13 +36,11 @@ declare const fullApi: ApiFromModules<{
   blocks: typeof blocks;
   categories: typeof categories;
   constants: typeof constants;
+  embeddings: typeof embeddings;
   index: typeof index;
   notifications: typeof notifications;
   recommendations: typeof recommendations;
-  rewards: typeof rewards;
-  search: typeof search;
   seed: typeof seed;
-  tags: typeof tags;
   topics: typeof topics;
   users: typeof users;
 }>;

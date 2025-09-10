@@ -112,70 +112,7 @@ export const initializeRewardTypes = mutation({
   },
 });
 
-// Initialize content types
-export const initializeContentTypes = mutation({
-  args: {},
-  returns: v.null(),
-  handler: async (ctx) => {
-    const contentTypes = [
-      {
-        key: "narrative",
-        name: "Narrative",
-        description: "Story-like format with flowing text",
-        cssClass: "narrative-style",
-      },
-      {
-        key: "listicle",
-        name: "Listicle",
-        description: "List-based format with numbered or bulleted points",
-        cssClass: "listicle-style",
-      },
-      {
-        key: "qa",
-        name: "Q&A",
-        description: "Question and answer format",
-        cssClass: "qa-style",
-      },
-      {
-        key: "tutorial",
-        name: "Tutorial",
-        description: "Step-by-step instructional format",
-        cssClass: "tutorial-style",
-      },
-      {
-        key: "paragraph",
-        name: "Paragraph",
-        description: "Standard paragraph text",
-        cssClass: "paragraph-style",
-      },
-      {
-        key: "highlight",
-        name: "Highlight",
-        description: "Highlighted or emphasized text",
-        cssClass: "highlight-style",
-      },
-      {
-        key: "quote",
-        name: "Quote",
-        description: "Quoted text or callout",
-        cssClass: "quote-style",
-      },
-    ];
 
-    for (const type of contentTypes) {
-      const existing = await ctx.db
-        .query("contentTypes")
-        .withIndex("by_key", (q) => q.eq("key", type.key))
-        .unique();
-
-      if (!existing) {
-        await ctx.db.insert("contentTypes", type);
-      }
-    }
-
-    return null;
-  },
-});
 
 // Initialize notification types
 export const initializeNotificationTypes = mutation({
@@ -269,21 +206,7 @@ export const getRewardTypes = query({
   },
 });
 
-export const getContentTypes = query({
-  args: {},
-  returns: v.array(
-    v.object({
-      _id: v.id("contentTypes"),
-      key: v.string(),
-      name: v.string(),
-      description: v.optional(v.string()),
-      cssClass: v.optional(v.string()),
-    })
-  ),
-  handler: async (ctx) => {
-    return await ctx.db.query("contentTypes").collect();
-  },
-});
+
 
 export const getNotificationTypes = query({
   args: {},
@@ -328,25 +251,7 @@ export const getRewardTypeByKey = query({
   },
 });
 
-export const getContentTypeByKey = query({
-  args: { key: v.string() },
-  returns: v.union(
-    v.object({
-      _id: v.id("contentTypes"),
-      key: v.string(),
-      name: v.string(),
-      description: v.optional(v.string()),
-      cssClass: v.optional(v.string()),
-    }),
-    v.null()
-  ),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("contentTypes")
-      .withIndex("by_key", (q) => q.eq("key", args.key))
-      .unique();
-  },
-});
+
 
 export const getNotificationTypeByKey = query({
   args: { key: v.string() },
