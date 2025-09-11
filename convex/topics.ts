@@ -188,9 +188,12 @@ export const getTopicBySlug = query({
                   v.literal("drag_drop"),
                   v.literal("true_false"),
                   v.literal("short_answer"),
-                  v.literal("reflection")
+                  v.literal("reflection"),
+                  v.literal("quiz_group"),
+                  v.literal("reorder_group"),
+                  v.literal("final_quiz_group")
                 ),
-                question: v.string(),
+                question: v.optional(v.string()),
                 options: v.optional(
                   v.array(
                     v.object({
@@ -199,10 +202,14 @@ export const getTopicBySlug = query({
                     })
                   )
                 ),
-                correctAnswer: v.string(),
+                correctAnswer: v.optional(v.string()),
                 explanation: v.optional(v.string()),
                 hints: v.optional(v.array(v.string())),
                 points: v.optional(v.number()),
+                // Additional fields for grouped exercises
+                quizData: v.optional(v.any()),
+                reorderData: v.optional(v.any()),
+                finalQuizData: v.optional(v.any()),
               }),
             }),
             // Media content block
