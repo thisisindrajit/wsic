@@ -4,7 +4,6 @@ Topic Checker Agent using Google ADK
 
 import os
 import sys
-from pathlib import Path
 from google.adk.agents import LlmAgent
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -80,8 +79,8 @@ class TopicValidationOutput(BaseModel):
 # AGENT DEFINITIONS
 # =============================================================================
 
-topic_checker_enhancer_agent = LlmAgent(
-    name="TopicCheckerEnhancerAgent",
+topic_checker_agent = LlmAgent(
+    name="TopicCheckerAgent",
     model="gemini-2.5-flash",
     instruction="""
     You are a topic validation specialist. Your task is to determine if a given topic is valid and suitable for generating educational content.
@@ -157,4 +156,4 @@ topic_checker_enhancer_agent = LlmAgent(
 )
 
 # For ADK tools compatibility, the root agent must be named `root_agent`
-root_agent = topic_checker_enhancer_agent
+root_agent = topic_checker_agent

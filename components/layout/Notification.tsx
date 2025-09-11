@@ -90,6 +90,9 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
                     className="relative p-2 size-10 rounded-full touch-manipulation bg-background/60"
                 >
                     <Bell className="h-5 w-5" />
+                    {(unreadCount && unreadCount > 0) ? (
+                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-teal-500"></span>
+                    ) : null}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent

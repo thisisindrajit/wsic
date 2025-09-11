@@ -31,3 +31,12 @@ export {
   getTrendingByPeriod,
 } from "./recommendations";
 
+export {
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  createNotification,
+  getNotificationTypes,
+} from "./notifications";
+

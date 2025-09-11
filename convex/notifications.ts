@@ -71,12 +71,60 @@ export const getUserNotifications = query({
 export const markNotificationAsRead = mutation({
   args: {
     notificationId: v.id("notifications"),
+    userId: v.optional(v.string()), // Optional for backward compatibility
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.notificationId, {
       isRead: true,
     });
+    return null;
+  },
+});
+
+/**
+ * Get unread notification count for a user
+ */
+export const getUnreadNotificationCount = query({
+  args: {
+    userId: v.string(),
+  },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    const unreadNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_user_and_read", (q) => 
+        q.eq("userId", args.userId).eq("isRead", false)
+      )
+      .collect();
+    
+    return unreadNotifications.length;
+  },
+});
+
+/**
+ * Mark all notifications as read for a user
+ */
+export const markAllNotificationsAsRead = mutation({
+  args: {
+    userId: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const unreadNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_user_and_read", (q) => 
+        q.eq("userId", args.userId).eq("isRead", false)
+      )
+      .collect();
+    
+    // Mark all unread notifications as read
+    for (const notification of unreadNotifications) {
+      await ctx.db.patch(notification._id, {
+        isRead: true,
+      });
+    }
+    
     return null;
   },
 });

@@ -75,12 +75,12 @@ const Block: React.FC<TrendingBlockProps> = ({
                                 <span>{estimatedReadTime} min</span>
                             </div>
                         )}
-                        {viewCount && (
+                        {viewCount && viewCount >= 0 ? (
                             <div className="flex items-center gap-1">
                                 <Eye className="w-3 h-3" />
                                 <span>{formatCount(viewCount)}</span>
                             </div>
-                        )}
+                        ) : null}
                         {/* Difficulty badge */}
                         {difficulty && (
                             <div className="flex items-start">
