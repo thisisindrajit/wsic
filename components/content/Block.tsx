@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Bookmark, Heart, Clock, Eye } from 'lucide-react';
 import { DIFFICULTY_COLORS } from '@/constants/common';
+import Link from 'next/link';
 
 interface TrendingBlockProps {
+    id: string;
     imageUrl?: string;
     title: string;
     description: string;
@@ -29,6 +31,7 @@ const getDifficultyPillStyle = (difficulty: string) => {
 };
 
 const Block: React.FC<TrendingBlockProps> = ({
+    id,
     imageUrl,
     title,
     description,
@@ -41,7 +44,7 @@ const Block: React.FC<TrendingBlockProps> = ({
     const [imageError, setImageError] = useState(false);
     return (
         <div
-            className="group relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-neutral-200 dark:border-neutral-900 hover:bg-white/20 dark:hover:bg-black/30 transition-all w-full shadow-xl cursor-pointer"
+            className="group relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-neutral-200 dark:border-neutral-900 hover:bg-white/20 dark:hover:bg-black/30 transition-all w-full shadow-xl"
         >
             {/* Full Background Image with Overlay */}
             <div className="absolute inset-0 rounded-3xl overflow-hidden">
@@ -121,12 +124,17 @@ const Block: React.FC<TrendingBlockProps> = ({
                     >
                         <Bookmark className="w-5 h-5 text-white" />
                     </Button>
-                    <Button
-                        className="flex-1 rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px]"
-                        variant="ghost"
+                    <Link
+                        href={`/topic/${id}`}
+                        className='w-full'
                     >
-                        View
-                    </Button>
+                        <Button
+                            className="flex-1 rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] w-full"
+                            variant="ghost"
+                        >
+                            View
+                        </Button>
+                    </Link>
                 </div>
             </div>
             {/* Enhanced glassmorphism glow for both light and dark modes */}

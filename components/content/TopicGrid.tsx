@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Id, Doc } from '@/convex/_generated/dataModel';
 import Block from '@/components/content/Block';
-import Link from 'next/link';
 
 interface TopicGridProps {
   categoryId?: Id<"categories">;
@@ -23,7 +22,7 @@ export default function TopicGrid({ categoryId, difficulty, className = '' }: To
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useTopics({ categoryId, difficulty, pageSize: 6 });
+  } = useTopics({ categoryId, difficulty, pageSize: 5 });
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -72,12 +71,9 @@ export default function TopicGrid({ categoryId, difficulty, className = '' }: To
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
             {topics.map((topic: Topic) => (
-              <Link
-                key={topic._id}
-                href={`/topic/${topic.slug}`}
-                className="block"
-              >
                 <Block
+                  key={topic._id}
+                  id={topic._id}
                   imageUrl={topic.imageUrl}
                   title={topic.title}
                   description={topic.description}
@@ -87,7 +83,6 @@ export default function TopicGrid({ categoryId, difficulty, className = '' }: To
                   estimatedReadTime={topic.estimatedReadTime}
                   viewCount={topic.viewCount}
                 />
-              </Link>
             ))}
           </div>
 

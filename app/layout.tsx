@@ -25,6 +25,14 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover'
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -71,11 +79,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover'
-};

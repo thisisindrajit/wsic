@@ -7,7 +7,8 @@ export default defineSchema({
     name: v.string(),
     slug: v.string(),
     description: v.optional(v.string()),
-    color: v.optional(v.string()), // Hex color for UI
+    lightHex: v.optional(v.string()), // Hex color for light mode
+    darkHex: v.optional(v.string()), // Hex color for dark mode
     icon: v.optional(v.string()), // Icon identifier
   })
     .index("by_slug", ["slug"])
