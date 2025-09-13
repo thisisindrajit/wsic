@@ -67,7 +67,7 @@ def extract_model_response(response_data):
         
         return None
     except Exception as e:
-        app.logger.info(f"Error extracting model response: {e}")
+        print(f"Error extracting model response: {e}", flush=True)
         return None
 
 def parse_json_from_markdown(text):
@@ -100,13 +100,13 @@ def parse_json_from_markdown(text):
             return json.loads(text)
             
         except (json.JSONDecodeError, AttributeError) as e:
-            app.logger.info(f"Failed to parse JSON from text: {e}")
-            app.logger.info(f"Text content: {text[:500]}...")  # Print first 500 chars for debugging
+            print(f"Failed to parse JSON from text: {e}", flush=True)
+            print(f"Text content: {text[:500]}...", flush=True)  # Print first 500 chars for debugging
             return None
 
 @app.route('/ok')
 def ok():
-    app.logger.info("Hitting health service...")
+    print("Hitting health service...", flush=True)
 
     return 'Topic Generator API is running!'
 
@@ -114,6 +114,8 @@ def ok():
 def check_topic():
     """Check if a topic is valid"""
     try:
+        print("Hitting check topic service...", flush=True)
+        
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
@@ -129,19 +131,19 @@ def check_topic():
         topic = topic.strip()
         user_id = user_id.strip()
         
-        app.logger.info(f"Checking topic validity for '{topic}' from user {user_id}")
+        print(f"Checking topic validity for '{topic}' from user {user_id}", flush=True)
         validation_result, status_code = check_topic_validity(topic, user_id)
         
         return jsonify(validation_result), status_code
             
     except Exception as e:
-        app.logger.info(f"Error in check_topic: {str(e)}")
+        print(f"Error in check_topic: {str(e)}", flush=True)
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 def check_topic_validity(topic, user_id):
     """Internal function to check if a topic is valid"""
     try:
-        app.logger.info(f"Checking topic validity: {topic} from user {user_id}")
+        print(f"Checking topic validity: {topic} from user {user_id}", flush=True)
         
         # Get current timestamp and set session
         timestamp = int(time.time())
@@ -183,6 +185,8 @@ def check_topic_validity(topic, user_id):
 def generate_topic():
     """Check topic validity and generate content if valid"""
     try:
+        print("Hitting generate topic service...", flush=True)
+        
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
@@ -201,7 +205,7 @@ def generate_topic():
         user_id = user_id.strip()
         
         # Step 1: Check topic validity first
-        app.logger.info(f"Step 1: Checking topic validity for '{topic}' from user {user_id}")
+        print(f"Step 1: Checking topic validity for '{topic}' from user {user_id}", flush=True)
         validation_result, status_code = check_topic_validity(topic, user_id)
         
         if status_code != 200:
@@ -209,13 +213,13 @@ def generate_topic():
         
         # Check if topic is invalid
         if validation_result.get('status') == 'INVALID':
-            app.logger.info(f"Topic '{topic}' is invalid: {validation_result.get('reason')}")
+            print(f"Topic '{topic}' is invalid: {validation_result.get('reason')}", flush=True)
             return jsonify({
                 "error": "Topic is invalid",
                 "validation": validation_result
             }), 400
         
-        app.logger.info(f"Topic '{topic}' is valid. Proceeding with generation...")
+        print(f"Topic '{topic}' is valid. Proceeding with generation...", flush=True)
         
         # Step 2: Generate content for valid topic
         # Get current timestamp and set session
@@ -252,7 +256,7 @@ def generate_topic():
             # Parse the JSON response from the model (handles markdown code blocks)
             parsed_response = parse_json_from_markdown(model_response)
             if parsed_response:
-                app.logger.info(f"Successfully generated content for topic '{topic}'")
+                print(f"Successfully generated content for topic '{topic}'", flush=True)
                 return jsonify(parsed_response)
             else:
                 return jsonify({"error": "Invalid JSON response from model"}), 500
@@ -260,7 +264,7 @@ def generate_topic():
             return jsonify({"error": "No valid response from topic generator"}), 500
             
     except Exception as e:
-        app.logger.info(f"Error in generate_topic: {str(e)}")
+        print(f"Error in generate_topic: {str(e)}", flush=True)
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 if __name__ == '__main__':
