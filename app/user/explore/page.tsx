@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { APP_NAME, APP_SHORT_NAME } from "@/constants/common";
-import ExploreContent from "@/components/pages/ExploreContent";
+import Explore from "@/components/pages/Explore";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const ExplorePage = () => {
-    return <ExploreContent />;
+    return <Explore />;
 };
 
 export default ExplorePage;

@@ -4,7 +4,7 @@ import { useCategories } from "@/hooks/useTopics";
 import CategoryCard from "@/components/content/CategoryCard";
 import { Loader2, AlertCircle } from "lucide-react";
 
-export default function ExploreContent() {
+const Explore = () => {
     const { data: categories, isLoading, isError } = useCategories();
 
     if (isError) {
@@ -54,3 +54,5 @@ export default function ExploreContent() {
         </div>
     );
 }
+
+export default Explore;

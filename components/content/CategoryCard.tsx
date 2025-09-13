@@ -38,7 +38,7 @@ export default function CategoryCard({ category, className }: CategoryCardProps)
   const borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${isDark ? 0.6 : 0.4})`;
   
   // Background colors optimized for current theme
-  const glassBg = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
+  const glassBg = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${isDark ? 0.15 : 0.1})`;
   const iconBg = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
   const hoverBg = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
 
@@ -58,7 +58,7 @@ export default function CategoryCard({ category, className }: CategoryCardProps)
       <div
         className="absolute inset-0 backdrop-blur-sm"
         style={{
-          background: `linear-gradient(135deg, ${glassBg}, rgba(255, 255, 255, ${isDark ? 0.08 : 0.04}))`,
+          background: `linear-gradient(135deg, ${glassBg}, ${isDark ? glassBg : "rgba(255, 255, 255, 0.04)"}))`,
         }}
       />
 
@@ -85,7 +85,7 @@ export default function CategoryCard({ category, className }: CategoryCardProps)
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground text-sm leading-relaxed">
+        <p className="text-sm leading-relaxed">
           {category.description}
         </p>
 

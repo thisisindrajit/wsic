@@ -16,12 +16,12 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
     return (
         <div className={`border border-border rounded-md p-6 bg-card ${className}`}>
             <h3 className="text-lg font-medium mb-4">Subscribe to Premium</h3>
-            
+
             <div className="space-y-3 mb-6">
                 <p className="text-sm/relaxed text-muted-foreground">
                     Unlock unlimited access to premium content and features:
                 </p>
-                
+
                 <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
@@ -29,11 +29,11 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
-                        Advanced content blocks
+                        Enhanced topic content with visual aids
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
-                        Priority support
+                        Unlimited saves (with save collections) and notes
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
@@ -41,13 +41,14 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
                     </li>
                 </ul>
             </div>
-            
-            <Button 
+
+            <Button
                 onClick={handleSubscribe}
                 size="lg"
                 className="w-full touch-manipulation"
+                disabled
             >
-                Subscribe
+                Subscribe (Launching soon!)
             </Button>
         </div>
     );

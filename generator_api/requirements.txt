@@ -1,0 +1,5 @@
+Flask
+Gunicorn
+requests
+python-dotenv
+convex>=0.5.0

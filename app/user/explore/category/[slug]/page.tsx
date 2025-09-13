@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { APP_NAME } from "@/constants/common";
-import CategoryPageContent from "@/components/pages/CategoryPageContent";
+import Category from "@/components/pages/Category";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -25,5 +25,5 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = (await params)
 
-  return <CategoryPageContent slug={slug} />;
+  return <Category slug={slug} />;
 }

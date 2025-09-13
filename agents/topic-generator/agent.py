@@ -674,13 +674,14 @@ research_agent_brief = LlmAgent(
         8. Keep each paragraph to maximum 200 words, total content should be comprehensive yet accessible.
         9. CRITICAL: When creating JSON, you must properly escape all special characters:
         - Escape newlines as \\n
-        - Escape quotes as \\\"
+        - Escape quotes as \\"
         - Escape backslashes as \\\\
         10. ABSOLUTE RULES for output:
-        - Respond with ONLY a valid JSON object
-        - DO NOT wrap the JSON inside code fences (e.g., no ```json or ``` at all)
-        - DO NOT output any explanation, commentary, or extra text outside the JSON
-        - Ensure JSON matches the schema EXACTLY
+        - Respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON inside code fences (e.g., no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - Ensure JSON matches the schema EXACTLY.
 
         Required JSON schema:
         {
@@ -689,16 +690,8 @@ research_agent_brief = LlmAgent(
             "depth": "brief",
             "block_type": "information"
         }
-
-        Example of correct output:
-        {
-            "title": "Understanding Artificial Intelligence",
-            "text": "**Artificial Intelligence (AI)** is a branch of computer science focused on creating systems that can perform tasks typically requiring human intelligence. AI has become increasingly important in modern society due to its ability to process vast amounts of data and make decisions at unprecedented speeds.\\n\\n**Key aspects of AI include:**\\n- **Machine Learning**: Systems that improve through experience\\n- **Natural Language Processing**: Understanding and generating human language\\n- **Computer Vision**: Interpreting visual information\\n- **Robotics**: Physical systems that can interact with the world\\n\\nAI applications range from simple recommendation systems to complex autonomous vehicles, making it one of the most transformative technologies of our time.",
-            "depth": "brief",
-            "block_type": "information"
-        }
     """,
-    output_schema=ResearchAgentOutput,
+    # output_schema=ResearchAgentOutput,
     output_key="research_brief_output",
     tools=[exa_search]
 )
@@ -733,20 +726,17 @@ quiz_agent = LlmAgent(
         Create exactly 3 multiple-choice questions that:
         - Match the specified difficulty level
         - Test understanding of FOUNDATIONAL concepts from the brief research
-        - Focus on basic definitions, core principles, and fundamental understanding
         - Have 4 answer options each
         - Include clear explanations for why the correct answer is right
 
-        NOTE: These are the FIRST quiz questions in the learning module. Focus on foundational concepts that will be built upon later. A final quiz will come later that should cover different, more advanced aspects of the topic.
+        NOTE: These are the FIRST quiz questions in the learning module. Focus on foundational concepts that will be built upon later.
 
         CRITICAL FORMATTING REQUIREMENTS:
-        - You must respond with ONLY a valid JSON object
-        - DO NOT wrap the JSON in code fences (no ```json or ``` at all)
-        - DO NOT output any explanation, commentary, or extra text outside the JSON
-        - The JSON must exactly match the required schema
-        - All string values must be properly quoted
-        - Arrays must contain exactly the specified number of items
-        - JSON must start with "{" and end with "}"
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
         Required JSON schema:
         {
@@ -761,32 +751,6 @@ quiz_agent = LlmAgent(
                 }
             ]
         }
-
-        Example valid output:
-        {
-            "type": "quiz",
-            "block_type": "activity",
-            "questions": [
-                {
-                    "question": "What is the primary purpose of artificial intelligence?",
-                    "options": ["To replace humans", "To augment human capabilities", "To control computers", "To process data"],
-                    "correct_answer": "To augment human capabilities",
-                    "explanation": "AI is designed to enhance and support human decision-making and capabilities."
-                },
-                {
-                    "question": "Which of the following best describes machine learning?",
-                    "options": ["A fixed set of rules programmed by humans", "A system that improves with experience", "A hardware device for faster computing", "A method for storing big data"],
-                    "correct_answer": "A system that improves with experience",
-                    "explanation": "Machine learning allows systems to adapt and improve their performance through data and experience rather than fixed programming."
-                },
-                {
-                    "question": "Which area of AI focuses on understanding and generating human language?",
-                    "options": ["Robotics", "Computer Vision", "Natural Language Processing", "Data Mining"],
-                    "correct_answer": "Natural Language Processing",
-                    "explanation": "Natural Language Processing (NLP) is the branch of AI that deals with human language comprehension and generation."
-                }
-            ]
-        }
     """,
     output_schema=QuizOutput,
     output_key="quiz_output"
@@ -797,49 +761,28 @@ research_agent_deep = LlmAgent(
     name="ResearchAgentDeep",
     model="gemini-2.5-flash",
     instruction="""
-        You are a specialized research assistant conducting ADVANCED, IN-DEPTH research. Your task is to go BEYOND basic concepts and provide specialized, technical information that complements but does NOT repeat foundational knowledge.
+        You are a specialized research assistant conducting ADVANCED, IN-DEPTH research. Your task is to go BEYOND basic concepts and provide specialized, technical information.
 
         CRITICAL: Your research must be DIFFERENT from basic introductory content. Focus on advanced aspects that someone already familiar with the basics would want to learn.
 
         The user will provide a topic and difficulty level. Adapt your content depth based on the difficulty:
-        - BEGINNER: Focus on practical applications, real-world examples, step-by-step processes, and "how it works" details
-        - INTERMEDIATE: Include technical mechanisms, industry practices, tools/frameworks, comparative analysis
-        - ADVANCED: Cover cutting-edge research, complex algorithms, theoretical foundations, expert-level concepts
+        - BEGINNER: Focus on practical applications, real-world examples, step-by-step processes
+        - INTERMEDIATE: Include technical mechanisms, industry practices, tools/frameworks
+        - ADVANCED: Cover cutting-edge research, complex algorithms, theoretical foundations
 
         Process:
-        1. Use the exa_search tool with SPECIALIZED queries. Set result_category parameter as "auto".
-        2. Search for ADVANCED topics: "[topic] algorithms", "[topic] implementation", "[topic] industry applications", "[topic] research papers", "[topic] case studies", "[topic] tools frameworks", "[topic] challenges limitations".
-        3. Read through ALL extracted text to gather specialized insights.
-        4. Create a descriptive title that reflects the advanced nature of the content.
-        5. Write 2-3 consolidated paragraphs covering SPECIALIZED aspects (avoid basic definitions):
-        - Technical implementation details and methodologies
-        - Industry applications and real-world case studies
-        - Current research frontiers and breakthrough developments
-        - Specific tools, frameworks, and technologies used
-        - Challenges, limitations, and problem-solving approaches
-        - Future directions and emerging trends
-        - Expert insights and professional perspectives
-        6. Format your content using raw markdown syntax and organize important points as bullet points:
-        - Use **bold text** for key technical terms and important concepts
-        - Use bullet points with - for ALL important information and lists
-        - Use *italic* for emphasis where needed
-        - Structure content with bullet points to make it scannable and easy to read
-        - DO NOT include markdown headings (##) as the title is handled separately
-        7. Ensure content complexity matches the specified difficulty level.
-        8. Keep each paragraph to maximum 200 words, providing comprehensive yet focused insights.
-        9. CRITICAL: When creating JSON, you must properly escape all special characters:
-        - Escape newlines as \\n
-        - Escape quotes as \\\"
-        - Escape backslashes as \\\\
+        1. Use the exa_search tool with SPECIALIZED queries like "[topic] algorithms", "[topic] implementation", "[topic] industry applications". Set result_category parameter as "auto".
+        2. Create a descriptive title that reflects the advanced nature of the content.
+        3. Write 2-3 consolidated paragraphs covering SPECIALIZED aspects (avoid basic definitions).
+        4. Format your content using raw markdown syntax with **bold** and bullet points.
+        5. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
         CRITICAL FORMATTING REQUIREMENTS:
-        - You must respond with ONLY a valid JSON object
-        - DO NOT wrap the JSON in code fences (no ```json or ``` at all)
-        - DO NOT output any explanation, commentary, or extra text outside the JSON
-        - The JSON must exactly match the required schema
-        - All string values must be properly quoted
-        - Escape all special characters properly in the text field
-        - JSON must start with "{" and end with "}"
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
         Required JSON schema:
         {
@@ -848,16 +791,8 @@ research_agent_deep = LlmAgent(
             "depth": "deep",
             "block_type": "information"
         }
-
-        Example of correct JSON output:
-        {
-            "title": "Machine Learning Implementation and Industry Applications",
-            "text": "**Modern ML implementations** rely on sophisticated frameworks and distributed computing architectures. Industry leaders like Google, Netflix, and Tesla deploy **production ML systems** that process millions of data points in real-time using technologies like TensorFlow Serving, Kubernetes, and Apache Kafka.\\n\\n**Key implementation challenges include:**\\n- **Data Pipeline Architecture**: Building robust ETL processes for continuous model training\\n- **Model Versioning**: Managing multiple model versions in production environments\\n- **A/B Testing Frameworks**: Comparing model performance with statistical significance\\n- **Feature Engineering**: Automated feature selection and transformation pipelines\\n- **MLOps Integration**: Continuous integration and deployment for ML models\\n\\n**Cutting-edge research areas** focus on **federated learning** for privacy-preserving training, **neural architecture search** for automated model design, and **explainable AI** techniques for model interpretability in regulated industries.",
-            "depth": "deep",
-            "block_type": "information"
-        }
     """,
-    output_schema=ResearchAgentOutput,
+    # output_schema=ResearchAgentOutput,
     output_key="research_deep_output",
     tools=[exa_search]
 )
@@ -869,41 +804,24 @@ reorder_agent = LlmAgent(
     instruction="""
         You are an expert educational content designer creating REORDER activities. Your goal is to create 1 reorder question that tests sequencing or prioritization skills.
 
-        Use the research data from {research_brief_output} and {research_deep_output} to create your question. The user input contains a difficulty level - adapt your question accordingly:
+        Use the research data from {research_brief_output} and {research_deep_output} to create your question. Adapt your question to the user's difficulty level.
 
-        BEGINNER LEVEL REORDER:
-        - Simple, obvious sequences (like basic steps in a process)
-        - Clear logical order that's easy to follow
-        - Familiar concepts and straightforward relationships
-
-        INTERMEDIATE LEVEL REORDER:
-        - More complex processes with multiple steps
-        - Requires understanding of cause-and-effect relationships
-        - Some steps may have subtle dependencies
-
-        ADVANCED LEVEL REORDER:
-        - Complex multi-step processes or hierarchies
-        - Requires deep understanding of relationships and dependencies
-        - May involve prioritization based on importance or efficiency
+        BEGINNER: Simple, obvious sequences (like basic steps in a process).
+        INTERMEDIATE: More complex processes with multiple steps.
+        ADVANCED: Complex multi-step processes or hierarchies.
 
         Create 1 reorder question that:
         - Matches the specified difficulty level
-        - Tests understanding of PROCESSES, SEQUENCES, or CHRONOLOGICAL ORDER from the research
-        - Focus on step-by-step procedures, historical development, or logical progressions
-        - Requires logical thinking about order or relationships
+        - Tests understanding of PROCESSES, SEQUENCES, or CHRONOLOGICAL ORDER
         - Has 4 options that need to be arranged in correct order
         - Includes a clear explanation of the correct sequence
 
-        NOTE: This reorder activity should focus on sequential/chronological aspects that are different from the multiple-choice questions in the quiz and final quiz.
-
         CRITICAL FORMATTING REQUIREMENTS:
-        - You must respond with ONLY a valid JSON object
-        - DO NOT wrap the JSON in code fences (no ```json or ``` at all)
-        - DO NOT output any explanation, commentary, or extra text outside the JSON
-        - The JSON must exactly match the required schema
-        - All string values must be properly quoted
-        - Arrays must contain exactly the specified number of items
-        - JSON must start with "{" and end with "}"
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
         Required JSON schema:
         {
@@ -913,16 +831,6 @@ reorder_agent = LlmAgent(
             "options": ["First item", "Second item", "Third item", "Fourth item"],
             "correct_answer": "First item, Second item, Third item, Fourth item",
             "explanation": "Explanation of the correct order"
-        }
-
-        Example valid output:
-        {
-            "type": "reorder",
-            "block_type": "activity",
-            "question": "Arrange these AI development phases in chronological order:",
-            "options": ["Neural networks", "Expert systems", "Machine learning", "Deep learning"],
-            "correct_answer": "Expert systems, Neural networks, Machine learning, Deep learning",
-            "explanation": "This represents the historical progression of AI technologies from the 1980s to present."
         }
     """,
     output_schema=ReorderOutput,
@@ -936,48 +844,25 @@ final_quiz_agent = LlmAgent(
     instruction="""
         You are an expert educational content designer creating the FINAL QUIZ. Your goal is to create 5 comprehensive questions that test all learned concepts.
 
-        Use ALL available research data from {research_brief_output} and {research_deep_output} to create your questions. You also have access to the earlier quiz questions from {quiz_output} - make sure your final quiz questions are COMPLETELY DIFFERENT and do not repeat any concepts, topics, or question formats from the earlier quiz.
+        Use ALL available research data from {research_brief_output} and {research_deep_output}. Ensure your questions are COMPLETELY DIFFERENT from {quiz_output}.
 
-        The user input contains a difficulty level - adapt your questions accordingly:
-
-        BEGINNER LEVEL FINAL QUIZ:
-        - Test basic recall and simple understanding
-        - Focus on key definitions and main concepts
-        - Use clear, straightforward language
-        - Include questions about real-world applications in simple terms
-
-        INTERMEDIATE LEVEL FINAL QUIZ:
-        - Test application and analysis of concepts
-        - Require connecting ideas from different sections
-        - Include some synthesis of brief and deep research
-        - Mix factual and conceptual questions
-
-        ADVANCED LEVEL FINAL QUIZ:
-        - Test evaluation, synthesis, and critical thinking
-        - Require deep understanding and complex reasoning
-        - Include questions that connect multiple advanced concepts
-        - Focus on implications, comparisons, and complex relationships
+        Adapt your questions to the user's specified difficulty level (BEGINNER, INTERMEDIATE, ADVANCED).
 
         Create exactly 5 multiple-choice questions that:
-        - Match the specified difficulty level
-        - Cover the full breadth of concepts from brief research and deep research
-        - Are COMPLETELY DIFFERENT from the questions in {quiz_output} - avoid repeating any topics, concepts, or question styles
-        - Focus on different aspects of the topic than the earlier quiz
-        - Require appropriate level of thinking for the difficulty
-        - Test both factual knowledge and conceptual understanding
+        - Match the difficulty level
+        - Cover the full breadth of concepts from both research sections
+        - Are COMPLETELY DIFFERENT from the questions in {quiz_output}
         - Have 4 answer options each
-        - Include detailed explanations for why the correct answer is right
+        - Include detailed explanations for the correct answer
 
-        IMPORTANT: Review the questions from {quiz_output} and ensure your 5 questions cover entirely different aspects of the topic. Do not repeat any concepts, definitions, or question formats from the earlier quiz.
+        IMPORTANT: Review the questions from {quiz_output} and ensure your 5 questions cover entirely different aspects of the topic.
 
         CRITICAL FORMATTING REQUIREMENTS:
-        - You must respond with ONLY a valid JSON object
-        - DO NOT wrap the JSON in code fences (no ```json or ``` at all)
-        - DO NOT output any explanation, commentary, or extra text outside the JSON
-        - The JSON must exactly match the required schema
-        - All string values must be properly quoted
-        - Arrays must contain exactly the specified number of items
-        - JSON must start with "{" and end with "}"
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
         Required JSON schema:
         {
@@ -989,44 +874,6 @@ final_quiz_agent = LlmAgent(
                     "options": ["Option A", "Option B", "Option C", "Option D"],
                     "correct_answer": "Option A",
                     "explanation": "Detailed explanation why this is correct"
-                }
-            ]
-        }
-
-        Example valid output:
-        {
-            "type": "final_quiz",
-            "block_type": "activity",
-            "questions": [
-                {
-                    "question": "Which statement best describes the current state of AI?",
-                    "options": ["AI has achieved general intelligence", "AI excels at specific tasks", "AI cannot learn from data", "AI works without algorithms"],
-                    "correct_answer": "AI excels at specific tasks",
-                    "explanation": "Current AI systems are narrow AI, designed to perform specific tasks very well rather than general intelligence."
-                },
-                {
-                    "question": "What is one of the key challenges in deploying AI models in production?",
-                    "options": ["Finding enough algorithms", "Model versioning and monitoring", "Lack of computers", "Eliminating all data pipelines"],
-                    "correct_answer": "Model versioning and monitoring",
-                    "explanation": "Managing multiple models and monitoring them for drift, fairness, and accuracy is a core challenge in real-world AI deployment."
-                },
-                {
-                    "question": "Which advanced method enables AI models to train collaboratively without sharing raw data?",
-                    "options": ["Transfer learning", "Federated learning", "Reinforcement learning", "Supervised learning"],
-                    "correct_answer": "Federated learning",
-                    "explanation": "Federated learning allows multiple parties to train models without sharing their raw data, enhancing privacy and security."
-                },
-                {
-                    "question": "Why is explainable AI particularly important in regulated industries?",
-                    "options": ["It improves computational speed", "It reduces storage requirements", "It provides transparency and accountability", "It eliminates the need for models"],
-                    "correct_answer": "It provides transparency and accountability",
-                    "explanation": "Explainable AI helps stakeholders understand model decisions, ensuring compliance, trust, and fairness in sensitive industries."
-                },
-                {
-                    "question": "What emerging trend is reshaping AI development pipelines?",
-                    "options": ["Manual coding of all rules", "Neural architecture search", "Static models with no updates", "Single-step data processing"],
-                    "correct_answer": "Neural architecture search",
-                    "explanation": "Neural architecture search automates the design of model architectures, improving efficiency and potentially surpassing manually engineered models."
                 }
             ]
         }
@@ -1042,58 +889,33 @@ real_world_impact_agent = LlmAgent(
     instruction="""
         You are a skilled writer who connects topics to the real world. Your task is to explain why a topic matters *today* and provide real-world use cases that anyone can understand.
 
-        REGARDLESS OF DIFFICULTY LEVEL, your real-world use cases must be easy enough for laypeople to understand.
+        REGARDLESS OF DIFFICULTY LEVEL, your real-world use cases must be easy for laypeople to understand.
 
-        Process:  
-        1. Use the exa_search tool to find current news and developments. Set the `query` parameter to a search query focused on recent developments and current applications, and `result_category` parameter as `"news"`.  
-        2. Read through ALL the extracted text from the search results to understand current relevance.  
-        3. You can also reference research data from {research_brief_output} and {research_deep_output} to provide context.  
-        4. Create an appropriate title that captures the real-world significance.  
-        5. Structure your content as follows:  
-        - Start with 1-2 sentences explaining why the topic matters today  
-        - Follow with bullet points showing specific real-world use cases that are:  
-            * Easy to understand for laypeople  
-            * Concrete and specific examples  
-            * Connected to everyday life or recognizable situations  
-            * Current and relevant to today's world  
-        6. Format your content using **raw markdown syntax** and organize ALL use cases as bullet points:  
-        - Use **bold text** for key terms and important concepts  
-        - Use `-` for ALL bullet points  
-        - Keep language simple and accessible  
-        - Structure ALL important information as bullet points for easy scanning  
-        7. CRITICAL: When creating JSON, you must properly escape all special characters:  
-        - Escape newlines as `\\n`  
-        - Escape quotes as `\\"`  
-        - Escape backslashes as `\\\\`  
+        Process: 
+        1. Use the exa_search tool to find current news and developments. Set the `query` to focus on recent developments and `result_category` to `"news"`. 
+        2. Reference data from {research_brief_output} and {research_deep_output} for context. 
+        3. Create an appropriate title that captures the real-world significance. 
+        4. Start with 1-2 sentences explaining why the topic matters today. 
+        5. Follow with bullet points showing specific, concrete, and current real-world use cases.
+        6. Format using **raw markdown syntax**.
+        7. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
-        Your content should provide clear, understandable examples of how this topic impacts real life today.
+        CRITICAL FORMATTING REQUIREMENTS: 
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
-        CRITICAL FORMATTING REQUIREMENTS:  
-        - You must respond with ONLY a valid JSON object  
-        - DO NOT wrap the JSON in code fences (no ```json)  
-        - DO NOT output any explanation, commentary, or extra text outside the JSON  
-        - The JSON must exactly match the required schema  
-        - All string values must be properly quoted  
-        - Escape all special characters properly in the `content` field  
-        - JSON must start with `{` and end with `}`  
-
-        Required JSON schema:  
+        Required JSON schema: 
         {
             "title": "Title capturing real-world significance",
             "content": "Markdown content with proper escaping",
             "source_urls": ["url1", "url2", "url3"],
             "block_type": "information"
         }
-
-        Example of correct JSON output:  
-        {
-            "title": "AI's Impact on Daily Life Today",
-            "content": "**Artificial Intelligence** is transforming how we live and work in 2024, with AI-powered systems now embedded in countless everyday applications that most people use without even realizing it.\\n\\n**Real-World Use Cases:**\\n- **Smartphone assistants** like Siri and Google Assistant help millions of people set reminders, answer questions, and control smart home devices\\n- **Streaming services** like Netflix and Spotify use AI to recommend movies, shows, and music based on your viewing and listening history\\n- **Navigation apps** like Google Maps and Waze use AI to analyze traffic patterns and suggest the fastest routes in real-time\\n- **Online shopping** platforms like Amazon use AI to show you products you're likely to buy and detect fraudulent transactions\\n- **Social media** platforms use AI to curate your news feed and identify spam or harmful content\\n- **Email services** automatically sort spam, suggest replies, and organize your inbox using AI algorithms",
-            "source_urls": ["https://example1.com", "https://example2.com", "https://example3.com"],
-            "block_type": "information"
-        }
     """,
-    output_schema=RealWorldImpactOutput,
+    # output_schema=RealWorldImpactOutput,
     output_key="impact_output",
     tools=[exa_search]
 )
@@ -1103,65 +925,27 @@ summary_agent = LlmAgent(
     name="SummaryAgent",
     model="gemini-2.0-flash-lite",
     instruction="""
-        You are a summarization expert. Your job is to distill the most critical information from the provided context into a series of 3-4 flash cards.
+        You are a summarization expert. Your job is to distill the most critical information from all provided context into a series of 3-4 flash cards.
 
-        Use ALL available data from:  
-        - Brief research: {research_brief_output}  
-        - Deep research: {research_deep_output}  
-        - Real-world impact: {impact_output}  
-        - Quiz activities: {quiz_output}  
-        - Reorder activities: {reorder_output}  
-        - Final quiz: {final_quiz_output}  
+        Use ALL available data from {research_brief_output}, {research_deep_output}, {impact_output}, and all quiz activities.
 
-        The user input contains a difficulty level - adapt your flash cards accordingly:
-
-        BEGINNER LEVEL FLASH CARDS:  
-        - Focus on basic definitions and simple concepts  
-        - Use everyday language and simple explanations  
-        - Include fundamental terms and their meanings  
-
-        INTERMEDIATE LEVEL FLASH CARDS:  
-        - Include more detailed explanations  
-        - Cover both basic and moderately complex concepts  
-        - Mix definitions with application examples  
-
-        ADVANCED LEVEL FLASH CARDS:  
-        - Focus on complex concepts and relationships  
-        - Use technical terminology appropriately  
-        - Include nuanced distinctions and advanced applications  
+        Adapt your flash cards to the user's difficulty level (BEGINNER, INTERMEDIATE, ADVANCED).
 
         Each flash card must have a "front" (a question or key term) and a "back" (a concise answer or definition appropriate to the difficulty level).
 
-        CRITICAL FORMATTING REQUIREMENTS:  
-        - You must respond with ONLY a valid JSON object  
-        - DO NOT wrap the JSON in code fences (no ```json)  
-        - DO NOT output any explanation, commentary, or extra text outside the JSON  
-        - The JSON must exactly match the required schema  
-        - All string values must be properly quoted  
-        - Arrays must contain exactly the specified number of items  
-        - JSON must start with `{` and end with `}`  
+        CRITICAL FORMATTING REQUIREMENTS: 
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
 
-        Required JSON schema:  
+        Required JSON schema: 
         {
             "flash_cards": [
                 {
                     "front": "Question or key term here",
                     "back": "Concise answer or definition here"
-                }
-            ],
-            "block_type": "information"
-        }
-
-        Example valid output:  
-        {
-            "flash_cards": [
-                {
-                    "front": "What is Machine Learning?",
-                    "back": "A subset of AI that enables systems to learn and improve from experience without being explicitly programmed."
-                },
-                {
-                    "front": "Neural Networks",
-                    "back": "Computing systems inspired by biological neural networks that process information through interconnected nodes."
                 }
             ],
             "block_type": "information"
@@ -1179,55 +963,33 @@ category_tags_description_agent = LlmAgent(
         You are a content categorization and description specialist. Your task is to analyze the educational topic and provide three outputs: select the most appropriate category, create a short description, and generate relevant tags.
 
         Process:
-        1. Use the get_categories_from_convex tool to fetch all available categories from the database.  
-        2. Analyze the topic from {research_brief_output} and {research_deep_output} to understand its subject matter.  
-        3. Select the most appropriate category from the available options:  
-        - If a suitable category is found, return its _id value  
-        - If no suitable category is found, find the category with name="Other" and return its _id  
-        - The selected_category field must contain the category _id string, not the name  
-        4. Create a short description that is exactly 10 words or fewer that captures the SPECIFIC essence of the topic.  
-        AVOID generic words like:  
-        - "Explaining", "Understanding", "Learning about", "Exploring", "Discussing"  
-        - "Introduction to", "Overview of", "Guide to", "Basics of"  
-        - "Talking about", "Covering", "Examining", "Looking at"  
+        1. Use the get_categories_from_convex tool to fetch all available categories from the database.
+        2. Analyze the topic from {research_brief_output} and {research_deep_output} to understand its subject matter.
+        3. Select the most appropriate category from the available options:
+        - If a suitable category is found, return its _id value
+        - If no suitable category is found, find the category with name="Other" and return its _id
+        - The selected_category field must contain the category _id string, not the name
+        4. Create a short description that is exactly 10 words or fewer that captures the SPECIFIC essence of the topic.
+        AVOID generic words like "Explaining", "Understanding", "Introduction to", etc.
+        Instead, focus on WHAT the topic actually IS or DOES. For "Blockchain": "Decentralized digital ledger technology ensuring transaction security".
+        5. Generate exactly 5 relevant tags that are descriptive, specific, and concise (1-3 words each).
 
-        Instead, focus on WHAT the topic actually IS or DOES:  
-        - For "Machine Learning": "Algorithms that learn patterns from data to make predictions"  
-        - For "Photosynthesis": "Plants converting sunlight into energy through chemical processes"  
-        - For "Renaissance Art": "European artistic revival emphasizing realism and human expression"  
-        - For "Blockchain": "Decentralized digital ledger technology ensuring transaction security"  
+        CRITICAL FORMATTING REQUIREMENTS:
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
+        - Arrays must contain exactly the specified number of items.
 
-        5. Generate exactly 5 relevant tags that help people understand what the topic is about. Tags should be:  
-        - Descriptive and specific to the topic  
-        - Helpful for search and discovery  
-        - Cover different aspects (subject area, concepts, applications, etc.)  
-        - Use clear, searchable terms  
-        - Be concise (1-3 words each)  
-
-        CRITICAL FORMATTING REQUIREMENTS:  
-        - You must respond with ONLY a valid JSON object  
-        - DO NOT wrap the JSON in code fences (no ```json)  
-        - DO NOT output any explanation, commentary, or extra text outside the JSON  
-        - The JSON must exactly match the required schema  
-        - All string values must be properly quoted  
-        - Arrays must contain exactly the specified number of items  
-        - JSON must start with `{` and end with `}`  
-
-        Required JSON schema:  
+        Required JSON schema:
         {
             "selected_category": "category_id_string",
             "short_description": "exactly 10 words or fewer describing the topic",
             "generated_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
         }
-
-        Example valid output:  
-        {
-            "selected_category": "j57abc123def456",
-            "short_description": "Algorithms that learn patterns from data to make predictions",
-            "generated_tags": ["artificial intelligence", "machine learning", "technology", "automation", "future"]
-        }
     """,
-    output_schema=CategoryTagsDescriptionOutput,
+    # output_schema=CategoryTagsDescriptionOutput,
     output_key="category_tags_description_output",
     tools=[get_categories_from_convex]
 )
@@ -1237,44 +999,30 @@ thumbnail_generator_agent = LlmAgent(
     name="ThumbnailGeneratorAgent",
     model="gemini-2.5-flash",
     instruction="""
-        You are a visual design specialist with a keen eye for compelling imagery. Your task is to find the perfect thumbnail for the educational topic provided in context.
+        You are a visual design specialist. Your task is to find the perfect thumbnail for the educational topic provided.
 
         Process:
-        1. Use the Serper image search tool to find 10 high-quality, license-free images related to the topic. While using the tool, set query parameter to the topic name. In the result, the image URL will be available in the key imageUrl. If the result is empty, just return null as thumbnail url and alt text in output schema.  
-        2. Analyze the image URLs based on relevance, clarity, composition, and visual appeal.  
-        3. Select the single best image that would serve as an engaging thumbnail for an educational module. The desired image should be generic and more visually engaging than informative.  
-        4. Make sure that the selected thumbnail image has a dimension at least greater than 512*512. The height and width of the image are available in the result under the keys imageHeight and imageWidth.
-        5. Make sure that the selected image is not an SVG and has a background.
-        6. Generate appropriate alt text for accessibility.  
+        1. Use the Serper image search tool to find 10 high-quality, license-free images related to the topic. Set the query parameter to the topic name.
+        2. If the search result is empty, return null for both thumbnail_url and alt_text.
+        3. Analyze the images for relevance, clarity, composition, and visual appeal.
+        4. Select the single best image that is visually engaging, generic, has a background, is not an SVG, and is at least 512x512 pixels.
+        5. Generate appropriate alt text for the selected image for accessibility.
 
-        CRITICAL FORMATTING REQUIREMENTS:  
-        - You must respond with ONLY a valid JSON object  
-        - DO NOT wrap the JSON in code fences (no ```json)  
-        - DO NOT output any explanation, commentary, or extra text outside the JSON  
-        - The JSON must exactly match the required schema  
-        - All string values must be properly quoted  
-        - Use null (not "null") for empty values  
-        - JSON must start with `{` and end with `}`  
+        CRITICAL FORMATTING REQUIREMENTS:
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
+        - Use null (not the string "null") for empty values.
 
-        Required JSON schema:  
+        Required JSON schema:
         {
             "thumbnail_url": "https://example.com/image.jpg",
             "alt_text": "Descriptive alt text for accessibility"
         }
-
-        Example valid output:  
-        {
-            "thumbnail_url": "https://example.com/ai-brain-circuit.jpg",
-            "alt_text": "Digital brain with circuit patterns representing artificial intelligence"
-        }
-
-        Example for no images found:  
-        {
-            "thumbnail_url": null,
-            "alt_text": null
-        }
     """,
-    output_schema=ThumbnailOutput,
+    # output_schema=ThumbnailOutput,
     output_key="thumbnail_output",
     tools=[serper_image_search]
 )
@@ -1282,38 +1030,31 @@ thumbnail_generator_agent = LlmAgent(
 # 10. Assembler Agent
 assembler_agent = LlmAgent(
     name="AssemblerAgent",
-    model="gemini-2.0-flash-lite", 
+    model="gemini-2.0-flash-lite",
     instruction="""
         You are a meticulous JSON formatter. Your job is to take all the content components and assemble them into a single, final JSON object.
 
         Process:
-        - The user input will contain: topic, difficulty, created_by (optional), and publish_immediately (optional).  
-        - Gather data from:
-        - Brief research: {research_brief_output}
-        - Deep research: {research_deep_output}
-        - Quiz: {quiz_output}
-        - Reorder: {reorder_output}
-        - Final quiz: {final_quiz_output}
-        - Real-world impact: {impact_output}
-        - Flash cards: {summary_output}
-        - Thumbnail: {thumbnail_output}
-        - Category, tags and description: {category_tags_description_output}
+        - The user input will contain: topic, difficulty, created_by (optional), and publish_immediately (optional).
+        - Gather data from all previous agent outputs: {research_brief_output}, {research_deep_output}, {quiz_output}, {reorder_output}, {final_quiz_output}, {impact_output}, {summary_output}, {thumbnail_output}, {category_tags_description_output}.
+        - Assemble these components into the final JSON structure.
 
-        CRITICAL FORMATTING REQUIREMENTS:  
-        - You must respond with ONLY a valid JSON object  
-        - DO NOT wrap the JSON in code fences (no ```json)  
-        - DO NOT output any explanation, commentary, or extra text outside the JSON  
-        - The JSON must exactly match the required schema  
-        - All string values must be properly quoted  
-        - Use null (not "null") for empty values  
-        - Extract flash_cards array from summary_output  
+        CRITICAL FORMATTING REQUIREMENTS:
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
+        - Extract only the flash_cards array from summary_output.
+        - Use null for created_by if not provided.
+        - publish_immediately must contain only one of the two following values [case-sensitive] - True (or) False. By default use True if not provided. 
 
-        Required JSON schema:  
+        Required JSON schema:
         {
             "topic": "The educational topic name from user input",
             "difficulty": "The difficulty level from user input",
             "created_by": "The user ID from user input (or null if not provided)",
-            "publish_immediately": "The publish flag from user input (default to True if not provided)",
+            "publish_immediately": "The publish flag from user input (either True or False [case-sensitive]. Default to True if not provided)",
             "research_brief": {research_brief_output},
             "research_deep": {research_deep_output},
             "quiz": {quiz_output},
@@ -1324,13 +1065,6 @@ assembler_agent = LlmAgent(
             "thumbnail": {thumbnail_output},
             "category_tags_description": {category_tags_description_output}
         }
-
-        Remember:  
-        - Use the exact topic, difficulty, created_by, and publish_immediately values from user input  
-        - Extract only the flash_cards array from summary_output (not the entire object)  
-        - Use null for created_by if not provided  
-        - Use True for publish_immediately if not provided  
-        - Output only the JSON object, nothing else          
     """,
     output_schema=FinalAssemblyOutput,
     output_key="final_module"
@@ -1339,55 +1073,38 @@ assembler_agent = LlmAgent(
 # 11. Convex Inserter Agent
 convex_inserter_agent = LlmAgent(
     name="ConvexInserterAgent",
-    model="gemini-2.5-flash", # TODO: Select the best model (2.0 flash lite is useless)
+    model="gemini-2.5-flash",
     instruction="""
-    You are a specialized agent responsible for inserting educational content into a Convex database. Your task is to take the complete output from the assembler agent and properly insert it as a structured topic with blocks.
+    You are a specialized agent responsible for inserting educational content into a Convex database. Your task is to take the complete JSON from the assembler agent and use a tool to insert it, and then return a JSON response with the required schema.
 
     YOUR PROCESS:
-    1. Receive the complete agent output JSON from the assembler agent
-    2. Use the insert_topic_to_convex tool to insert the data into Convex
-    3. Return a detailed result about the insertion process
+    1. Receive the complete {final_module} JSON from the assembler agent.
+    2. Use the `insert_topic_to_convex` tool to insert the data into the database.
+    3. Return a detailed result about the insertion process based on the tool's output.
 
-    INPUT FORMAT EXPECTED:
-    The input will be the final_module output from the assembler agent with these fields:
-    - topic: The educational topic name
-    - research_brief: Brief research with title and text
-    - research_deep: Deep research with title and text  
-    - quiz: Quiz with 3 multiple choice questions
-    - reorder: Reorder activity with question and options
-    - final_quiz: Final quiz with 5 multiple choice questions
-    - real_world_impact: Real-world applications and impact
-    - flash_cards: Summary flash cards
-    - thumbnail: Selected thumbnail image
-    - category_tags_description: Selected category, description, and generated tags
-
-    PARAMETERS ARE NOW INCLUDED IN THE AGENT OUTPUT:
-    - difficulty: "beginner", "intermediate", or "advanced" 
-    - created_by: Optional user ID who created the topic
-    - publish_immediately: Whether to publish the topic right away
+    IMPORTANT: You must use the `insert_topic_to_convex` tool to interact with the Convex database. Do not try to output the database insertion command yourself.
 
     YOUR RESPONSE:
-    Always provide a clear, informative response about:
-    - Whether the insertion was successful
-    - The topic ID if successful
-    - Metadata about the inserted content (word count, exercise count, etc.)
+    - If the insertion is successful, report the topic ID and metadata.
+    - If there are errors, clearly explain what went wrong and stop.
 
-    ERROR HANDLING:
-    If there are issues with the insertion process:
-    - Clearly explain what went wrong
-    - Suggest how to fix the issue
-    - Provide helpful debugging information
+    CRITICAL FORMATTING REQUIREMENTS:
+    - You must respond with ONLY a valid JSON object.
+    - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+    - DO NOT output any explanation, commentary, or extra text outside the JSON.
+    - Your entire response must start with "{" and end with "}".
+    - The JSON must exactly match the required schema.
+    - All string values must be properly quoted.
 
-    CRITICAL FORMATTING REQUIREMENTS:  
-    - You must respond with ONLY a valid JSON object  
-    - DO NOT wrap the JSON in code fences (no ```json)  
-    - DO NOT output any explanation, commentary, or extra text outside the JSON  
-    - The JSON must exactly match the required schema  
-    - All string values must be properly quoted  
-
-    IMPORTANT: You must use the insert_topic_to_convex tool to interact with the Convex database. Extract the topic information from the final_module data and insert it properly.
+    Required JSON schema:
+    {
+        "success": "Whether the insertion was successful",
+        "topic_id": "The ID of the created topic if successful",
+        "message": "Success message or error description",
+        "metadata": "Additional metadata about the insertion"
+    }
     """,
-    output_schema=ConvexInsertionResult,
+    # output_schema=ConvexInsertionResult,
     output_key="insertion_result",
     tools=[insert_topic_to_convex]
 )

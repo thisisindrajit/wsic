@@ -193,8 +193,8 @@ export const seedCategories = internalMutation({
         slug: "mathematics",
         description:
           "Pure and applied mathematics, statistics, and mathematical concepts",
-        lightHex: "#4F46E5", // Indigo for light mode
-        darkHex: "#6366F1", // Lighter indigo for dark mode
+        lightHex: "#BA8E23", // Mustard for light mode
+        darkHex: "#EBBE4D", // Lighter yellow for dark mode
         icon: "📐",
       },
       {

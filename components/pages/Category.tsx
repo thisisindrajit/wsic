@@ -7,12 +7,13 @@ import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CategoryCard from "../content/CategoryCard";
+import { FC } from "react";
 
 interface CategoryPageContentProps {
     slug: string;
 }
 
-export default function CategoryPageContent({ slug }: CategoryPageContentProps) {
+const Category: FC<CategoryPageContentProps> = ({ slug }) => {
     // Get category details
     const category = useQuery(api.categories.getCategoryBySlug, { slug });
 
@@ -48,9 +49,9 @@ export default function CategoryPageContent({ slug }: CategoryPageContentProps) 
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-12">
             {/* Header */}
-            <div className="flex items-center gap-4 mt-3 mb-6 ">
+            <div className="flex items-center gap-4 mt-3 mb-6">
                 <Link href="/user/explore">
                     <Button variant="secondary" size="sm" className="gap-2">
                         <ArrowLeft className="h-4 w-4" />
@@ -70,3 +71,5 @@ export default function CategoryPageContent({ slug }: CategoryPageContentProps) 
         </div>
     );
 }
+
+export default Category;
