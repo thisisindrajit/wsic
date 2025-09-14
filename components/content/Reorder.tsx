@@ -69,7 +69,7 @@ export default function Reorder({ question, items, correctOrder, explanation, on
   });
 
   return (
-    <Card className="w-full">
+    <Card className="w-full shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <GripVertical className="h-5 w-5" />

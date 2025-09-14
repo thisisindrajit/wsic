@@ -73,7 +73,7 @@ export default function MultiQuiz({ questions, title = "Quiz", onComplete }: Mul
   const score = getScore();
 
   return (
-    <Card className="w-full">
+    <Card className="w-full shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
