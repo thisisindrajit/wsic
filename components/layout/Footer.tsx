@@ -18,11 +18,15 @@ const Footer = () => {
         <div className="lg:sticky z-0 bottom-0 w-full max-w-[1440px] mx-auto h-80 bg-teal-500 flex justify-center items-center">
             <div className="relative overflow-hidden w-full h-full flex justify-end p-6 text-right items-start text-background">
                 <div className="flex flex-row space-x-12 sm:space-x-16 md:space-x-24 text-lg md:text-xl">
-                    {/* <ul>
-                        <li className="hover:underline cursor-pointer">Home</li>
-                        <li className="hover:underline cursor-pointer">Docs</li>
-                        <li className="hover:underline cursor-pointer">Comps</li>
-                    </ul> */}
+                    <ul>
+                        <li>Created with ❤️</li>
+                        <li className="inline-flex gap-2">by 
+                            <Link href="https://indrajitvijayakumar.in" target="_blank" className="underline">
+                                Indrajit
+                            </Link>
+                        </li>
+
+                    </ul>
                     <ul>
                         <Link href="https://github.com/thisisindrajit/wsic" target="_blank">
                             <li className="hover:underline cursor-pointer">Github</li>

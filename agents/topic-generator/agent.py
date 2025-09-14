@@ -7,6 +7,7 @@ import requests
 import json
 import re
 import sys
+import time
 from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import google_search
 from pydantic import BaseModel, Field
@@ -207,12 +208,23 @@ def insert_topic_to_convex(agent_output: str) -> dict:
     Returns:
         dict: Result with topic_id if successful, error message if failed
     """
+    # Initialize variables for error handling
+    topic_title = "WSIC Topic"
+    created_by = None
+    client = None
+    
     try:
         # Parse the agent output JSON
         if isinstance(agent_output, str):
             output_data = json.loads(agent_output)
         else:
             output_data = agent_output
+        
+        # Extract data from agent output early for error handling
+        topic_title = output_data.get("topic", "WSIC Topic")
+        difficulty = output_data.get("difficulty", "beginner").lower()
+        created_by = output_data.get("created_by")
+        publish_immediately = output_data.get("publish_immediately", False)
         
         # Get Convex URL from environment
         convex_url = os.environ.get("CONVEX_URL")
@@ -221,14 +233,6 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         
         # Initialize Convex client
         client = ConvexClient(convex_url)
-        
-        # Helper functions are now imported from utilities.py
-        
-        # Extract data from agent output
-        topic_title = output_data.get("topic", "WSIC Topic")
-        difficulty = output_data.get("difficulty", "beginner").lower()
-        created_by = output_data.get("created_by")
-        publish_immediately = output_data.get("publish_immediately", False)
         
         research_brief = output_data.get("research_brief", {})
         research_deep = output_data.get("research_deep", {})
@@ -577,6 +581,46 @@ def insert_topic_to_convex(agent_output: str) -> dict:
                 
             except Exception as cleanup_error:
                 print(f"Warning: Failed to clean up topic {topic_id}: {str(cleanup_error)}")
+        
+        # Create error notification
+        try:
+            if 'client' in locals():
+                # Get the notification type for errors
+                notification_types = client.query("notifications:getNotificationTypes")
+                error_notification_type = None
+                for nt in notification_types:
+                    if nt.get("key") == "error":
+                        error_notification_type = nt
+                        break
+                
+                # Create error notification if notification type exists
+                if error_notification_type:
+                    error_notification_data = {
+                        "userId": created_by or "system",
+                        "notificationTypeKey": error_notification_type["_id"],
+                        "title": "Topic Generation Failed",
+                        "message": f"An error occurred while generating information for the topic '{topic_title}'. The system will retry up to 3 times automatically.",
+                        "data": {
+                            "error": str(e),
+                            "topic_title": topic_title if 'topic_title' in locals() else "Unknown Topic",
+                            "retry_count": 0,
+                            "max_retries": 3,
+                            "metadata": {
+                                "error_type": "topic_generation_failure",
+                                "timestamp": str(int(time.time() * 1000))
+                            }
+                        }
+                    }
+                    
+                    try:
+                        notification_id = client.mutation("notifications:createNotification", error_notification_data)
+                        print(f"Successfully created error notification with ID: {notification_id}")
+                    except Exception as notification_error:
+                        print(f"Warning: Failed to create error notification: {str(notification_error)}")
+                else:
+                    print("Warning: error notification type not found in database")
+        except Exception as notification_error:
+            print(f"Warning: Failed to create error notification: {str(notification_error)}")
         
         return {
             "success": False,

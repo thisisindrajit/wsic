@@ -4,7 +4,7 @@ import SuggestedTopics from "@/components/content/SuggestedTopics";
 import Block from "@/components/content/Block";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mouse, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, Mouse, Loader2, AlertCircle, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useTrendingTopics } from "@/hooks/useTrendingTopics";
@@ -30,6 +30,10 @@ const Home = () => {
     setSearchTopic(topic);
   };
 
+  const handleClearInput = () => {
+    setSearchTopic('');
+  };
+
   return (
     <>
       {/* Search box */}
@@ -39,22 +43,35 @@ const Home = () => {
             <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row items-stretch gap-4">
-            <Input
-              type="text"
-              placeholder="type in any topic..."
-              value={searchTopic}
-              onChange={(e) => setSearchTopic(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              className={cn(
-                "dark:bg-background h-auto border-x-0 border-t-0 text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pb-2 focus-visible:ring-none focus-visible:ring-[0px] transition-all",
-                (isFocused || searchTopic.trim()) ? "border-teal-500 focus-visible:border-teal-500" : ""
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                placeholder="type in any topic..."
+                value={searchTopic}
+                onChange={(e) => setSearchTopic(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className={cn(
+                  "dark:bg-background h-auto border-x-0 border-t-0 text-4xl/normal md:text-5xl/normal xl:text-6xl/normal font-light p-0 pr-12 pb-2 focus-visible:ring-none focus-visible:ring-[0px] transition-all",
+                  (isFocused || searchTopic.trim()) ? "border-teal-500 focus-visible:border-teal-500" : ""
+                )}
+                maxLength={256}
+                autoComplete="off"
+                autoCapitalize="words"
+                spellCheck="true"
+              />
+              {searchTopic.trim() && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearInput}
+                  className="absolute right-0 top-[45%] -translate-y-1/2 h-10 w-10 p-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="size-8" />
+                </Button>
               )}
-              maxLength={256}
-              autoComplete="off"
-              autoCapitalize="words"
-              spellCheck="true"
-            />
+            </div>
             <Button
               type="submit"
               disabled={!searchTopic.trim()}
