@@ -1,17 +1,23 @@
 "use client"
 
 import { useSession, signOut } from "@/lib/auth-client";
+import { useUserTopics } from "@/hooks/useUserTopics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ErrorContext } from "better-auth/react";
+import { Loader2, FileText } from "lucide-react";
+import Block from "@/components/content/Block";
 
 const Profile = () => {
     const { data: session } = useSession();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const router = useRouter();
+
+    // Get user's topics with pagination
+    const { data: userTopics, isLoading: topicsLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useUserTopics();
 
     const handleLogout = async () => {
         await signOut({
@@ -50,7 +56,7 @@ const Profile = () => {
                                 {session.user?.name?.substring(0, 1) ?? ":)"}
                             </AvatarFallback>
                         </Avatar>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <h3 className="text-xl font-semibold text-foreground/90">
                                 {session.user?.name ?? "User"}
                             </h3>
@@ -69,6 +75,69 @@ const Profile = () => {
                     >
                         {isLoggingOut ? "Logging out..." : "Logout"}
                     </Button>
+                </div>
+            )}
+
+            {/* User's Topics Section */}
+            {session?.user?.id && (
+                <div className="space-y-4 pt-6">
+                    <div>
+                        <h2 className="text-xl font-semibold">My Topics</h2>
+                        <p className="text-muted-foreground">{`Topics you've requested`}</p>
+                    </div>
+
+                    {topicsLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : userTopics && userTopics.length > 0 ? (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                                {userTopics.map((topic) => (
+                                    <Block
+                                        key={topic._id}
+                                        id={topic._id}
+                                        imageUrl={topic.imageUrl}
+                                        title={topic.title}
+                                        description={topic.description}
+                                        likes={topic.likeCount}
+                                        shares={topic.shareCount}
+                                        difficulty={topic.difficulty}
+                                        estimatedReadTime={topic.estimatedReadTime}
+                                        viewCount={topic.viewCount}
+                                    />
+                                ))}
+                            </div>
+                            
+                            {hasNextPage && (
+                                <div className="flex justify-center">
+                                    <Button 
+                                        onClick={fetchNextPage}
+                                        variant="outline"
+                                        className="w-full sm:w-auto"
+                                        disabled={isFetchingNextPage}
+                                    >
+                                        {isFetchingNextPage ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            "Load More Topics"
+                                        )}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground mb-2">No topics created yet</p>
+                            <p className="text-sm text-muted-foreground">
+                                Start exploring and request topics to see them here!
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

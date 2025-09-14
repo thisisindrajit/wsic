@@ -32,8 +32,6 @@ export function useTopics({
   };
 }
 
-
-
 // Hook for searching topics
 export function useSearchTopics({
   searchTerm,
