@@ -264,3 +264,6 @@ def generate_topic():
     except Exception as e:
         print(f"Error in generate_topic: {str(e)}", flush=True)
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000, debug=True)

@@ -2,15 +2,16 @@
 
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
-import { TOPBAR_SCROLL_THRESHOLD } from "@/constants/common";
+import { APP_SHORT_NAME, TOPBAR_SCROLL_THRESHOLD } from "@/constants/common";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, Heart, Bookmark, Share2, Loader2 } from "lucide-react";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { useTopicInteractions } from "@/hooks/useTopicInteractions";
 import { ShareDialog } from "@/components/ui/share-dialog";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatLikes, formatShares } from "@/lib/format";
 import SimilarTopics from "@/components/content/SimilarTopics";
+import { useTopic } from "@/hooks/useTopic";
 
 export default function TopicLayout({
   children,
@@ -18,8 +19,10 @@ export default function TopicLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams();
   const topicId = params.id as Id<"topics">;
+  const { data: topicData, isLoading, error } = useTopic(topicId);
 
   // Topic interactions
   const { interactions, handleLike, handleSave, handleShare, handleView, isAuthenticated } = useTopicInteractions(topicId);
@@ -120,10 +123,32 @@ export default function TopicLayout({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || !topicData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg font-medium mb-2">Topic not found</p>
+          <p className="text-muted-foreground mb-4">The topic you are looking for does not exist or has been removed.</p>
+          <Button onClick={() => router.push("/")}>
+            Go Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const shareOptions = {
-    title: "Topic", // This will be updated when we have topic data
-    text: "Check out this interesting topic!",
-    url: typeof window !== 'undefined' ? window.location.href : '',
+    title: topicData?.topic.title ?? `${APP_SHORT_NAME} topic`,
+    text: topicData?.topic.description ?? "Check out this interesting topic!",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}${pathname}`,
   };
 
   return (
@@ -176,7 +201,7 @@ export default function TopicLayout({
           </div>
 
           {/* Center Content */}
-          <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5 overflow-hidden">
+          <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5">
             {children}
           </div>
 

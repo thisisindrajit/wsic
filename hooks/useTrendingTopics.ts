@@ -6,18 +6,20 @@ import { toast } from "sonner";
 
 export function useTrendingTopics({
   categoryId,
+  limit = 10,
 }: {
   categoryId?: Id<"categories">;
+  limit?: number;
 } = {}) {
   const convex = useConvex();
   
   const query = useQuery({
-    queryKey: ["trending-topics", categoryId],
+    queryKey: ["trending-topics", categoryId, limit],
     queryFn: async () => {
       // Use the new getTrendingTopics query
       const topics = await convex.query(api.topics.getTrendingTopics, {
         categoryId: categoryId || undefined,
-        limit: 10,
+        limit,
       });
       
       return topics;

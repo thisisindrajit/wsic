@@ -4,6 +4,7 @@ import React, { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
 import { CALLBACK_URL, NEW_USER_CALLBACK_URL } from "@/constants/common";
+import { useSearchParams } from "next/navigation";
 
 interface GoogleSignInButtonProps {
   isLoading?: boolean;
@@ -19,6 +20,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   disabled = false,
 }) => {
   const [internalLoading, setInternalLoading] = useState(false);
+  const params = useSearchParams();
 
   // Use external loading state if provided, otherwise use internal state
   const isLoadingState = externalLoading || internalLoading;
@@ -37,8 +39,8 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
       // Initiate Google OAuth flow using better-auth
       const result = await signIn.social({
         provider: "google",
-        callbackURL: CALLBACK_URL, // Redirect to home page after successful sign-in
-        newUserCallbackURL: NEW_USER_CALLBACK_URL
+        callbackURL: params.get('redirect_url') ?? CALLBACK_URL, // Redirect to redirect url or home page after successful sign-in
+        newUserCallbackURL: params.get('redirect_url') ?? NEW_USER_CALLBACK_URL // Redirect to redirect url or home page after successful sign-in
       });
 
       // Check if the sign-in was successful

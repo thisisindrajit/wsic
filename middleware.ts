@@ -13,10 +13,6 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Store current request url in a custom header, which you can read later
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-redirect-url', request.url);
-
   if (!session) {
     return NextResponse.redirect(
       new URL(`/login?redirect_url=${request.url}`, request.url)

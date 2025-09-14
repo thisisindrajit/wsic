@@ -424,8 +424,8 @@ const Topic = () => {
                 {contentBlocks.real_world_impact.content.data.source_urls.length > 0 && (
                   <div className="border-t">
                     <h4 className="text-sm font-medium mb-2">Sources:</h4>
-                    <div className="text-sm flex flex-col gap-2 text-muted-foreground">
-                      {contentBlocks.real_world_impact.content.data.source_urls.slice(0, 5).map((url, index) => (
+                    <div className="text-sm flex flex-col gap-2 text-muted-foreground overflow-clip">
+                      {contentBlocks.real_world_impact.content.data.source_urls.slice(0, 10).map((url, index) => (
                         <a key={index} href={url} className="line-clamp-1 hover:underline" target="_blank" rel="noopener noreferrer">
                           {url}
                         </a>

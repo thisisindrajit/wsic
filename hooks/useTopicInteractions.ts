@@ -71,7 +71,6 @@ export function useTopicInteractions(topicId: Id<"topics">) {
 
   const handleShare = async (destination?: string) => {
     if (!userId) {
-      toast.error("Please sign in to share topics");
       return;
     }
 

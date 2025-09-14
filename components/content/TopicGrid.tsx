@@ -71,18 +71,18 @@ export default function TopicGrid({ categoryId, difficulty, className = '' }: To
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
             {topics.map((topic: Topic) => (
-                <Block
-                  key={topic._id}
-                  id={topic._id}
-                  imageUrl={topic.imageUrl}
-                  title={topic.title}
-                  description={topic.description}
-                  likes={topic.likeCount}
-                  shares={topic.shareCount}
-                  difficulty={topic.difficulty}
-                  estimatedReadTime={topic.estimatedReadTime}
-                  viewCount={topic.viewCount}
-                />
+              <Block
+                key={topic._id}
+                id={topic._id}
+                imageUrl={topic.imageUrl}
+                title={topic.title}
+                description={topic.description}
+                likes={topic.likeCount}
+                shares={topic.shareCount}
+                difficulty={topic.difficulty}
+                estimatedReadTime={topic.estimatedReadTime}
+                viewCount={topic.viewCount}
+              />
             ))}
           </div>
 

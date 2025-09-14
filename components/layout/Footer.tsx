@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 const Footer = () => {
     const pathname = usePathname();
 
-    // Only show footer on the landing page (root path)
-    const shouldShowFooter = pathname === "/";
+    // Only show footer on the landing page or login page
+    const shouldShowFooter = pathname === "/" || pathname.includes("/login");
 
     if (!shouldShowFooter) {
         return null;
@@ -27,7 +27,7 @@ const Footer = () => {
                         <Link href="https://github.com/thisisindrajit/wsic" target="_blank">
                             <li className="hover:underline cursor-pointer">Github</li>
                         </Link>
-                        <li className="hover:underline cursor-pointer">X (Twitter)</li>
+                        <li className="hover:underline cursor-pointer">Blog Post</li>
                     </ul>
                 </div>
                 <h2 className="hidden lg:block absolute bottom-0 left-0 translate-y-1/3 sm:text-[192px] text-[80px] text-background">

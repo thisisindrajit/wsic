@@ -15,10 +15,9 @@ import {
   Facebook,
   Linkedin,
   MessageCircle,
-  Send,
   Twitter,
 } from "lucide-react";
-import { shareToNative, shareToClipboard, shareToSocial, ShareOptions } from "@/lib/share";
+import { shareToClipboard, shareToSocial, ShareOptions } from "@/lib/share";
 
 interface ShareDialogProps {
   open: boolean;
@@ -30,13 +29,13 @@ interface ShareDialogProps {
 export function ShareDialog({ open, onOpenChange, shareOptions, onShare }: ShareDialogProps) {
   const [copying, setCopying] = useState(false);
 
-  const handleNativeShare = async () => {
-    const success = await shareToNative(shareOptions);
-    if (success) {
-      onShare?.("native");
-      onOpenChange(false);
-    }
-  };
+  // const handleNativeShare = async () => {
+  //   const success = await shareToNative(shareOptions);
+  //   if (success) {
+  //     onShare?.("native");
+  //     onOpenChange(false);
+  //   }
+  // };
 
   const handleCopyLink = async () => {
     setCopying(true);
@@ -61,21 +60,20 @@ export function ShareDialog({ open, onOpenChange, shareOptions, onShare }: Share
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Share Topic</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-4">
-          {/* Native Share (if supported) */}
-          <Button
+          {/* TODO: Implement robust Native Share (if supported) */}
+          {/* <Button
             onClick={handleNativeShare}
             className="w-full"
             variant="outline"
           >
             <Send className="w-4 h-4 mr-2" />
             Share
-          </Button>
+          </Button> */}
 
           {/* Copy Link */}
           <div className="flex items-center space-x-2">

@@ -1,17 +1,21 @@
 "use client"
 
 import SuggestedTopics from "@/components/content/SuggestedTopics";
-// import Block from "@/components/content/Block";
+import Block from "@/components/content/Block";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mouse } from "lucide-react";
+import { ArrowRight, Mouse, Loader2, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useTrendingTopics } from "@/hooks/useTrendingTopics";
 
 const Home = () => {
   const [searchTopic, setSearchTopic] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
+  
+  // Get trending topics
+  const { data: trendingTopics, isLoading: trendingLoading, isError: trendingError } = useTrendingTopics({ limit: 5 });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,11 +83,46 @@ const Home = () => {
         </div>
       </div>
       {/* Trending Topics */}
-      <div id="trending-topics" className="flex flex-col gap-4">
+      <div id="trending-topics" className="flex flex-col gap-6 py-8">
         <div className="flex items-center justify-between">
           <div className="text-2xl/normal font-medium">
             <span className="font-light uppercase">Trending</span> Topics
           </div>
+        </div>
+        
+        {/* Trending Topics Grid */}
+        <div className="w-full">
+          {trendingLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : trendingError ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span>Failed to load trending topics</span>
+            </div>
+          ) : trendingTopics && trendingTopics.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {trendingTopics.slice(0, 5).map((topic) => (
+                <Block
+                  key={topic._id}
+                  id={topic._id}
+                  imageUrl={topic.imageUrl}
+                  title={topic.title}
+                  description={topic.description}
+                  likes={topic.likeCount}
+                  shares={topic.shareCount}
+                  difficulty={topic.difficulty}
+                  estimatedReadTime={topic.estimatedReadTime}
+                  viewCount={topic.viewCount}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No trending topics found</p>
+            </div>
+          )}
         </div>
       </div>
     </>

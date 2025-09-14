@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/auth-client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CALLBACK_URL } from "@/constants/common";
 
 const LoginPage = () => {
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+    const { data: session } = useSession();
+    const params = useSearchParams();
     const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
 
     const handleSignInError = (errorMessage: string) => {
@@ -21,6 +27,12 @@ const LoginPage = () => {
     const dismissError = () => {
         setError(null);
     };
+
+    useEffect(() => {
+        if (session) {
+            router.replace(params.get("redirect_url") ?? CALLBACK_URL);
+        }
+    }, [session, params, router])
 
     return (
         <>
