@@ -639,8 +639,8 @@ class BaseAgentOutput(BaseModel):
 
 # Data schemas for different agent types
 class ResearchData(BaseModel):
-    title: str = Field(description="Clear, descriptive title that identifies the topic being researched.")
-    text: str = Field(description="Consolidated paragraphs of well-structured content in markdown format that explains the topic based on research depth.")
+    title: str = Field(description="Clear, descriptive title")
+    text: str = Field(description="Markdown content with proper escaping")
     depth: str = Field(description="Research depth: 'brief' or 'deep'")
 
 class Question(BaseModel):
@@ -653,14 +653,14 @@ class QuizData(BaseModel):
     questions: List[Question] = Field(description="List of quiz questions")
 
 class ReorderData(BaseModel):
-    question: str = Field(description="The main question or prompt")
-    options: List[str] = Field(description="List of answer options")
-    correct_answer: List[str] = Field(description="The answer in correct order")
-    explanation: str = Field(description="Explanation of why the answer is correct")
+    question: str = Field(description="Your reorder question here")
+    options: List[str] = Field(description="List of items to reorder")
+    correct_answer: List[str] = Field(description="The options in correct order as an array")
+    explanation: str = Field(description="Explanation of the correct order")
 
 class RealWorldImpactData(BaseModel):
-    title: str = Field(description="Title of the real-world impact section")
-    content: str = Field(description="Narrative paragraph in markdown format about current relevance")
+    title: str = Field(description="Title capturing real-world significance")
+    content: str = Field(description="Markdown content with proper escaping")
     source_urls: List[str] = Field(description="URLs of sources used")
 
 class FlashCard(BaseModel):
@@ -671,13 +671,13 @@ class SummaryData(BaseModel):
     flash_cards: List[FlashCard] = Field(description="List of 3-4 flash cards")
 
 class ThumbnailData(BaseModel):
-    thumbnail_url: str = Field(description="URL of the selected thumbnail image")
-    alt_text: str = Field(description="Alt text for the image")
+    thumbnail_url: Optional[str] = Field(description="URL of the selected thumbnail image or null if no image found")
+    alt_text: Optional[str] = Field(description="Alt text for the image or null if no image found")
 
 class CategoryTagsDescriptionData(BaseModel):
-    selected_category: str = Field(description="Selected category ID for the topic")
-    short_description: str = Field(description="10-word short description about the topic")
-    generated_tags: List[str] = Field(description="List of 5 relevant tags for the topic")
+    selected_category: str = Field(description="Selected category ID string")
+    short_description: str = Field(description="Exactly 10 words or fewer describing the topic")
+    generated_tags: List[str] = Field(description="List of exactly 5 relevant tags", min_items=5, max_items=5)
 
 # Specific agent output schemas
 class ResearchAgentOutput(BaseAgentOutput):
@@ -721,10 +721,10 @@ class CategoryTagsDescriptionAgentOutput(BaseAgentOutput):
     data: CategoryTagsDescriptionData = Field(description="Category, tags and description data")
 
 class FinalAssemblyOutput(BaseModel):
-    topic: str = Field(description="The educational topic")
-    difficulty: str = Field(description="Topic difficulty level")
-    created_by: Optional[str] = Field(description="User ID who created the topic")
-    publish_immediately: bool = Field(description="Whether to publish the topic immediately")
+    topic: str = Field(description="The educational topic name from user input")
+    difficulty: str = Field(description="The difficulty level from user input")
+    created_by: Optional[str] = Field(description="The user ID from user input (or null if not provided)")
+    publish_immediately: bool = Field(description="The publish flag from user input (either True or False, default True)")
     research_brief: ResearchData = Field(description="Brief research results")
     research_deep: ResearchData = Field(description="Deep research results")
     quiz: QuizData = Field(description="Quiz activity with 3 questions")

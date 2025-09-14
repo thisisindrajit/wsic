@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 export function useTrendingTopics({
   categoryId,
-  limit = 10,
+  limit = 5,
 }: {
   categoryId?: Id<"categories">;
   limit?: number;
