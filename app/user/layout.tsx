@@ -8,6 +8,7 @@ import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { TOPBAR_SCROLL_THRESHOLD } from "@/constants/common";
+import { usePathname } from "next/navigation";
 
 export default function UserLayout({
     children,
@@ -15,6 +16,7 @@ export default function UserLayout({
     children: React.ReactNode;
 }) {
     const { data: session } = useSession();
+    const pathname = usePathname();
 
     // Track scroll states for sidebar height calculations
     const [isAtTop, setIsAtTop] = useState<boolean>(true);
@@ -56,6 +58,11 @@ export default function UserLayout({
             window.removeEventListener('scroll', handleScroll);
         };
     }, [lastScrollY]);
+
+    useEffect(() => {
+        // Scroll to top on page load
+        window.scrollTo(0, 0);
+    }, [pathname]);
 
     // Calculate sidebar height based on scroll state
     const getSidebarHeight = () => {

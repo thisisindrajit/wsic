@@ -41,7 +41,7 @@ const Explore = () => {
                     <div className="block lg:hidden">
                         <TrendingTopics />
                     </div>
-                    <div className="pt-4 flex flex-col gap-3 lg:hidden">
+                    <div className="pt-4 flex flex-col gap-4 lg:hidden">
                         <div className="text-xl">Categories</div>
                         <div className="flex flex-col gap-4">
                             {categories?.map((category) => (

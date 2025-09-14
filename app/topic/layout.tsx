@@ -217,7 +217,7 @@ export default function TopicLayout({
       </div>
 
       {/* Mobile Actions Bar */}
-      <div className="lg:hidden sticky bottom-4 z-40 bg-background/95 backdrop-blur-sm border border-teal-500 p-2 w-full shadow-xl">
+      <div className="lg:hidden sticky bottom-4 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full border border-border p-2 w-full shadow-xl">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"

@@ -69,7 +69,7 @@ export default function SimilarTopics({ className = '' }: SimilarTopicsProps) {
     <div className={`border border-border rounded-md p-6 bg-card flex flex-col gap-8 ${className}`}>
       <h3 className="text-lg font-medium">Similar Topics</h3>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-10">
         {isLoading ? (
           // Loading state
           <div className="flex items-center justify-center py-8">

@@ -28,6 +28,7 @@ import {
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
 import Link from "next/link";
+import { SimilarTopics } from "../content";
 
 type ProgressStage =
   | "research_brief"
@@ -479,10 +480,13 @@ const Topic = () => {
         )}
 
         {/* Summary */}
-        {canShowStage("summary") && contentBlocks.summary && (
-          <div data-stage="summary">
-            <Summary flashCards={contentBlocks.summary.content.data.flash_cards} />
-          </div>
+        {contentBlocks.summary && (
+          <>
+            <div data-stage="summary">
+              <Summary flashCards={contentBlocks.summary.content.data.flash_cards} />
+            </div>
+            <div className="block lg:hidden"><SimilarTopics /></div>
+          </>
         )}
       </div>
     </div>

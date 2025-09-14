@@ -73,8 +73,8 @@ export default function Summary({ flashCards }: SummaryProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Flashcard */}
-        <div 
-          className="relative h-48 cursor-pointer perspective-1000"
+        <div
+          className="relative h-72 cursor-pointer perspective-1000"
           onClick={handleFlip}
         >
           <div className={cn(
@@ -83,24 +83,20 @@ export default function Summary({ flashCards }: SummaryProps) {
           )}>
             {/* Front of card */}
             <div className="absolute inset-0 w-full h-full backface-hidden">
-              <Card className="h-full border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-                <CardContent className="h-full flex items-center justify-center p-6">
-                  <div className="text-center">
-                    <p className="text-lg font-medium mb-2">{currentCard.front}</p>
-                    <p className="text-sm text-muted-foreground">Click to reveal answer</p>
-                  </div>
+              <Card className="h-72 border-2 border-dashed border-primary/20 hover:border-primary/40 overflow-auto text-center transition-colors">
+                <CardContent className="h-fit m-auto">
+                  <p className="text-lg">{currentCard.front}</p>
+                  <p className="text-sm text-muted-foreground pt-2">Click to reveal answer</p>
                 </CardContent>
               </Card>
             </div>
-            
+
             {/* Back of card */}
-            <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
-              <Card className="h-full border-2 border-primary">
-                <CardContent className="h-full flex items-center justify-center p-6">
-                  <div className="text-center">
-                    <p className="text-lg">{currentCard.back}</p>
-                    <p className="text-sm text-muted-foreground mt-2">Click to flip back</p>
-                  </div>
+            <div className="absolute inset-0 w-full h-72 backface-hidden rotate-y-180">
+              <Card className="h-72 border-2 border-primary overflow-auto text-center">
+                <CardContent className="h-fit m-auto">
+                  <p className="text-lg">{currentCard.back}</p>
+                  <p className="text-sm text-muted-foreground pt-2">Click to flip back</p>
                 </CardContent>
               </Card>
             </div>
@@ -109,22 +105,22 @@ export default function Summary({ flashCards }: SummaryProps) {
 
         {/* Navigation */}
         <div className="flex justify-between items-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handlePrevious}
             disabled={currentCardIndex === 0}
           >
             Previous
           </Button>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleReset}>
               <RotateCcw className="h-4 w-4" />
               Reset
             </Button>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleNext}
             disabled={currentCardIndex === flashCards.length - 1}
           >
