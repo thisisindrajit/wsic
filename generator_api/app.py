@@ -186,7 +186,7 @@ def generate_topic():
     """Check topic validity and generate content if valid"""
     try:
         print("Hitting generate topic service...", flush=True)
-        
+
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
@@ -249,8 +249,6 @@ def generate_topic():
         
         # Delete session
         delete_session(TOPIC_GENERATOR_BASE_URL, "topic-generator", user_id, session_id)
-
-        # Check if the topic is available in convex for the given user id (Sometimes the output might not come but the topic will be available)
         
         if model_response:
             # Parse the JSON response from the model (handles markdown code blocks)
@@ -266,6 +264,3 @@ def generate_topic():
     except Exception as e:
         print(f"Error in generate_topic: {str(e)}", flush=True)
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)

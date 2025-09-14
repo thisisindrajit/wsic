@@ -42,7 +42,7 @@ def generate_embedding(text: str) -> List[float]:
     except Exception as e:
         print(f"Error generating embedding: {e}")
         # Return a zero vector as fallback
-        return [0.0] * 1536
+        return [0.0] * 768
 
 
 def get_categories_from_convex() -> dict:
@@ -271,177 +271,129 @@ def insert_topic_to_convex(agent_output: str) -> dict:
             "categoryId": category_id
         })
         
-        # Create blocks - only insert specified outputs with type field
+        # Create blocks - insert agent outputs directly matching schema
         order = 0
         
-        # 1. Brief Research Text Block (information type)
+        # 1. Brief Research Block (information type)
         if research_brief.get("text"):
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "information",
                 "content": {
-                    "type": "text",
+                    "step": "research_brief",
                     "data": {
-                        "content": {
-                            "text": research_brief["text"]
-                        },
-                        "styleKey": "research_brief"
+                        "title": research_brief.get("title", ""),
+                        "text": research_brief["text"],
+                        "depth": "brief"
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 2. Quiz Exercises (activity type) - Single JSON block
+        # 2. Quiz Block (activity type)
         quiz = output_data.get("quiz", {})
         if quiz.get("questions"):
-            # Create a single block containing all quiz questions as JSON
-            quiz_data = {
-                "type": "quiz",
-                "questions": []
-            }
-            for question_data in quiz["questions"]:
-                options = [{"id": str(i), "text": opt} for i, opt in enumerate(question_data.get("options", []))]
-                quiz_data["questions"].append({
-                    "question": question_data.get("question", ""),
-                    "options": options,
-                    "correctAnswer": question_data.get("correct_answer", ""),
-                    "explanation": question_data.get("explanation", ""),
-                    "points": 10
-                })
-            
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "activity",
                 "content": {
-                    "type": "exercise",
+                    "step": "quiz",
                     "data": {
-                        "exerciseType": "quiz_group",
-                        "quizData": quiz_data
+                        "questions": quiz["questions"]
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 3. Deep Research Text Block (information type)
+        # 3. Deep Research Block (information type)
         if research_deep.get("text"):
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "information",
                 "content": {
-                    "type": "text",
+                    "step": "research_deep",
                     "data": {
-                        "content": {
-                            "text": research_deep["text"]
-                        },
-                        "styleKey": "research_deep"
+                        "title": research_deep.get("title", ""),
+                        "text": research_deep["text"],
+                        "depth": "deep"
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 4. Reorder Exercise (activity type) - Single JSON block
+        # 4. Reorder Block (activity type)
         reorder = output_data.get("reorder", {})
         if reorder.get("question"):
-            options = [{"id": str(i), "text": opt} for i, opt in enumerate(reorder.get("options", []))]
-            reorder_data = {
-                "type": "reorder",
-                "question": reorder.get("question", ""),
-                "options": options,
-                "correctAnswer": reorder.get("correct_answer", ""),
-                "explanation": reorder.get("explanation", ""),
-                "points": 15
-            }
-            
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "activity",
                 "content": {
-                    "type": "exercise",
+                    "step": "reorder",
                     "data": {
-                        "exerciseType": "reorder_group",
-                        "reorderData": reorder_data
+                        "question": reorder["question"],
+                        "options": reorder["options"],
+                        "correct_answer": reorder["correct_answer"],
+                        "explanation": reorder["explanation"]
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 5. Real-World Impact Text Block (information type)
+        # 5. Real-World Impact Block (information type)
         if real_world_impact.get("content"):
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "information",
                 "content": {
-                    "type": "text",
+                    "step": "real_world_impact",
                     "data": {
-                        "content": {
-                            "text": real_world_impact["content"]
-                        },
-                        "styleKey": "real_world_impact"
+                        "title": real_world_impact.get("title", ""),
+                        "content": real_world_impact["content"],
+                        "source_urls": real_world_impact.get("source_urls", [])
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 6. Final Quiz Exercises (activity type) - Single JSON block
+        # 6. Final Quiz Block (activity type)
         final_quiz = output_data.get("final_quiz", {})
         if final_quiz.get("questions"):
-            # Create a single block containing all final quiz questions as JSON
-            final_quiz_data = {
-                "type": "final_quiz",
-                "questions": []
-            }
-            for question_data in final_quiz["questions"]:
-                options = [{"id": str(i), "text": opt} for i, opt in enumerate(question_data.get("options", []))]
-                final_quiz_data["questions"].append({
-                    "question": question_data.get("question", ""),
-                    "options": options,
-                    "correctAnswer": question_data.get("correct_answer", ""),
-                    "explanation": question_data.get("explanation", ""),
-                    "points": 20
-                })
-            
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "activity",
                 "content": {
-                    "type": "exercise",
+                    "step": "final_quiz",
                     "data": {
-                        "exerciseType": "final_quiz_group",
-                        "finalQuizData": final_quiz_data
+                        "questions": final_quiz["questions"]
                     }
                 },
                 "order": order
             })
             order += 1
         
-        # 7. Summary Flash Cards (information type)
+        # 7. Summary Flash Cards Block (information type)
         flash_cards = output_data.get("flash_cards", [])
         if flash_cards:
-            # Create a single text block containing all flash cards
-            flash_cards_text = ""
-            for i, card in enumerate(flash_cards, 1):
-                flash_cards_text += f"**{i}. {card.get('front', '')}**\\n\\n{card.get('back', '')}\\n\\n"
-            
             client.mutation("blocks:createBlock", {
                 "topicId": topic_id,
                 "type": "information",
                 "content": {
-                    "type": "text",
+                    "step": "summary",
                     "data": {
-                        "content": {
-                            "text": flash_cards_text
-                        },
-                        "styleKey": "summary"
+                        "flash_cards": flash_cards
                     }
                 },
                 "order": order
             })
             order += 1
+        
+        # Note: Thumbnail and category data are stored in the topic record itself,
+        # not as separate blocks, to match the schema union constraints
         
         # Publish if requested
         if publish_immediately:
@@ -507,182 +459,7 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         }
 
 # Minimal test data
-minimal_test_data = {
-"topic": "Clinical Trials",
-"difficulty": "Intermediate",
-"created_by": "q3RZR7NPMo2BK9QRtiKoQGpAs3aBGYWZ",
-"publish_immediately": True,
-"research_brief": {
-"title": "Clinical Trials: A Foundation of Medical Advancement",
-"text": "Clinical trials are meticulously designed research studies involving human volunteers that evaluate the safety and efficacy of new medical interventions. These interventions can include novel drugs, vaccines, diagnostic procedures, or modifications to existing treatments. They are the cornerstone of medical progress, providing the scientific evidence required before a new treatment can be made widely available to the public. Through a structured process, researchers aim to answer critical questions about a treatment's effectiveness, potential side effects, and optimal use.\n\nClinical trials progress through several distinct phases, each with specific objectives:\n- Phase 0: Explores how a new drug is processed by the body at very low doses in a small number of participants, typically to understand drug action before extensive testing.\n- Phase 1: Focuses on safety, determining the most appropriate dose and identifying major side effects in a small group of healthy volunteers or patients.\n- Phase 2: Evaluates the effectiveness of the treatment for a specific condition in a larger group of patients, while continuing to monitor safety.\n- Phase 3: Compares the new treatment against standard treatments or a placebo in hundreds to thousands of participants to confirm efficacy, monitor side effects, and gather information for safe use. Successful completion of this phase is often required for regulatory approval.\n- Phase 4: Occurs after a treatment is approved and marketed. These studies continue to monitor long-term effects, optimal use in diverse populations, and identify any rare side effects.\n\nEthical considerations are paramount in clinical trials, ensuring the protection and well-being of participants. Key principles include:\n- Informed Consent: Participants must fully understand the study's purpose, procedures, potential risks, and benefits before voluntarily agreeing to participate.\n- Risk-Benefit Ratio: The potential benefits of the research must justify the risks involved for participants.\n- Independent Review: All clinical trial protocols are rigorously reviewed and approved by Ethics Committees (also known as Institutional Review Boards or IRBs) to safeguard participant rights and welfare.\n- Scientific Validity: The trial must be designed to yield reliable and meaningful results that contribute to medical knowledge.\n- Fair Subject Selection: Participants are chosen fairly, minimizing exploitation and ensuring equitable distribution of risks and benefits.",
-"depth": "brief",
-"block_type": "information"
-},
-"research_deep": {
-"title": "Clinical Trials: Intermediate Methodologies, Regulatory Frameworks, and Data Management",
-"text": "Clinical trials are underpinned by sophisticated technical methodologies designed to ensure the integrity and scientific validity of results. Key among these are randomization and blinding. Randomization involves assigning trial participants to different treatment groups with a predefined, unpredictable probability, effectively minimizing selection bias and ensuring that both known and unknown confounding factors are evenly distributed across groups. This allows for valid estimates of treatment effects. Blinding refers to the practice of keeping participants, researchers, and/or data analysts unaware of the assigned treatment to reduce subjective expectations and prevent information bias. Single-blinding (participants unaware) and double-blinding (both participants and researchers/site staff unaware) are standard practices, with advanced trials sometimes employing triple-blinding (participants, investigators, and data analysis personnel unaware).\n\nAdherence to rigorous industry standards and regulatory oversight is paramount in clinical trials. Good Clinical Practice (GCP), an internationally recognized ethical and scientific quality standard, governs the design, conduct, recording, and reporting of trials involving human participants. GCP principles, often harmonized by organizations like the International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use (ICH), ensure the protection of human rights, data integrity, and compliance with global regulatory requirements (e.g., FDA in the US, EMA in Europe). Regulatory bodies mandate independent review by Ethics Committees or Institutional Review Boards (IRBs) to safeguard participant welfare and approve trial protocols.\n\nModern clinical trials heavily rely on advanced data management systems for efficiency and data quality. Electronic Data Capture (EDC) systems have largely replaced traditional paper-based methods, providing digital platforms for real-time, secure data entry, management, and storage. These systems utilize electronic Case Report Forms (eCRFs), which are digital versions of traditional CRFs, offering configurable edit checks, real-time validation, and comprehensive audit trails. EDC systems enhance data accuracy, reduce transcription errors, streamline data cleaning processes, and ensure 21 CFR Part 11 compliance (FDA regulations for electronic records and signatures), accelerating the path to database lock and regulatory submission.",
-"depth": "deep",
-"block_type": "information"
-},
-"quiz": {
-"type": "quiz",
-"block_type": "activity",
-"questions": [
-{
-"question": "What is the primary goal of Phase 1 clinical trials?",
-"options": [
-"To determine the long-term effects of a treatment.",
-"To evaluate the effectiveness of a treatment for a specific condition.",
-"To assess the safety and identify side effects of a new treatment.",
-"To compare a new treatment against a standard treatment or placebo."
-],
-"correct_answer": "To assess the safety and identify side effects of a new treatment.",
-"explanation": "Phase 1 trials are specifically designed to assess the safety of a treatment and determine the appropriate dosage. The text clearly states this focus."
-},
-{
-"question": "Which ethical principle ensures that participants understand the risks and benefits of a clinical trial before agreeing to participate?",
-"options": [
-"Risk-Benefit Ratio",
-"Independent Review",
-"Fair Subject Selection",
-"Informed Consent"
-],
-"correct_answer": "Informed Consent",
-"explanation": "Informed consent is explicitly defined in the text as requiring that participants fully understand the study before agreeing to participate. The other options are ethical principles, but do not directly address the participants' understanding."
-},
-{
-"question": "What is the main function of Ethics Committees (IRBs) in clinical trials?",
-"options": [
-"To design the clinical trial protocols.",
-"To recruit participants for the studies.",
-"To review and approve trial protocols to protect participant rights and welfare.",
-"To analyze the data collected from the trials."
-],
-"correct_answer": "To review and approve trial protocols to protect participant rights and welfare.",
-"explanation": "The text states that Ethics Committees (IRBs) rigorously review and approve protocols to safeguard participant rights and welfare."
-}
-]
-},
-"reorder": {
-"type": "reorder",
-"block_type": "activity",
-"question": "Place the following steps related to data management in a clinical trial in the correct order:",
-"options": [
-"Electronic Case Report Forms (eCRFs) are used for data entry.",
-"Data is entered into Electronic Data Capture (EDC) systems.",
-"The trial data meets the requirements for regulatory submission.",
-"The data undergoes real-time validation and edit checks."
-],
-"correct_answer": "Data is entered into Electronic Data Capture (EDC) systems.,Electronic Case Report Forms (eCRFs) are used for data entry.,The data undergoes real-time validation and edit checks.,The trial data meets the requirements for regulatory submission.",
-"explanation": "First, data is entered into EDC systems. Next, eCRFs are used within the EDC system for data entry. Then, the system performs real-time validation and edit checks to ensure data quality. Finally, after all data is entered and validated, the data meets the requirements for regulatory submission."
-},
-"final_quiz": {
-"type": "final_quiz",
-"block_type": "activity",
-"questions": [
-{
-"question": "In clinical trials, what is the primary purpose of randomization?",
-"options": [
-"To ensure that all participants receive the same treatment.",
-"To guarantee that the researchers know which treatment each participant receives.",
-"To minimize selection bias and distribute confounding factors evenly across treatment groups.",
-"To speed up the data analysis process at the end of the trial."
-],
-"correct_answer": "To minimize selection bias and distribute confounding factors evenly across treatment groups.",
-"explanation": "Randomization is a key methodological tool in clinical trials designed to ensure that participants are assigned to different treatment groups by chance. This helps to prevent bias in the selection of participants and ensures that both known and unknown factors are distributed evenly across the groups, allowing for more reliable results."
-},
-{
-"question": "What is the role of Good Clinical Practice (GCP) guidelines in clinical trials?",
-"options": [
-"To determine the specific treatments used in the trial.",
-"To establish the ethical and scientific quality standards for conducting, recording, and reporting trials.",
-"To dictate the statistical methods used for data analysis.",
-"To manage the recruitment of patients for the study."
-],
-"correct_answer": "To establish the ethical and scientific quality standards for conducting, recording, and reporting trials.",
-"explanation": "GCP is an internationally recognized standard that ensures the ethical conduct and scientific integrity of clinical trials involving human participants. It provides guidelines for all aspects of a clinical trial, from the design to the final report, guaranteeing participant safety and data reliability."
-},
-{
-"question": "Which phase of clinical trials typically focuses on evaluating a treatment's effectiveness in a larger group of patients while continuing to monitor safety?",
-"options": [
-"Phase 0",
-"Phase 1",
-"Phase 2",
-"Phase 4"
-],
-"correct_answer": "Phase 2",
-"explanation": "Phase 2 clinical trials build upon the safety information gathered in Phase 1, and assess the efficacy of the treatment for a specific condition in a larger group of patients. Safety is still carefully monitored throughout this phase."
-},
-{
-"question": "How do Electronic Data Capture (EDC) systems improve data management in modern clinical trials?",
-"options": [
-"By using paper-based forms, improving accuracy and efficiency.",
-"By providing real-time, secure data entry, and management, reducing errors and streamlining processes.",
-"By eliminating the need for regulatory compliance.",
-"By limiting access to the data for all parties involved in the trial."
-],
-"correct_answer": "By providing real-time, secure data entry, and management, reducing errors and streamlining processes.",
-"explanation": "EDC systems provide digital platforms for efficient data management, replacing traditional paper-based methods. They allow for real-time data entry, offer features such as configurable edit checks, real-time validation, and comprehensive audit trails, thereby enhancing data accuracy, reducing errors, and streamlining data cleaning."
-},
-{
-"question": "What is the significance of triple-blinding in a clinical trial?",
-"options": [
-"It means only the participants are unaware of the treatment.",
-"It refers to blinding of both participants and researchers/site staff.",
-"It involves blinding of participants, investigators, and data analysis personnel to reduce bias.",
-"It is only used in Phase 1 trials to assess safety."
-],
-"correct_answer": "It involves blinding of participants, investigators, and data analysis personnel to reduce bias.",
-"explanation": "Triple-blinding is an advanced technique used to reduce bias in clinical trials. It ensures that neither the participants, the investigators administering the treatment, nor the data analysts evaluating the results know who is receiving which treatment. This helps to prevent subjective expectations from influencing the results."
-}
-]
-},
-"real_world_impact": {
-"title": "Clinical Trials: Paving the Way for Tomorrow's Health Solutions Today",
-"content": "Clinical trials are more dynamic and crucial than ever, directly shaping the future of medicine by rigorously testing new treatments, leveraging advanced technologies, and ensuring ethical patient protection to address critical health challenges globally. Recent breakthroughs in areas like gene therapy, precision medicine, and AI-driven enrollment highlight their ongoing and evolving impact on improving human health and quality of life.\n\n### Real-World Use Cases:\n\n* Conquering Inherited Blindness with Gene Therapy: Imagine a child born with a severe inherited retinal disease, facing a future of limited vision. Clinical trials, like the ongoing Phase 1/2 study for OPGx-LCA5 gene therapy, are offering a glimmer of hope. These trials begin by meticulously assessing the safety of a novel treatment in a small group (Phase 1), then expand to evaluate its effectiveness (Phase 2) in improving sight, potentially restoring vision for conditions once considered untreatable.\n\n* Precision Medicine for Cancer Treatment: For patients battling complex cancers such as acute myeloid leukemia or myelodysplastic syndromes, clinical trials are moving towards highly personalized treatments. The NCI's myeloMATCH trial, for instance, utilizes precision medicine by tailoring therapies based on an individual's unique genetic profile. This ensures that patients receive the most targeted and effective interventions, maximizing their chances of a positive outcome.\n\n* Finding Relief for Persistent Conditions like Chronic Cough: Clinical trials are essential for addressing widespread, debilitating conditions, even seemingly less life-threatening ones like refractory chronic cough. In Phase 3 trials for treatments like BLU-5937, methodologies such as randomization and double-blinding are critical. Participants are assigned to either the experimental drug or a placebo by chance, and neither they nor the research team know who receives which treatment. This rigorous approach minimizes bias, ensuring that any observed improvements are genuinely due to the treatment itself.\n\n* Preventing Future Health Crises: Beyond treating existing diseases, clinical trials are vital for prevention. An NIH trial currently assessing a rectal microbicide for HIV prevention exemplifies this. Throughout such studies, ethical considerations like informed consent are paramount. Participants are fully educated about the study's purpose, procedures, and potential risks and benefits before voluntarily agreeing to participate, safeguarding their well-being while pursuing public health solutions.\n\n* Accelerating Medical Discovery with Artificial Intelligence: The development of AI algorithms to match potential volunteers to clinical trials, as seen with NIH-developed tools, is transforming the research landscape. This innovation helps overcome a common hurdle in clinical research—recruiting suitable participants—by efficiently connecting individuals with trials that fit their needs, thereby accelerating the overall research timeline and bringing new treatments to market faster.\n\n* Ensuring Data Accuracy and Integrity with Digital Systems: In large-scale trials, modern Electronic Data Capture (EDC) systems and Electronic Case Report Forms (eCRFs) have replaced paper-based methods. These digital platforms provide real-time, secure data entry and management, complete with configurable edit checks and audit trails. This ensures the highest level of data accuracy and regulatory compliance (like 21 CFR Part 11), meaning that the extensive data collected from thousands of participants in studies (e.g., for Dementia with Lewy Bodies) is reliable and trustworthy for regulatory review.",
-"source_urls": [
-"https://eyewire.news/news/opus-genetics-announces-1-month-clinical-data-from-pediatric-patient-in-phase-12-trial-of-opgx-lca5-gene-therapy-in-inherited-retinal-diseases",
-"https://ctv.veeva.com/study/a-52-week-study-of-the-efficacy-and-safety-of-blu-5937-in-adults-with-refractory-chronic-cough",
-"https://www.nih.gov/health-information/nih-clinical-research-trials-you/news",
-"https://practicalneurology.com/news/investigative-therapy-linked-to-improved-cognitive-behavioral-functional-and-motor-outcomes-for-people-with-dementia-with-lewy-bodies/2473783/",
-"https://www.jnj.com/tag/clinical-trials"
-],
-"block_type": "information"
-},
-"flash_cards": [
-{
-"front": "What are the two key technical methodologies used in clinical trials to ensure reliable results?",
-"back": "Randomization and blinding."
-},
-{
-"front": "Define randomization and its purpose in clinical trials.",
-"back": "Randomization is the process of assigning participants to treatment groups by chance. It minimizes selection bias and ensures that confounding factors are evenly distributed."
-},
-{
-"front": "What is blinding and what types are commonly used in clinical trials?",
-"back": "Blinding keeps participants, researchers, and/or data analysts unaware of treatment assignments. Common types are single-blinding (participants unaware) and double-blinding (participants and researchers unaware), with triple-blinding being more advanced."
-},
-{
-"front": "What is Good Clinical Practice (GCP) and why is it important?",
-"back": "GCP is an international ethical and scientific quality standard for clinical trials. It ensures human rights protection, data integrity, and compliance with regulations."
-}
-],
-"thumbnail": {
-"thumbnail_url": "https://www.bleeding.org/sites/default/files/image/CT%20Kit_Phases%20of%20Clinical%20Trials.png",
-"alt_text": "An illustrative diagram depicting the four phases of clinical trials (Phase I, II, III, IV) with icons representing patients, researchers, and medical procedures, against a light blue background."
-},
-"category_tags_description": {
-"selected_category": "j97byjak8wa1tgd4j3psncz1nn7qfdg1",
-"short_description": "Research studies evaluating medical interventions' safety, efficacy, and ethics.",
-"generated_tags": [
-"Medical Research",
-"Drug Development",
-"Clinical Phases",
-"Medical Ethics",
-"Regulatory Compliance"
-]
-}
-}
+minimal_test_data = {}
 
 def run_test():
     """Run a simple test of the insert function"""

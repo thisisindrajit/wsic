@@ -354,11 +354,6 @@ export const clearAllData = internalMutation({
       await ctx.db.delete(interaction._id);
     }
 
-    const trendingTopics = await ctx.db.query("trendingTopics").collect();
-    for (const trending of trendingTopics) {
-      await ctx.db.delete(trending._id);
-    }
-
     console.log("Successfully cleared all data");
     return null;
   },

@@ -142,7 +142,7 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
                                         </p>
                                     </div>
                                     {!notification.isRead && (
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1 flex-shrink-0" />
+                                        <div className="w-2 h-2 bg-foreground rounded-full ml-2 mt-1 flex-shrink-0" />
                                     )}
                                 </div>
                                 <span className="text-xs text-muted-foreground mt-2">

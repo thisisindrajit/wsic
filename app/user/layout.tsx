@@ -69,10 +69,8 @@ export default function UserLayout({
     };
 
     const getSidebarTop = () => {
-        if (isAtTop) {
-            return "top-20"; // At top
-        } else if (isVisible) {
-            return "top-20"; // Not at top but topbar visible
+        if (isAtTop || isVisible) {
+            return "top-20"; // At top (or) Not at top but topbar visible
         } else {
             return "top-4"; // Not at top and topbar not visible
         }
@@ -80,7 +78,7 @@ export default function UserLayout({
 
     return (
         <>
-            <div className="w-full lg:max-w-6xl lg:mx-auto mt-4">
+            <div className="w-full lg:max-w-6xl lg:mx-auto mt-4 pb-24 lg:pb-0">
                 <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6 lg:px-4">
                     {/* Left Sidebar - Navigation (hidden on mobile and tablet) */}
                     <div className={cn(
@@ -92,9 +90,7 @@ export default function UserLayout({
                     </div>
 
                     {/* Center Content */}
-                    <div className={cn(
-                        "flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5"
-                    )}>
+                    <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5">
                         {children}
                     </div>
 

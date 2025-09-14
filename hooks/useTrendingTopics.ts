@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useConvex } from "convex/react";
+import { useConvex, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
 
 export function useTrendingTopics({
   categoryId,
@@ -9,42 +11,39 @@ export function useTrendingTopics({
 } = {}) {
   const convex = useConvex();
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ["trending-topics", categoryId],
     queryFn: async () => {
-      // Use a direct database query to avoid validator issues
-      const topics = await convex.query("topics:getTopics" as any, {
+      // Use the new getTrendingTopics query
+      const topics = await convex.query(api.topics.getTrendingTopics, {
         categoryId: categoryId || undefined,
-        difficulty: undefined,
-        paginationOpts: {
-          cursor: null,
-          numItems: 20, // Get more to filter
-        }
+        limit: 10,
       });
       
-      // Filter for trending topics and limit to 5
-      const trendingTopics = topics.page
-        .filter((topic: any) => topic.isTrending)
-        .slice(0, 5)
-        .map((topic: any) => ({
-          _id: topic._id,
-          _creationTime: topic._creationTime,
-          title: topic.title,
-          description: topic.description,
-          difficulty: topic.difficulty,
-          estimatedReadTime: topic.estimatedReadTime,
-          viewCount: topic.viewCount,
-          likeCount: topic.likeCount,
-          shareCount: topic.shareCount,
-          slug: topic.slug,
-          categoryId: topic.categoryId,
-          tagIds: topic.tagIds,
-        }));
-      
-      return trendingTopics;
+      return topics;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
     refetchOnWindowFocus: false,
   });
+
+  return query;
+}
+
+export function useTrendingUpdate() {
+  const triggerUpdate = useMutation(api.topics.triggerTrendingUpdate);
+
+  const updateTrending = async () => {
+    try {
+      await triggerUpdate({});
+      toast.success("Trending topics updated successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error updating trending topics:", error);
+      toast.error("Failed to update trending topics");
+      return false;
+    }
+  };
+
+  return { updateTrending };
 }

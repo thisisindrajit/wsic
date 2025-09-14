@@ -442,7 +442,6 @@ type TextBlock = {
       text: string;
       formatting?: any;
     };
-    styleKey?: string;
   };
 };
 

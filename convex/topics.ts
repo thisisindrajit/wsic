@@ -1,9 +1,12 @@
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import { blockContentValidator } from "./schema";
+import { internal } from "./_generated/api";
 
 /**
  * Get trending topics for the homepage
+ * Uses a dynamic algorithm based on engagement metrics
  */
 export const getTrendingTopics = query({
   args: {
@@ -16,42 +19,79 @@ export const getTrendingTopics = query({
       _creationTime: v.number(),
       title: v.string(),
       description: v.string(),
-      slug: v.string(),
+      slug: v.string(), // URL-friendly identifier
       categoryId: v.optional(v.id("categories")),
-      tagIds: v.array(v.string()),
-      imageUrl: v.optional(v.string()),
+      tagIds: v.array(v.string()), // Array of tag strings
+      imageUrl: v.optional(v.string()), // URL for the topic's image
       difficulty: v.union(
         v.literal("beginner"),
         v.literal("intermediate"),
         v.literal("advanced")
       ),
-      estimatedReadTime: v.number(),
+      estimatedReadTime: v.number(), // in minutes
+      isPublished: v.boolean(),
+      isTrending: v.boolean(),
       viewCount: v.number(),
       likeCount: v.number(),
       shareCount: v.number(),
+      createdBy: v.optional(v.string()), // Better Auth user ID
+      lastUpdated: v.number(),
+      isAIGenerated: v.boolean(),
+      generationPrompt: v.optional(v.string()),
+      sources: v.optional(v.array(v.string())),
+      metadata: v.optional(
+        v.object({
+          wordCount: v.number(),
+          readingLevel: v.any(),
+          estimatedTime: v.optional(v.number()), // minutes to complete
+          exerciseCount: v.optional(v.number()),
+        })
+      ),
+      trendingScore: v.number(), // Calculated field
     })
   ),
   handler: async (ctx, args) => {
     const limit = args.limit ?? 10;
 
-    let query = ctx.db
+    // Get all published topics
+    let baseQuery = ctx.db
       .query("topics")
-      .withIndex("by_trending", (q) => q.eq("isTrending", true))
-      .filter((q) => q.eq(q.field("isPublished"), true));
+      .withIndex("by_published", (q) => q.eq("isPublished", true));
 
     if (args.categoryId) {
-      query = ctx.db
+      baseQuery = ctx.db
         .query("topics")
-        .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
-        .filter((q) =>
-          q.and(
-            q.eq(q.field("isPublished"), true),
-            q.eq(q.field("isTrending"), true)
-          )
-        );
+        .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId!))
+        .filter((q) => q.eq(q.field("isPublished"), true));
     }
 
-    return await query.order("desc").take(limit);
+    const topics = await baseQuery.collect();
+
+    // Calculate trending score for each topic
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+
+    const topicsWithScores = topics.map((topic) => {
+      // Age factor (newer topics get a boost)
+      const ageInDays = (now - topic._creationTime) / (24 * 60 * 60 * 1000);
+      const ageFactor = Math.max(0.1, 1 - ageInDays / 30); // Decay over 30 days
+
+      // Calculate trending score based on total engagement
+      // Simplified formula for better performance
+      const totalEngagement =
+        topic.viewCount * 1 + topic.likeCount * 5 + topic.shareCount * 10;
+      const trendingScore = totalEngagement * ageFactor;
+
+      return {
+        ...topic,
+        trendingScore,
+      };
+    });
+
+    // Sort by trending score and return top results
+    return topicsWithScores
+      .sort((a, b) => b.trendingScore - a.trendingScore)
+      .slice(0, limit);
   },
 });
 
@@ -166,81 +206,7 @@ export const getTopicBySlug = query({
           _creationTime: v.number(),
           topicId: v.id("topics"),
           type: v.union(v.literal("information"), v.literal("activity")),
-          content: v.union(
-            // Text content block
-            v.object({
-              type: v.literal("text"),
-              data: v.object({
-                content: v.object({
-                  text: v.string(),
-                  formatting: v.optional(v.any()),
-                }),
-                styleKey: v.optional(v.string()),
-              }),
-            }),
-            // Interactive exercise block
-            v.object({
-              type: v.literal("exercise"),
-              data: v.object({
-                exerciseType: v.union(
-                  v.literal("multiple_choice"),
-                  v.literal("fill_in_blank"),
-                  v.literal("drag_drop"),
-                  v.literal("true_false"),
-                  v.literal("short_answer"),
-                  v.literal("reflection"),
-                  v.literal("quiz_group"),
-                  v.literal("reorder_group"),
-                  v.literal("final_quiz_group")
-                ),
-                question: v.optional(v.string()),
-                options: v.optional(
-                  v.array(
-                    v.object({
-                      id: v.string(),
-                      text: v.string(),
-                    })
-                  )
-                ),
-                correctAnswer: v.optional(v.string()),
-                explanation: v.optional(v.string()),
-                hints: v.optional(v.array(v.string())),
-                points: v.optional(v.number()),
-                // Additional fields for grouped exercises
-                quizData: v.optional(v.any()),
-                reorderData: v.optional(v.any()),
-                finalQuizData: v.optional(v.any()),
-              }),
-            }),
-            // Media content block
-            v.object({
-              type: v.literal("media"),
-              data: v.object({
-                mediaType: v.union(
-                  v.literal("image"),
-                  v.literal("video"),
-                  v.literal("audio"),
-                  v.literal("diagram")
-                ),
-                url: v.optional(v.string()),
-                diagramCode: v.optional(v.string()),
-                caption: v.optional(v.string()),
-                altText: v.optional(v.string()),
-                thumbnail: v.optional(v.string()),
-              }),
-            }),
-            // Code snippet block
-            v.object({
-              type: v.literal("code"),
-              data: v.object({
-                code: v.string(),
-                language: v.optional(v.string()),
-                title: v.optional(v.string()),
-                explanation: v.optional(v.string()),
-                runnable: v.optional(v.boolean()),
-              }),
-            })
-          ),
+          content: blockContentValidator,
           order: v.number(),
         })
       ),
@@ -290,7 +256,7 @@ export const getTopics = query({
     if (args.categoryId) {
       query = ctx.db
         .query("topics")
-        .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
+        .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId!))
         .filter((q) => q.eq(q.field("isPublished"), true));
     }
 
@@ -345,7 +311,7 @@ export const createTopic = mutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert("topics", {
       ...args,
-      isPublished: false, // Start as draft
+      isPublished: true,
       isTrending: false,
       viewCount: 0,
       likeCount: 0,
@@ -392,6 +358,96 @@ export const updateTopicMetrics = internalMutation({
 });
 
 /**
+ * Get a single topic by ID with its blocks
+ */
+export const getTopicById = query({
+  args: { topicId: v.id("topics") },
+  returns: v.union(
+    v.null(),
+    v.object({
+      topic: v.object({
+        _id: v.id("topics"),
+        _creationTime: v.number(),
+        title: v.string(),
+        description: v.string(),
+        slug: v.string(),
+        categoryId: v.optional(v.id("categories")),
+        tagIds: v.array(v.string()),
+        imageUrl: v.optional(v.string()),
+        difficulty: v.union(
+          v.literal("beginner"),
+          v.literal("intermediate"),
+          v.literal("advanced")
+        ),
+        estimatedReadTime: v.number(),
+        isPublished: v.boolean(),
+        isTrending: v.boolean(),
+        viewCount: v.number(),
+        likeCount: v.number(),
+        shareCount: v.number(),
+        createdBy: v.optional(v.string()),
+        lastUpdated: v.number(),
+        isAIGenerated: v.boolean(),
+        generationPrompt: v.optional(v.string()),
+        sources: v.optional(v.array(v.string())),
+        metadata: v.optional(
+          v.object({
+            wordCount: v.number(),
+            readingLevel: v.any(),
+            estimatedTime: v.optional(v.number()),
+            exerciseCount: v.optional(v.number()),
+          })
+        ),
+      }),
+      blocks: v.array(
+        v.object({
+          _id: v.id("blocks"),
+          _creationTime: v.number(),
+          topicId: v.id("topics"),
+          type: v.union(v.literal("information"), v.literal("activity")),
+          content: blockContentValidator,
+          order: v.number(),
+        })
+      ),
+      category: v.union(
+        v.null(),
+        v.object({
+          _id: v.id("categories"),
+          _creationTime: v.number(),
+          name: v.string(),
+          slug: v.string(),
+          description: v.optional(v.string()),
+          lightHex: v.optional(v.string()),
+          darkHex: v.optional(v.string()),
+          icon: v.optional(v.string()),
+        })
+      ),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const topic = await ctx.db.get(args.topicId);
+
+    if (!topic || !topic.isPublished) {
+      return null;
+    }
+
+    const blocks = await ctx.db
+      .query("blocks")
+      .withIndex("by_topic_and_order", (q) => q.eq("topicId", topic._id))
+      .order("asc")
+      .collect();
+
+    let category = null;
+
+    if (topic.categoryId) {
+      category = await ctx.db.get(topic.categoryId);
+    }
+
+    return { topic, blocks, category };
+  },
+});
+
+/**
  * Publish a topic (make it visible to users)
  */
 export const publishTopic = mutation({
@@ -404,6 +460,117 @@ export const publishTopic = mutation({
       isPublished: true,
       lastUpdated: Date.now(),
     });
+    return null;
+  },
+});
+
+/**
+ * Delete a topic (used for cleanup when creation fails)
+ */
+export const deleteTopic = mutation({
+  args: {
+    topicId: v.id("topics"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.topicId);
+    return null;
+  },
+});
+
+/**
+ * Update trending status for all topics based on engagement metrics
+ * This should be called periodically (e.g., every hour)
+ */
+export const updateTrendingStatus = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Get all published topics
+    const topics = await ctx.db
+      .query("topics")
+      .withIndex("by_published", (q) => q.eq("isPublished", true))
+      .collect();
+
+    // Calculate trending scores
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+
+    const topicsWithScores = await Promise.all(
+      topics.map(async (topic) => {
+        // Get recent interactions (last 24 hours)
+        const recentInteractions = await ctx.db
+          .query("userTopicInteractions")
+          .withIndex("by_topic", (q) => q.eq("topicId", topic._id))
+          .filter((q) => q.gte(q.field("_creationTime"), oneDayAgo))
+          .collect();
+
+        // Count different types of recent interactions
+        const recentViews = recentInteractions.filter(
+          (i) => i.interactionType === "view"
+        ).length;
+        const recentLikes = recentInteractions.filter(
+          (i) => i.interactionType === "like"
+        ).length;
+        const recentShares = recentInteractions.filter(
+          (i) => i.interactionType === "share"
+        ).length;
+
+        // Age factor (newer topics get a boost)
+        const ageInDays = (now - topic._creationTime) / (24 * 60 * 60 * 1000);
+        const ageFactor = Math.max(0.1, 1 - ageInDays / 30); // Decay over 30 days
+
+        // Calculate trending score
+        const recentEngagement =
+          recentViews * 1 + recentLikes * 5 + recentShares * 10;
+        const totalEngagement =
+          topic.viewCount * 0.5 + topic.likeCount * 2 + topic.shareCount * 5;
+
+        const trendingScore =
+          (recentEngagement * 10 + totalEngagement * 2) * ageFactor;
+
+        return {
+          topicId: topic._id,
+          trendingScore,
+        };
+      })
+    );
+
+    // Sort by trending score
+    const sortedTopics = topicsWithScores.sort(
+      (a, b) => b.trendingScore - a.trendingScore
+    );
+
+    // Mark top 20% as trending (minimum 1, maximum 50)
+    const trendingCount = Math.max(
+      1,
+      Math.min(50, Math.ceil(sortedTopics.length * 0.2))
+    );
+    const trendingThreshold =
+      sortedTopics[trendingCount - 1]?.trendingScore || 0;
+
+    // Update all topics
+    for (const topic of sortedTopics) {
+      const shouldBeTrending =
+        topic.trendingScore >= trendingThreshold && topic.trendingScore > 0;
+
+      await ctx.db.patch(topic.topicId, {
+        isTrending: shouldBeTrending,
+      });
+    }
+
+    return null;
+  },
+});
+
+/**
+ * Manually trigger trending status update (for testing/admin use)
+ */
+export const triggerTrendingUpdate = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.topics.updateTrendingStatus, {});
     return null;
   },
 });

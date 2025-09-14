@@ -16,7 +16,7 @@ export function useTopics({
 } = {}) {
   const paginatedResult = usePaginatedQuery(
     api.topics.getTopics,
-    enabled ? { categoryId, difficulty } : "skip",
+    { categoryId, difficulty },
     { initialNumItems: pageSize }
   );
 
@@ -32,27 +32,7 @@ export function useTopics({
   };
 }
 
-// Hook for trending topics
-export function useTrendingTopics({
-  categoryId,
-  limit = 10,
-  enabled = true,
-}: {
-  categoryId?: Id<"categories">;
-  limit?: number;
-  enabled?: boolean;
-} = {}) {
-  const data = useQuery(
-    api.topics.getTrendingTopics,
-    enabled ? { categoryId, limit } : "skip"
-  );
 
-  return {
-    data,
-    isLoading: data === undefined,
-    isError: false, // Convex handles errors internally
-  };
-}
 
 // Hook for searching topics
 export function useSearchTopics({

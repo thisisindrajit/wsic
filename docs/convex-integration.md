@@ -70,7 +70,6 @@ type TextBlock = {
       text: string;
       formatting?: any; // Custom formatting data
     };
-    styleKey?: string; // References contentTypes.key
   };
 };
 

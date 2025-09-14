@@ -13,13 +13,18 @@ export default async function LoginLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const headersList = await headers();
+    const redirectUrl = headersList.get('x-redirect-url') || CALLBACK_URL;
+
     const session = await auth.api.getSession({
-        headers: await headers(),
+        headers: headersList,
     });
+
+    console.log(redirectUrl);
 
     // If user is authenticated, navigate to dashboard page
     if (session) {
-        redirect(CALLBACK_URL);
+        redirect(redirectUrl);
     }
 
     return children;

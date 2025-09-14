@@ -1,3 +1,9 @@
 export { default as Block } from './Block';
 export { default as SuggestedTopics } from './SuggestedTopics';
+export { default as SimilarTopics } from './SimilarTopics'
 export { default as TrendingTopics } from './TrendingTopics';
+export { default as TopicGrid } from './TopicGrid';
+export { default as CategoryCard } from './CategoryCard';
+export { default as MultiQuiz } from './MultiQuiz';
+export { default as Reorder } from './Reorder';
+export { default as Summary } from './Summary';

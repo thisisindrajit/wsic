@@ -1,6 +1,95 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// Block content validators - single source of truth for all block types
+export const researchBriefValidator = v.object({
+  step: v.literal("research_brief"),
+  data: v.object({
+    title: v.string(),
+    text: v.string(),
+    depth: v.literal("brief"),
+  }),
+});
+
+export const researchDeepValidator = v.object({
+  step: v.literal("research_deep"),
+  data: v.object({
+    title: v.string(),
+    text: v.string(),
+    depth: v.literal("deep"),
+  }),
+});
+
+export const realWorldImpactValidator = v.object({
+  step: v.literal("real_world_impact"),
+  data: v.object({
+    title: v.string(),
+    content: v.string(),
+    source_urls: v.array(v.string()),
+  }),
+});
+
+export const summaryValidator = v.object({
+  step: v.literal("summary"),
+  data: v.object({
+    flash_cards: v.array(
+      v.object({
+        front: v.string(),
+        back: v.string(),
+      })
+    ),
+  }),
+});
+
+export const quizValidator = v.object({
+  step: v.literal("quiz"),
+  data: v.object({
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        options: v.array(v.string()),
+        correct_answer: v.string(),
+        explanation: v.string(),
+      })
+    ),
+  }),
+});
+
+export const reorderValidator = v.object({
+  step: v.literal("reorder"),
+  data: v.object({
+    question: v.string(),
+    options: v.array(v.string()),
+    correct_answer: v.array(v.string()),
+    explanation: v.string(),
+  }),
+});
+
+export const finalQuizValidator = v.object({
+  step: v.literal("final_quiz"),
+  data: v.object({
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        options: v.array(v.string()),
+        correct_answer: v.string(),
+        explanation: v.string(),
+      })
+    ),
+  }),
+});
+
+// Union of all block content validators
+export const blockContentValidator = v.union(
+  researchBriefValidator,
+  researchDeepValidator,
+  realWorldImpactValidator,
+  summaryValidator,
+  quizValidator,
+  reorderValidator,
+  finalQuizValidator
+);
+
 export default defineSchema({
   // Categories - Topic categories
   categories: defineTable({
@@ -35,7 +124,6 @@ export default defineSchema({
     shareCount: v.number(),
     createdBy: v.optional(v.string()), // Better Auth user ID
     lastUpdated: v.number(),
-    // Moved from blocks table
     isAIGenerated: v.boolean(),
     generationPrompt: v.optional(v.string()),
     sources: v.optional(v.array(v.string())),
@@ -61,7 +149,7 @@ export default defineSchema({
   // Embeddings - Vector embeddings for semantic search
   embeddings: defineTable({
     topicId: v.id("topics"), // Foreign key reference to topics table
-    embedding: v.array(v.float64()), // Vector embedding (typically 1536 dimensions for OpenAI)
+    embedding: v.array(v.float64()), // Vector embedding
     contentType: v.union(
       v.literal("research_brief"),
       v.literal("research_deep"),
@@ -77,7 +165,7 @@ export default defineSchema({
     .index("by_topic", ["topicId"])
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
-      dimensions: 1536, // OpenAI text-embedding-3-small or Gemini embedding dimensions
+      dimensions: 768, // Gemini embedding
       filterFields: ["difficulty", "categoryId", "contentType"],
     }),
 
@@ -85,82 +173,7 @@ export default defineSchema({
   blocks: defineTable({
     topicId: v.id("topics"),
     type: v.union(v.literal("information"), v.literal("activity")), // Block type for categorization
-    content: v.union(
-      // Text content block
-      v.object({
-        type: v.literal("text"),
-        data: v.object({
-          content: v.object({
-            // JSON-based content for custom formatters
-            text: v.string(),
-            formatting: v.optional(v.any()), // Custom formatting data as JSON
-          }),
-          styleKey: v.optional(v.string()), // Style identifier for content formatting
-        }),
-      }),
-      // Interactive exercise block
-      v.object({
-        type: v.literal("exercise"),
-        data: v.object({
-          exerciseType: v.union(
-            v.literal("multiple_choice"),
-            v.literal("fill_in_blank"),
-            v.literal("drag_drop"),
-            v.literal("true_false"),
-            v.literal("short_answer"),
-            v.literal("reflection"),
-            v.literal("quiz_group"),
-            v.literal("reorder_group"),
-            v.literal("final_quiz_group")
-          ),
-          question: v.optional(v.string()),
-          options: v.optional(
-            v.array(
-              v.object({
-                id: v.string(),
-                text: v.string(),
-              })
-            )
-          ),
-          correctAnswer: v.optional(v.string()), // Only store correct answer
-          explanation: v.optional(v.string()),
-          hints: v.optional(v.array(v.string())),
-          points: v.optional(v.number()),
-          // Additional fields for grouped exercises
-          quizData: v.optional(v.any()),
-          reorderData: v.optional(v.any()),
-          finalQuizData: v.optional(v.any()),
-        }),
-      }),
-      // Media content block
-      v.object({
-        type: v.literal("media"),
-        data: v.object({
-          mediaType: v.union(
-            v.literal("image"),
-            v.literal("video"),
-            v.literal("audio"),
-            v.literal("diagram")
-          ),
-          url: v.optional(v.string()),
-          diagramCode: v.optional(v.string()), // Mermaid diagram code
-          caption: v.optional(v.string()),
-          altText: v.optional(v.string()),
-          thumbnail: v.optional(v.string()),
-        }),
-      }),
-      // Code snippet block
-      v.object({
-        type: v.literal("code"),
-        data: v.object({
-          code: v.string(),
-          language: v.optional(v.string()),
-          title: v.optional(v.string()),
-          explanation: v.optional(v.string()),
-          runnable: v.optional(v.boolean()),
-        }),
-      })
-    ),
+    content: blockContentValidator,
     order: v.number(), // Display order within topic
   })
     .index("by_topic_and_order", ["topicId", "order"])
@@ -191,27 +204,6 @@ export default defineSchema({
     .index("by_topic_and_type", ["topicId", "interactionType"])
     .index("by_user", ["userId"])
     .index("by_topic", ["topicId"]),
-
-  // Trending and recommendation data
-  trendingTopics: defineTable({
-    topicId: v.id("topics"),
-    score: v.number(), // Trending score based on views, likes, shares
-    period: v.union(
-      v.literal("daily"),
-      v.literal("weekly"),
-      v.literal("monthly")
-    ),
-    calculatedAt: v.number(),
-    metrics: v.object({
-      viewsInPeriod: v.number(),
-      likesInPeriod: v.number(),
-      sharesInPeriod: v.number(),
-      completionsInPeriod: v.number(),
-    }),
-  })
-    .index("by_period_and_score", ["period", "score"])
-    .index("by_topic", ["topicId"])
-    .index("by_calculated_at", ["calculatedAt"]),
 
   // Notification types - constant table for notification types
   notificationTypes: defineTable({

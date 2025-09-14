@@ -1,0 +1,239 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { useEffect, useState, useRef } from "react";
+import { TOPBAR_SCROLL_THRESHOLD } from "@/constants/common";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
+import { useRouter, useParams } from "next/navigation";
+import { useTopicInteractions } from "@/hooks/useTopicInteractions";
+import { ShareDialog } from "@/components/ui/share-dialog";
+import { Id } from "@/convex/_generated/dataModel";
+import { formatLikes, formatShares } from "@/lib/format";
+import SimilarTopics from "@/components/content/SimilarTopics";
+
+export default function TopicLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const params = useParams();
+  const topicId = params.id as Id<"topics">;
+
+  // Topic interactions
+  const { interactions, handleLike, handleSave, handleShare, handleView, isAuthenticated } = useTopicInteractions(topicId);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState<number | null>(null);
+  const [localShareCount, setLocalShareCount] = useState<number | null>(null);
+
+  // Record view when layout mounts - use a ref to prevent multiple calls
+  const viewRecorded = useRef(false);
+
+  useEffect(() => {
+    if (topicId && !viewRecorded.current && isAuthenticated) {
+      handleView();
+      viewRecorded.current = true;
+    }
+  }, [topicId, isAuthenticated, handleView]);
+
+  // Track scroll states for sidebar height calculations
+  const [isAtTop, setIsAtTop] = useState<boolean>(true);
+  const [isVisible, setIsVisible] = useState<boolean>(true);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
+
+  useEffect(() => {
+    const currentScrollY = window.scrollY;
+    setLastScrollY(currentScrollY);
+    setIsAtTop(currentScrollY < TOPBAR_SCROLL_THRESHOLD);
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Check if we're at the top
+      setIsAtTop(currentScrollY < TOPBAR_SCROLL_THRESHOLD);
+
+      // Only apply show/hide logic when not at top
+      if (currentScrollY >= TOPBAR_SCROLL_THRESHOLD) {
+        // Show TopBar when scrolling up
+        if (currentScrollY < lastScrollY) {
+          setIsVisible(true);
+        }
+        // Hide TopBar when scrolling down (but only after 100px to avoid flickering)
+        else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          setIsVisible(false);
+        }
+      } else {
+        // Always visible when at top
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
+  // Calculate sidebar height based on scroll state
+  const getSidebarHeight = () => {
+    if (isAtTop) {
+      return "h-[calc(100dvh-8rem)]"; // At top
+    } else if (isVisible) {
+      return "h-[calc(100dvh-6rem)]"; // Not at top but topbar visible
+    } else {
+      return "h-[calc(100dvh-2rem)]"; // Not at top and topbar not visible
+    }
+  };
+
+  const getSidebarTop = () => {
+    if (isAtTop || isVisible) {
+      return "top-20"; // At top (or) Not at top but topbar visible
+    } else {
+      return "top-4"; // Not at top and topbar not visible
+    }
+  };
+
+  // Handle interactions
+  const handleLikeClick = async () => {
+    const result = await handleLike();
+    if (result) {
+      setLocalLikeCount(result.newCount);
+    }
+  };
+
+  const handleSaveClick = async () => {
+    await handleSave();
+  };
+
+  const handleShareClick = () => {
+    setShareDialogOpen(true);
+  };
+
+  const onShareComplete = async (platform: string) => {
+    const result = await handleShare(platform);
+    if (result) {
+      setLocalShareCount(result.newCount);
+    }
+  };
+
+  const shareOptions = {
+    title: "Topic", // This will be updated when we have topic data
+    text: "Check out this interesting topic!",
+    url: typeof window !== 'undefined' ? window.location.href : '',
+  };
+
+  return (
+    <>
+      <div className="w-full lg:max-w-6xl lg:mx-auto mt-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6 lg:px-4">
+          {/* Left Sidebar - Actions */}
+          <div className={cn(
+            "hidden lg:flex lg:flex-col lg:col-span-3 lg:justify-between sticky transition-all mt-3",
+            getSidebarTop(),
+            getSidebarHeight()
+          )}>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/user/dashboard")}
+              className="w-full"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black",
+                  interactions?.hasLiked && "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300"
+                )}
+                onClick={handleLikeClick}
+              >
+                <Heart className={cn("h-4 w-4", interactions?.hasLiked && "fill-current")} />
+                {localLikeCount !== null ? formatLikes(localLikeCount) : (interactions?.hasLiked ? "Liked" : "Like")}
+              </Button>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-black",
+                  interactions?.hasSaved && "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300"
+                )}
+                onClick={handleSaveClick}
+              >
+                <Bookmark className={cn("h-4 w-4", interactions?.hasSaved && "fill-current")} />
+                {interactions?.hasSaved ? "Saved" : "Save"}
+              </Button>
+              <Button variant="outline" className="w-full" onClick={handleShareClick}>
+                <Share2 className="h-4 w-4" />
+                {localShareCount !== null ? formatShares(localShareCount) : 'Share'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Center Content */}
+          <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5 overflow-hidden">
+            {children}
+          </div>
+
+          {/* Right Sidebar - Similar Topics */}
+          <div className={cn(
+            "hidden lg:block lg:col-span-4 lg:sticky lg:overflow-auto pr-3 transition-all mt-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500",
+            getSidebarTop(),
+            getSidebarHeight()
+          )}>
+            <SimilarTopics />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Actions Bar */}
+      <div className="lg:hidden sticky bottom-4 z-40 bg-background/95 backdrop-blur-sm border border-teal-500 p-2 w-full shadow-xl">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(interactions?.hasLiked && "text-red-500")}
+              onClick={handleLikeClick}
+            >
+              <Heart className={cn("h-4 w-4", interactions?.hasLiked && "fill-current")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(interactions?.hasSaved && "text-orange-500")}
+              onClick={handleSaveClick}
+            >
+              <Bookmark className={cn("h-4 w-4", interactions?.hasSaved && "fill-current")} />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleShareClick}>
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        shareOptions={shareOptions}
+        onShare={onShareComplete}
+      />
+    </>
+  );
+}

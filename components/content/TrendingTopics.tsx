@@ -1,9 +1,12 @@
 "use client";
 
-import { TrendingUp, Loader2, AlertCircle } from 'lucide-react';
-import { useTrendingTopics } from '@/hooks/useTrendingTopics';
+import { TrendingUp, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useTrendingTopics, useTrendingUpdate } from '@/hooks/useTrendingTopics';
+import { Button } from '@/components/ui/button';
+import { formatViews, formatLikes } from '@/lib/format';
 import { Id } from '@/convex/_generated/dataModel';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface TrendingTopicsProps {
   className?: string;
@@ -25,22 +28,36 @@ interface TrendingTopic {
   tagIds: string[];
 }
 
-const formatCount = (count: number): string => {
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toString();
-};
-
-
-
 export default function TrendingTopics({ className = '', categoryId }: TrendingTopicsProps) {
-  const { data: topics, isLoading, isError } = useTrendingTopics({ categoryId });
+  const { data: topics, isLoading, isError, refetch } = useTrendingTopics({ categoryId });
+  const { updateTrending } = useTrendingUpdate();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsUpdating(true);
+    const success = await updateTrending();
+    if (success) {
+      // Refetch the trending topics after successful update
+      await refetch();
+    }
+    setIsUpdating(false);
+  };
 
   if (isError) {
     return (
       <div className={`border border-border rounded-md p-6 bg-card flex flex-col gap-8 ${className}`}>
-        <h3 className="text-lg font-medium">What&apos;s happening</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">{`What's Trending`}</h3>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            disabled={isUpdating}
+            className="h-8 w-8 p-0"
+          >
+            <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
         <div className="flex items-center justify-center py-8 text-muted-foreground">
           <AlertCircle className="h-5 w-5 mr-2" />
           <span>Failed to load trending topics</span>
@@ -51,7 +68,18 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
 
   return (
     <div className={`border border-border rounded-md p-6 bg-card flex flex-col gap-8 ${className}`}>
-      <h3 className="text-lg font-medium">What&apos;s Trending</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">{`What's Trending`}</h3>
+        <Button
+          onClick={handleRefresh}
+          variant="outline"
+          size="sm"
+          disabled={isUpdating}
+          className="h-8 w-8 p-0"
+        >
+          <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
 
       <div className="flex flex-col gap-10">
         {isLoading ? (
@@ -64,7 +92,7 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
           topics.map((topic: TrendingTopic) => (
             <Link
               key={topic._id}
-              href={`/topic/${topic.slug}`}
+              href={`/topic/${topic._id}`}
               className="group cursor-pointer hover:bg-muted/50 rounded-md px-4 py-2 -m-4 transition-colors touch-manipulation active:bg-muted/70 min-h-[44px] flex items-center"
             >
               <div className="flex items-center justify-between w-full">
@@ -77,10 +105,10 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
                   </p>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground">
-                      {formatCount(topic.viewCount)} views
+                      {formatViews(topic.viewCount)}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {formatCount(topic.likeCount)} likes
+                      {formatLikes(topic.likeCount)}
                     </span>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { blockContentValidator } from "./schema";
 
 /**
  * Get blocks for a specific topic
@@ -12,81 +13,7 @@ export const getBlocksByTopic = query({
       _creationTime: v.number(),
       topicId: v.id("topics"),
       type: v.union(v.literal("information"), v.literal("activity")),
-      content: v.union(
-        // Text content block
-        v.object({
-          type: v.literal("text"),
-          data: v.object({
-            content: v.object({
-              text: v.string(),
-              formatting: v.optional(v.any()),
-            }),
-            styleKey: v.optional(v.string()),
-          }),
-        }),
-        // Interactive exercise block
-        v.object({
-          type: v.literal("exercise"),
-          data: v.object({
-            exerciseType: v.union(
-              v.literal("multiple_choice"),
-              v.literal("fill_in_blank"),
-              v.literal("drag_drop"),
-              v.literal("true_false"),
-              v.literal("short_answer"),
-              v.literal("reflection"),
-              v.literal("quiz_group"),
-              v.literal("reorder_group"),
-              v.literal("final_quiz_group")
-            ),
-            question: v.optional(v.string()),
-            options: v.optional(
-              v.array(
-                v.object({
-                  id: v.string(),
-                  text: v.string(),
-                })
-              )
-            ),
-            correctAnswer: v.optional(v.string()),
-            explanation: v.optional(v.string()),
-            hints: v.optional(v.array(v.string())),
-            points: v.optional(v.number()),
-            // Additional fields for grouped exercises
-            quizData: v.optional(v.any()),
-            reorderData: v.optional(v.any()),
-            finalQuizData: v.optional(v.any()),
-          }),
-        }),
-        // Media content block
-        v.object({
-          type: v.literal("media"),
-          data: v.object({
-            mediaType: v.union(
-              v.literal("image"),
-              v.literal("video"),
-              v.literal("audio"),
-              v.literal("diagram")
-            ),
-            url: v.optional(v.string()),
-            diagramCode: v.optional(v.string()),
-            caption: v.optional(v.string()),
-            altText: v.optional(v.string()),
-            thumbnail: v.optional(v.string()),
-          }),
-        }),
-        // Code snippet block
-        v.object({
-          type: v.literal("code"),
-          data: v.object({
-            code: v.string(),
-            language: v.optional(v.string()),
-            title: v.optional(v.string()),
-            explanation: v.optional(v.string()),
-            runnable: v.optional(v.boolean()),
-          }),
-        })
-      ),
+      content: blockContentValidator,
       order: v.number(),
     })
   ),
@@ -103,88 +30,51 @@ export const getBlocksByTopic = query({
  * Create a new block for a topic
  */
 export const createBlock = mutation({
-  args: {
+  args: v.object({
     topicId: v.id("topics"),
     type: v.union(v.literal("information"), v.literal("activity")),
-    content: v.union(
-      // Text content block
-      v.object({
-        type: v.literal("text"),
-        data: v.object({
-          content: v.object({
-            text: v.string(),
-            formatting: v.optional(v.any()),
-          }),
-          styleKey: v.optional(v.string()),
-        }),
-      }),
-      // Interactive exercise block
-      v.object({
-        type: v.literal("exercise"),
-        data: v.object({
-          exerciseType: v.union(
-            v.literal("multiple_choice"),
-            v.literal("fill_in_blank"),
-            v.literal("drag_drop"),
-            v.literal("true_false"),
-            v.literal("short_answer"),
-            v.literal("reflection"),
-            v.literal("quiz_group"),
-            v.literal("reorder_group"),
-            v.literal("final_quiz_group")
-          ),
-          question: v.optional(v.string()),
-          options: v.optional(
-            v.array(
-              v.object({
-                id: v.string(),
-                text: v.string(),
-              })
-            )
-          ),
-          correctAnswer: v.optional(v.string()),
-          explanation: v.optional(v.string()),
-          hints: v.optional(v.array(v.string())),
-          points: v.optional(v.number()),
-          // Additional fields for grouped exercises
-          quizData: v.optional(v.any()),
-          reorderData: v.optional(v.any()),
-          finalQuizData: v.optional(v.any()),
-        }),
-      }),
-      // Media content block
-      v.object({
-        type: v.literal("media"),
-        data: v.object({
-          mediaType: v.union(
-            v.literal("image"),
-            v.literal("video"),
-            v.literal("audio"),
-            v.literal("diagram")
-          ),
-          url: v.optional(v.string()),
-          diagramCode: v.optional(v.string()),
-          caption: v.optional(v.string()),
-          altText: v.optional(v.string()),
-          thumbnail: v.optional(v.string()),
-        }),
-      }),
-      // Code snippet block
-      v.object({
-        type: v.literal("code"),
-        data: v.object({
-          code: v.string(),
-          language: v.optional(v.string()),
-          title: v.optional(v.string()),
-          explanation: v.optional(v.string()),
-          runnable: v.optional(v.boolean()),
-        }),
-      })
-    ),
+    content: blockContentValidator,
     order: v.number(),
-  },
+  }),
   returns: v.id("blocks"),
   handler: async (ctx, args) => {
     return await ctx.db.insert("blocks", args);
+  },
+});
+
+/**
+ * Delete a block (used for cleanup when creation fails)
+ */
+export const deleteBlock = mutation({
+  args: {
+    blockId: v.id("blocks"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.blockId);
+    return null;
+  },
+});
+
+/**
+ * Get blocks by topic ID (used for cleanup queries)
+ */
+export const getBlocksByTopicId = query({
+  args: { topicId: v.id("topics") },
+  returns: v.array(
+    v.object({
+      _id: v.id("blocks"),
+      _creationTime: v.number(),
+      topicId: v.id("topics"),
+      type: v.union(v.literal("information"), v.literal("activity")),
+      content: blockContentValidator,
+      order: v.number(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("blocks")
+      .withIndex("by_topic_and_order", (q) => q.eq("topicId", args.topicId))
+      .collect();
   },
 });

@@ -54,7 +54,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         <Link
           href="/user/profile"
           className={cn(
-            "flex items-center gap-3 p-3 rounded-md transition-colors mt-4 border-t pt-4",
+            "flex items-center gap-3 p-3 rounded-md transition-colors mt-4 border-t",
             activePath === "/user/profile"
               ? "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950 dark:text-teal-300 dark:border-teal-800"
               : "hover:bg-accent hover:text-accent-foreground border-border"

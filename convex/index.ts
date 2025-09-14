@@ -26,11 +26,6 @@ export {
   recordInteraction,
 } from "./users";
 
-
-export {
-  getTrendingByPeriod,
-} from "./recommendations";
-
 export {
   getUserNotifications,
   getUnreadNotificationCount,

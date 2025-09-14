@@ -1,7 +1,7 @@
 "use client"
 
 import SuggestedTopics from "@/components/content/SuggestedTopics";
-import Block from "@/components/content/Block";
+// import Block from "@/components/content/Block";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mouse } from "lucide-react";
@@ -80,19 +80,10 @@ const Home = () => {
       </div>
       {/* Trending Topics */}
       <div id="trending-topics" className="flex flex-col gap-4">
-        <div className="text-2xl/normal font-medium">
-          <span className="font-light uppercase">Trending</span> Topics
-        </div>
-        {/* Blocks Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-          <Block
-            id="1"
-            imageUrl="https://blogs.microsoft.com/wp-content/uploads/sites/5/2023/11/GettyImages-1165687569-scaled.jpg"
-            title="Elections"
-            description="Understanding democratic processes, voting systems, and their impact on society."
-            likes={1240}
-            shares={340}
-          />
+        <div className="flex items-center justify-between">
+          <div className="text-2xl/normal font-medium">
+            <span className="font-light uppercase">Trending</span> Topics
+          </div>
         </div>
       </div>
     </>

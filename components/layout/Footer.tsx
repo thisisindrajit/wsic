@@ -1,9 +1,21 @@
+"use client"
+
 import { APP_SHORT_NAME } from "@/constants/common";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
+    const pathname = usePathname();
+
+    // Only show footer on the landing page (root path)
+    const shouldShowFooter = pathname === "/";
+
+    if (!shouldShowFooter) {
+        return null;
+    }
+
     return (
-        <div className="lg:sticky z-0 bottom-0 left-0 w-full h-80 bg-teal-500 flex justify-center items-center">
+        <div className="lg:sticky z-0 bottom-0 w-full max-w-[1440px] mx-auto h-80 bg-teal-500 flex justify-center items-center">
             <div className="relative overflow-hidden w-full h-full flex justify-end p-6 text-right items-start text-background">
                 <div className="flex flex-row space-x-12 sm:space-x-16 md:space-x-24 text-lg md:text-xl">
                     {/* <ul>

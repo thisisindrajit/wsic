@@ -29,15 +29,15 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
+                        Ad-free experience
+                    </li>
+                    <li className="flex items-start">
+                        <span className="text-teal-500 mr-2">•</span>
                         Enhanced topic content with visual aids
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
                         Unlimited saves (with save collections) and notes
-                    </li>
-                    <li className="flex items-start">
-                        <span className="text-teal-500 mr-2">•</span>
-                        Ad-free experience
                     </li>
                 </ul>
             </div>

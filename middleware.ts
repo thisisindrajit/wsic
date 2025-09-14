@@ -13,6 +13,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // Store current request url in a custom header, which you can read later
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-redirect-url', request.url);
+
   if (!session) {
     return NextResponse.redirect(
       new URL(`/login?redirect_url=${request.url}`, request.url)
@@ -23,5 +27,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/user/:path*"], // Apply middleware to specific routes
+  matcher: ["/user/:path*", "/topic/:path*"], // Apply middleware to specific routes
 };

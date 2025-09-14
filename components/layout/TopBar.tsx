@@ -86,11 +86,11 @@ const TopBar: FC<TopBarProps> = ({ session }) => {
 
     return (
         <div className={cn(
-            "fixed top-0 left-0 right-0 z-50 transition-all ease-in-out max-w-[1440px] mx-auto",
+            "sticky top-0 z-50 transition-all ease-in-out w-full max-w-[1440px] mx-auto border-b border-x",
             // Background and border styling based on scroll position
             isAtTop
-                ? "bg-transparent"
-                : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b",
+                ? "bg-transparent border-transparent"
+                : "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-border",
             // Show/hide based on scroll direction (only when not at top)
             !isAtTop && !isVisible && "-translate-y-full"
         )}>

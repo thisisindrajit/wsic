@@ -96,7 +96,7 @@ def generate_embedding(text: str) -> List[float]:
     except Exception as e:
         print(f"Error generating embedding: {e}")
         # Return a zero vector as fallback
-        return [0.0] * 1536
+        return [0.0] * 768
 
 
 def get_categories_from_convex() -> dict:
@@ -314,192 +314,183 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         
         # Create topic in Convex
         topic_id = client.mutation("topics:createTopic", topic_data)
+        created_resources = {"topic_id": topic_id, "embedding_id": None, "block_ids": []}
         
-        # Create embedding for semantic search
-        embedding_vector = generate_embedding(research_brief["text"])
-        client.mutation("embeddings:createEmbedding", {
-            "topicId": topic_id,
-            "embedding": embedding_vector,
-            "contentType": "research_brief",
-            "difficulty": difficulty,
-            "categoryId": category_id
-        })
-        
-        # Create blocks - only insert specified outputs with type field
-        order = 0
-        
-        # 1. Brief Research Text Block (information type)
-        if research_brief.get("text"):
-            client.mutation("blocks:createBlock", {
+        try:
+            # Create embedding for semantic search
+            embedding_vector = generate_embedding(research_brief["text"])
+            embedding_id = client.mutation("embeddings:createEmbedding", {
                 "topicId": topic_id,
-                "type": "information",
-                "content": {
-                    "type": "text",
-                    "data": {
-                        "content": {
-                            "text": research_brief["text"]
-                        },
-                        "styleKey": "research_brief"
-                    }
-                },
-                "order": order
+                "embedding": embedding_vector,
+                "contentType": "research_brief",
+                "difficulty": difficulty,
+                "categoryId": category_id
             })
-            order += 1
+            created_resources["embedding_id"] = embedding_id
+            
+            # Create blocks - insert agent outputs directly matching schema
+            order = 0
         
-        # 2. Quiz Exercises (activity type) - Single JSON block
-        quiz = output_data.get("quiz", {})
-        if quiz.get("questions"):
-            # Create a single block containing all quiz questions as JSON
-            quiz_data = {
-                "type": "quiz",
-                "questions": []
-            }
-            for question_data in quiz["questions"]:
-                options = [{"id": str(i), "text": opt} for i, opt in enumerate(question_data.get("options", []))]
-                quiz_data["questions"].append({
-                    "question": question_data.get("question", ""),
-                    "options": options,
-                    "correctAnswer": question_data.get("correct_answer", ""),
-                    "explanation": question_data.get("explanation", ""),
-                    "points": 10
+            # 1. Brief Research Block (information type)
+            if research_brief.get("text"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "information",
+                    "content": {
+                        "step": "research_brief",
+                        "data": {
+                            "title": research_brief.get("title", ""),
+                            "text": research_brief["text"],
+                            "depth": "brief"
+                        }
+                    },
+                    "order": order
                 })
-            
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "activity",
-                "content": {
-                    "type": "exercise",
-                    "data": {
-                        "exerciseType": "quiz_group",
-                        "quizData": quiz_data
-                    }
-                },
-                "order": order
-            })
-            order += 1
+                created_resources["block_ids"].append(block_id)
+                order += 1
         
-        # 3. Deep Research Text Block (information type)
-        if research_deep.get("text"):
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "information",
-                "content": {
-                    "type": "text",
-                    "data": {
-                        "content": {
-                            "text": research_deep["text"]
-                        },
-                        "styleKey": "research_deep"
-                    }
-                },
-                "order": order
-            })
-            order += 1
-        
-        # 4. Reorder Exercise (activity type) - Single JSON block
-        reorder = output_data.get("reorder", {})
-        if reorder.get("question"):
-            options = [{"id": str(i), "text": opt} for i, opt in enumerate(reorder.get("options", []))]
-            reorder_data = {
-                "type": "reorder",
-                "question": reorder.get("question", ""),
-                "options": options,
-                "correctAnswer": reorder.get("correct_answer", ""),
-                "explanation": reorder.get("explanation", ""),
-                "points": 15
-            }
-            
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "activity",
-                "content": {
-                    "type": "exercise",
-                    "data": {
-                        "exerciseType": "reorder_group",
-                        "reorderData": reorder_data
-                    }
-                },
-                "order": order
-            })
-            order += 1
-        
-        # 5. Real-World Impact Text Block (information type)
-        if real_world_impact.get("content"):
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "information",
-                "content": {
-                    "type": "text",
-                    "data": {
-                        "content": {
-                            "text": real_world_impact["content"]
-                        },
-                        "styleKey": "real_world_impact"
-                    }
-                },
-                "order": order
-            })
-            order += 1
-        
-        # 6. Final Quiz Exercises (activity type) - Single JSON block
-        final_quiz = output_data.get("final_quiz", {})
-        if final_quiz.get("questions"):
-            # Create a single block containing all final quiz questions as JSON
-            final_quiz_data = {
-                "type": "final_quiz",
-                "questions": []
-            }
-            for question_data in final_quiz["questions"]:
-                options = [{"id": str(i), "text": opt} for i, opt in enumerate(question_data.get("options", []))]
-                final_quiz_data["questions"].append({
-                    "question": question_data.get("question", ""),
-                    "options": options,
-                    "correctAnswer": question_data.get("correct_answer", ""),
-                    "explanation": question_data.get("explanation", ""),
-                    "points": 20
+            # 2. Quiz Block (activity type)
+            quiz = output_data.get("quiz", {})
+            if quiz.get("questions"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "activity",
+                    "content": {
+                        "step": "quiz",
+                        "data": {
+                            "questions": quiz["questions"]
+                        }
+                    },
+                    "order": order
                 })
-            
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "activity",
-                "content": {
-                    "type": "exercise",
-                    "data": {
-                        "exerciseType": "final_quiz_group",
-                        "finalQuizData": final_quiz_data
-                    }
-                },
-                "order": order
-            })
-            order += 1
+                created_resources["block_ids"].append(block_id)
+                order += 1
         
-        # 7. Summary Flash Cards (information type)
-        flash_cards = output_data.get("flash_cards", [])
-        if flash_cards:
-            # Create a single text block containing all flash cards
-            flash_cards_text = ""
-            for i, card in enumerate(flash_cards, 1):
-                flash_cards_text += f"**{i}. {card.get('front', '')}**\\n\\n{card.get('back', '')}\\n\\n"
-            
-            client.mutation("blocks:createBlock", {
-                "topicId": topic_id,
-                "type": "information",
-                "content": {
-                    "type": "text",
-                    "data": {
-                        "content": {
-                            "text": flash_cards_text
-                        },
-                        "styleKey": "summary"
-                    }
-                },
-                "order": order
-            })
-            order += 1
+            # 3. Deep Research Block (information type)
+            if research_deep.get("text"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "information",
+                    "content": {
+                        "step": "research_deep",
+                        "data": {
+                            "title": research_deep.get("title", ""),
+                            "text": research_deep["text"],
+                            "depth": "deep"
+                        }
+                    },
+                    "order": order
+                })
+                created_resources["block_ids"].append(block_id)
+                order += 1
         
-        # Publish if requested
-        if publish_immediately:
-            client.mutation("topics:publishTopic", {"topicId": topic_id})
+            # 4. Reorder Block (activity type)
+            reorder = output_data.get("reorder", {})
+            if reorder.get("question"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "activity",
+                    "content": {
+                        "step": "reorder",
+                        "data": {
+                            "question": reorder["question"],
+                            "options": reorder["options"],
+                            "correct_answer": reorder["correct_answer"],
+                            "explanation": reorder["explanation"]
+                        }
+                    },
+                    "order": order
+                })
+                created_resources["block_ids"].append(block_id)
+                order += 1
+        
+            # 5. Real-World Impact Block (information type)
+            if real_world_impact.get("content"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "information",
+                    "content": {
+                        "step": "real_world_impact",
+                        "data": {
+                            "title": real_world_impact.get("title", ""),
+                            "content": real_world_impact["content"],
+                            "source_urls": real_world_impact.get("source_urls", [])
+                        }
+                    },
+                    "order": order
+                })
+                created_resources["block_ids"].append(block_id)
+                order += 1
+        
+            # 6. Final Quiz Block (activity type)
+            final_quiz = output_data.get("final_quiz", {})
+            if final_quiz.get("questions"):
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "activity",
+                    "content": {
+                        "step": "final_quiz",
+                        "data": {
+                            "questions": final_quiz["questions"]
+                        }
+                    },
+                    "order": order
+                })
+                created_resources["block_ids"].append(block_id)
+                order += 1
+        
+            # 7. Summary Flash Cards Block (information type)
+            flash_cards = output_data.get("flash_cards", [])
+            if flash_cards:
+                block_id = client.mutation("blocks:createBlock", {
+                    "topicId": topic_id,
+                    "type": "information",
+                    "content": {
+                        "step": "summary",
+                        "data": {
+                            "flash_cards": flash_cards
+                        }
+                    },
+                    "order": order
+                })
+                created_resources["block_ids"].append(block_id)
+                order += 1
+        
+            # Note: Thumbnail and category data are stored in the topic record itself,
+            # not as separate blocks, to match the schema union constraints
+            
+            # Publish if requested
+            if publish_immediately:
+                client.mutation("topics:publishTopic", {"topicId": topic_id})
+        
+        except Exception as block_error:
+            # If any block creation fails, clean up all created resources
+            print(f"Error creating blocks, cleaning up resources: {str(block_error)}")
+            
+            # Delete all created blocks
+            for block_id in created_resources["block_ids"]:
+                try:
+                    client.mutation("blocks:deleteBlock", {"blockId": block_id})
+                except Exception as cleanup_error:
+                    print(f"Warning: Failed to delete block {block_id}: {str(cleanup_error)}")
+            
+            # Delete embedding if created
+            if created_resources["embedding_id"]:
+                try:
+                    client.mutation("embeddings:deleteEmbedding", {"embeddingId": created_resources["embedding_id"]})
+                except Exception as cleanup_error:
+                    print(f"Warning: Failed to delete embedding {created_resources['embedding_id']}: {str(cleanup_error)}")
+            
+            # Delete topic
+            try:
+                client.mutation("topics:deleteTopic", {"topicId": topic_id})
+            except Exception as cleanup_error:
+                print(f"Warning: Failed to delete topic {topic_id}: {str(cleanup_error)}")
+            
+            return {
+                "success": False,
+                "error": f"Error creating blocks: {str(block_error)}. All resources have been cleaned up."
+            }
         
         # Get the notification type for topic_generated
         notification_types = client.query("notifications:getNotificationTypes")
@@ -549,12 +540,44 @@ def insert_topic_to_convex(agent_output: str) -> dict:
             }
         }
         
-    except json.JSONDecodeError as e:
-        return {
-            "success": False,
-            "error": f"Invalid JSON in agent output: {str(e)}"
-        }
+    # except json.JSONDecodeError as e:
+    #     return {
+    #         "success": False,
+    #         "error": f"Invalid JSON in agent output: {str(e)}"
+    #     }
     except Exception as e:
+        # If we have a topic_id in locals(), it means topic creation succeeded but something else failed
+        # We should clean up the topic and any associated resources
+        if 'topic_id' in locals() and 'client' in locals():
+            print(f"Error during topic insertion, cleaning up topic {topic_id}: {str(e)}")
+            
+            try:
+                # Try to get all blocks for this topic and delete them
+                blocks = client.query("blocks:getBlocksByTopicId", {"topicId": topic_id})
+                for block in blocks:
+                    try:
+                        client.mutation("blocks:deleteBlock", {"blockId": block["_id"]})
+                    except Exception as cleanup_error:
+                        print(f"Warning: Failed to delete block {block['_id']}: {str(cleanup_error)}")
+                
+                # Try to delete any embeddings for this topic
+                try:
+                    embeddings = client.query("embeddings:getEmbeddingsByTopicId", {"topicId": topic_id})
+                    for embedding in embeddings:
+                        try:
+                            client.mutation("embeddings:deleteEmbedding", {"embeddingId": embedding["_id"]})
+                        except Exception as cleanup_error:
+                            print(f"Warning: Failed to delete embedding {embedding['_id']}: {str(cleanup_error)}")
+                except Exception as query_error:
+                    print(f"Warning: Could not query embeddings for cleanup: {str(query_error)}")
+                
+                # Finally delete the topic
+                client.mutation("topics:deleteTopic", {"topicId": topic_id})
+                print(f"Successfully cleaned up topic {topic_id} and associated resources")
+                
+            except Exception as cleanup_error:
+                print(f"Warning: Failed to clean up topic {topic_id}: {str(cleanup_error)}")
+        
         return {
             "success": False,
             "error": f"Error inserting topic: {str(e)}"
@@ -564,11 +587,17 @@ def insert_topic_to_convex(agent_output: str) -> dict:
 # OUTPUT SCHEMAS
 # =============================================================================
 
-class ResearchAgentOutput(BaseModel):
+# Base schema for all agent outputs
+class BaseAgentOutput(BaseModel):
+    step: str = Field(description="The agent step identifier")
+    type: str = Field(description="The content type")
+    data: Dict[str, Any] = Field(description="The actual data payload")
+
+# Data schemas for different agent types
+class ResearchData(BaseModel):
     title: str = Field(description="Clear, descriptive title that identifies the topic being researched.")
     text: str = Field(description="Consolidated paragraphs of well-structured content in markdown format that explains the topic based on research depth.")
     depth: str = Field(description="Research depth: 'brief' or 'deep'")
-    block_type: str = Field(default="information", description="Block type for categorization")
 
 class Question(BaseModel):
     question: str = Field(description="The question text")
@@ -576,61 +605,91 @@ class Question(BaseModel):
     correct_answer: str = Field(description="The correct answer")
     explanation: str = Field(description="Explanation of why the answer is correct")
 
-class QuizOutput(BaseModel):
-    type: str = Field(description="Activity type: 'quiz'")
-    block_type: str = Field(default="activity", description="Block type for categorization")
-    questions: List[Question] = Field(description="List of 3 quiz questions")
+class QuizData(BaseModel):
+    questions: List[Question] = Field(description="List of quiz questions")
 
-class ReorderOutput(BaseModel):
-    type: str = Field(description="Activity type: 'reorder'")
-    block_type: str = Field(default="activity", description="Block type for categorization")
+class ReorderData(BaseModel):
     question: str = Field(description="The main question or prompt")
     options: List[str] = Field(description="List of answer options")
-    correct_answer: str = Field(description="The correct answer")
+    correct_answer: List[str] = Field(description="The answer in correct order")
     explanation: str = Field(description="Explanation of why the answer is correct")
 
-class FinalQuizOutput(BaseModel):
-    type: str = Field(description="Activity type: 'final_quiz'")
-    block_type: str = Field(default="activity", description="Block type for categorization")
-    questions: List[Question] = Field(description="List of 5 final quiz questions")
-
-class RealWorldImpactOutput(BaseModel):
+class RealWorldImpactData(BaseModel):
     title: str = Field(description="Title of the real-world impact section")
     content: str = Field(description="Narrative paragraph in markdown format about current relevance")
     source_urls: List[str] = Field(description="URLs of sources used")
-    block_type: str = Field(default="information", description="Block type for categorization")
 
 class FlashCard(BaseModel):
     front: str = Field(description="Question or key term")
     back: str = Field(description="Answer or definition")
 
-class SummaryAgentOutput(BaseModel):
+class SummaryData(BaseModel):
     flash_cards: List[FlashCard] = Field(description="List of 3-4 flash cards")
-    block_type: str = Field(default="information", description="Block type for categorization")
 
-class ThumbnailOutput(BaseModel):
+class ThumbnailData(BaseModel):
     thumbnail_url: str = Field(description="URL of the selected thumbnail image")
     alt_text: str = Field(description="Alt text for the image")
 
-class CategoryTagsDescriptionOutput(BaseModel):
+class CategoryTagsDescriptionData(BaseModel):
     selected_category: str = Field(description="Selected category ID for the topic")
     short_description: str = Field(description="10-word short description about the topic")
     generated_tags: List[str] = Field(description="List of 5 relevant tags for the topic")
+
+# Specific agent output schemas
+class ResearchAgentOutput(BaseAgentOutput):
+    step: str = Field(description="research_brief or research_deep")
+    type: str = Field(default="information", description="Content type")
+    data: ResearchData = Field(description="Research data")
+
+class QuizAgentOutput(BaseAgentOutput):
+    step: str = Field(default="quiz", description="Agent step")
+    type: str = Field(default="activity", description="Content type")
+    data: QuizData = Field(description="Quiz data")
+
+class ReorderAgentOutput(BaseAgentOutput):
+    step: str = Field(default="reorder", description="Agent step")
+    type: str = Field(default="activity", description="Content type")
+    data: ReorderData = Field(description="Reorder data")
+
+class FinalQuizAgentOutput(BaseAgentOutput):
+    step: str = Field(default="final_quiz", description="Agent step")
+    type: str = Field(default="activity", description="Content type")
+    data: QuizData = Field(description="Final quiz data")
+
+class RealWorldImpactAgentOutput(BaseAgentOutput):
+    step: str = Field(default="real_world_impact", description="Agent step")
+    type: str = Field(default="information", description="Content type")
+    data: RealWorldImpactData = Field(description="Real world impact data")
+
+class SummaryAgentOutput(BaseAgentOutput):
+    step: str = Field(default="summary", description="Agent step")
+    type: str = Field(default="information", description="Content type")
+    data: SummaryData = Field(description="Summary data")
+
+class ThumbnailAgentOutput(BaseAgentOutput):
+    step: str = Field(default="thumbnail", description="Agent step")
+    type: str = Field(default="media", description="Content type")
+    data: ThumbnailData = Field(description="Thumbnail data")
+
+class CategoryTagsDescriptionAgentOutput(BaseAgentOutput):
+    step: str = Field(default="category_tags_description", description="Agent step")
+    type: str = Field(default="metadata", description="Content type")
+    data: CategoryTagsDescriptionData = Field(description="Category, tags and description data")
 
 class FinalAssemblyOutput(BaseModel):
     topic: str = Field(description="The educational topic")
     difficulty: str = Field(description="Topic difficulty level")
     created_by: Optional[str] = Field(description="User ID who created the topic")
     publish_immediately: bool = Field(description="Whether to publish the topic immediately")
-    research_brief: ResearchAgentOutput = Field(description="Brief research results")
-    research_deep: ResearchAgentOutput = Field(description="Deep research results")
-    quiz: QuizOutput = Field(description="Quiz activity with 3 questions")
-    reorder: ReorderOutput = Field(description="Reorder activity")
-    final_quiz: FinalQuizOutput = Field(description="Final quiz with 5 questions")
-    real_world_impact: RealWorldImpactOutput = Field(description="Real-world impact analysis")
+    research_brief: ResearchData = Field(description="Brief research results")
+    research_deep: ResearchData = Field(description="Deep research results")
+    quiz: QuizData = Field(description="Quiz activity with 3 questions")
+    reorder: ReorderData = Field(description="Reorder activity")
+    final_quiz: QuizData = Field(description="Final quiz with 5 questions")
+    real_world_impact: RealWorldImpactData = Field(description="Real-world impact analysis")
     flash_cards: List[FlashCard] = Field(description="Summary flash cards")
-    thumbnail: ThumbnailOutput = Field(description="Selected thumbnail")
-    category_tags_description: CategoryTagsDescriptionOutput = Field(description="Selected category, description, and generated tags")
+    thumbnail: ThumbnailData = Field(description="Selected thumbnail")
+    category_tags_description: CategoryTagsDescriptionData = Field(description="Selected category, description, and generated tags")
 
 class ConvexInsertionResult(BaseModel):
     success: bool = Field(description="Whether the insertion was successful")
@@ -659,24 +718,37 @@ research_agent_brief = LlmAgent(
         2. Search for multiple aspects: "what is [topic]", "[topic] overview", "[topic] basics", "[topic] fundamentals".
         3. Read through ALL extracted text to get a comprehensive understanding.
         4. Create a clear, descriptive title that identifies the topic.
-        5. Write 1-2 consolidated paragraphs covering BROAD aspects of the topic:
-        - What it is and why it matters
-        - Key components, types, or categories
-        - How it works or its main principles
-        - Common applications or examples
-        6. Format your content using raw markdown syntax and organize important points as bullet points:
+        5. Write content using this SPECIFIC markdown format:
+        
+        ### What is [Topic]?
+        [Answer paragraph explaining what the topic is]
+        
+        ### Why does [Topic] matter?
+        [Answer paragraph explaining importance and relevance]
+        
+        ### Key Components/Features
+        - **Component 1**: Brief explanation
+        - **Component 2**: Brief explanation
+        - **Component 3**: Brief explanation
+        
+        ### Common Applications
+        - **Application 1**: Brief description
+        - **Application 2**: Brief description
+        - **Application 3**: Brief description
+
+        6. Format requirements:
+        - Use ### for all headings (exactly 3 hash symbols)
         - Use **bold text** for key terms and important concepts
-        - Use bullet points with - for ALL important information and lists
+        - Use bullet points with - for ALL lists
         - Use *italic* for emphasis where needed
-        - Structure content with bullet points to make it scannable and easy to read
-        - DO NOT include markdown headings (##) as the title is handled separately
+        - Each answer paragraph should be 2-3 sentences maximum
+        - Keep bullet points concise (1-2 sentences each)
         7. Ensure content is appropriate for the specified difficulty level.
-        8. Keep each paragraph to maximum 200 words, total content should be comprehensive yet accessible.
-        9. CRITICAL: When creating JSON, you must properly escape all special characters:
+        8. CRITICAL: When creating JSON, you must properly escape all special characters:
         - Escape newlines as \\n
         - Escape quotes as \\"
         - Escape backslashes as \\\\
-        10. ABSOLUTE RULES for output:
+        9. ABSOLUTE RULES for output:
         - Respond with ONLY a valid JSON object.
         - DO NOT wrap the JSON inside code fences (e.g., no ```json or ``` at all).
         - DO NOT output any explanation, commentary, or extra text outside the JSON.
@@ -685,10 +757,13 @@ research_agent_brief = LlmAgent(
 
         Required JSON schema:
         {
-            "title": "Clear, descriptive title",
-            "text": "Markdown content with proper escaping",
-            "depth": "brief",
-            "block_type": "information"
+            "step": "research_brief",
+            "type": "information",
+            "data": {
+                "title": "Clear, descriptive title",
+                "text": "Markdown content with proper escaping",
+                "depth": "brief"
+            }
         }
     """,
     # output_schema=ResearchAgentOutput,
@@ -740,19 +815,21 @@ quiz_agent = LlmAgent(
 
         Required JSON schema:
         {
-            "type": "quiz",
-            "block_type": "activity",
-            "questions": [
-                {
-                    "question": "Your question text here",
-                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                    "correct_answer": "Option A",
-                    "explanation": "Explanation why this is correct"
-                }
-            ]
+            "step": "quiz",
+            "type": "activity",
+            "data": {
+                "questions": [
+                    {
+                        "question": "Your question text here",
+                        "options": ["Option A", "Option B", "Option C", "Option D"],
+                        "correct_answer": "Option A",
+                        "explanation": "Explanation why this is correct"
+                    }
+                ]
+            }
         }
     """,
-    output_schema=QuizOutput,
+    output_schema=QuizAgentOutput,
     output_key="quiz_output"
 )
 
@@ -773,9 +850,36 @@ research_agent_deep = LlmAgent(
         Process:
         1. Use the exa_search tool with SPECIALIZED queries like "[topic] algorithms", "[topic] implementation", "[topic] industry applications". Set result_category parameter as "auto".
         2. Create a descriptive title that reflects the advanced nature of the content.
-        3. Write 2-3 consolidated paragraphs covering SPECIALIZED aspects (avoid basic definitions).
-        4. Format your content using raw markdown syntax with **bold** and bullet points.
-        5. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
+        3. Write content using this SPECIFIC markdown format:
+        
+        ### How does [Topic] work internally?
+        [Answer paragraph explaining internal mechanisms/processes]
+        
+        ### What are the advanced techniques/methods?
+        [Answer paragraph about sophisticated approaches]
+        
+        ### Technical Implementation Details
+        - **Method/Tool 1**: Technical explanation
+        - **Method/Tool 2**: Technical explanation
+        - **Method/Tool 3**: Technical explanation
+        
+        ### Industry Best Practices
+        - **Practice 1**: Professional implementation detail
+        - **Practice 2**: Professional implementation detail
+        - **Practice 3**: Professional implementation detail
+        
+        ### Challenges and Solutions
+        - **Challenge 1**: How it's addressed
+        - **Challenge 2**: How it's addressed
+
+        4. Format requirements:
+        - Use ### for all headings (exactly 3 hash symbols)
+        - Use **bold text** for key terms and important concepts
+        - Use bullet points with - for ALL lists
+        - Each answer paragraph should be 2-3 sentences maximum
+        - Keep bullet points concise but technical (1-2 sentences each)
+        5. Ensure content is appropriate for the specified difficulty level.
+        6. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
         CRITICAL FORMATTING REQUIREMENTS:
         - You must respond with ONLY a valid JSON object.
@@ -786,10 +890,13 @@ research_agent_deep = LlmAgent(
 
         Required JSON schema:
         {
-            "title": "Clear, descriptive title",
-            "text": "Markdown content with proper escaping",
-            "depth": "deep",
-            "block_type": "information"
+            "step": "research_deep",
+            "type": "information",
+            "data": {
+                "title": "Clear, descriptive title",
+                "text": "Markdown content with proper escaping",
+                "depth": "deep"
+            }
         }
     """,
     # output_schema=ResearchAgentOutput,
@@ -814,6 +921,12 @@ reorder_agent = LlmAgent(
         - Matches the specified difficulty level
         - Tests understanding of PROCESSES, SEQUENCES, or CHRONOLOGICAL ORDER
         - Has 4 options that need to be arranged in correct order
+        - Has the correct_answer field set to an ARRAY containing the options in the correct order. For example, if the correct sequence is:
+        1. First step
+        2. Second step  
+        3. Third step
+        4. Fourth step
+        Then correct_answer should be set as ["First step", "Second step", "Third step", "Fourth step"]
         - Includes a clear explanation of the correct sequence
 
         CRITICAL FORMATTING REQUIREMENTS:
@@ -825,15 +938,17 @@ reorder_agent = LlmAgent(
 
         Required JSON schema:
         {
-            "type": "reorder",
-            "block_type": "activity",
-            "question": "Your reorder question here",
-            "options": ["First item", "Second item", "Third item", "Fourth item"],
-            "correct_answer": "First item, Second item, Third item, Fourth item",
-            "explanation": "Explanation of the correct order"
+            "step": "reorder",
+            "type": "activity",
+            "data": {
+                "question": "Your reorder question here",
+                "options": ["First item", "Second item", "Third item", "Fourth item"],
+                "correct_answer": ["Second item", "First item", "Third item", "Fourth item"],
+                "explanation": "Explanation of the correct order"
+            }
         }
     """,
-    output_schema=ReorderOutput,
+    output_schema=ReorderAgentOutput,
     output_key="reorder_output"
 )
 
@@ -866,19 +981,21 @@ final_quiz_agent = LlmAgent(
 
         Required JSON schema:
         {
-            "type": "final_quiz",
-            "block_type": "activity",
-            "questions": [
-                {
-                    "question": "Your question text here",
-                    "options": ["Option A", "Option B", "Option C", "Option D"],
-                    "correct_answer": "Option A",
-                    "explanation": "Detailed explanation why this is correct"
-                }
-            ]
+            "step": "final_quiz",
+            "type": "activity",
+            "data": {
+                "questions": [
+                    {
+                        "question": "Your question text here",
+                        "options": ["Option A", "Option B", "Option C", "Option D"],
+                        "correct_answer": "Option A",
+                        "explanation": "Detailed explanation why this is correct"
+                    }
+                ]
+            }
         }
     """,
-    output_schema=FinalQuizOutput,
+    output_schema=FinalQuizAgentOutput,
     output_key="final_quiz_output"
 )
 
@@ -895,10 +1012,36 @@ real_world_impact_agent = LlmAgent(
         1. Use the exa_search tool to find current news and developments. Set the `query` to focus on recent developments and `result_category` to `"news"`. 
         2. Reference data from {research_brief_output} and {research_deep_output} for context. 
         3. Create an appropriate title that captures the real-world significance. 
-        4. Start with 1-2 sentences explaining why the topic matters today. 
-        5. Follow with bullet points showing specific, concrete, and current real-world use cases.
-        6. Format using **raw markdown syntax**.
-        7. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
+        4. Write content using this SPECIFIC markdown format:
+        
+        ### Why does [Topic] matter today?
+        [Answer paragraph explaining current relevance and importance]
+        
+        ### Where do we see [Topic] in action?
+        [Answer paragraph about widespread current usage]
+        
+        ### Real-World Applications
+        - **Industry/Field 1**: Specific example of how it's used
+        - **Industry/Field 2**: Specific example of how it's used
+        - **Industry/Field 3**: Specific example of how it's used
+        
+        ### Current Trends and Developments
+        - **Trend 1**: Recent development or innovation
+        - **Trend 2**: Recent development or innovation
+        - **Trend 3**: Recent development or innovation
+        
+        ### Impact on Daily Life
+        - **Example 1**: How it affects ordinary people
+        - **Example 2**: How it affects ordinary people
+
+        5. Format requirements:
+        - Use ### for all headings (exactly 3 hash symbols)
+        - Use **bold text** for key terms and important concepts
+        - Use bullet points with - for ALL lists
+        - Each answer paragraph should be 2-3 sentences maximum
+        - Keep bullet points concrete and specific (1-2 sentences each)
+        - Focus on current, real examples that people can relate to
+        6. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
         CRITICAL FORMATTING REQUIREMENTS: 
         - You must respond with ONLY a valid JSON object.
@@ -909,10 +1052,13 @@ real_world_impact_agent = LlmAgent(
 
         Required JSON schema: 
         {
-            "title": "Title capturing real-world significance",
-            "content": "Markdown content with proper escaping",
-            "source_urls": ["url1", "url2", "url3"],
-            "block_type": "information"
+            "step": "real_world_impact",
+            "type": "information",
+            "data": {
+                "title": "Title capturing real-world significance",
+                "content": "Markdown content with proper escaping",
+                "source_urls": ["url1", "url2", "url3"]
+            }
         }
     """,
     # output_schema=RealWorldImpactOutput,
@@ -942,13 +1088,16 @@ summary_agent = LlmAgent(
 
         Required JSON schema: 
         {
-            "flash_cards": [
-                {
-                    "front": "Question or key term here",
-                    "back": "Concise answer or definition here"
-                }
-            ],
-            "block_type": "information"
+            "step": "summary",
+            "type": "information",
+            "data": {
+                "flash_cards": [
+                    {
+                        "front": "Question or key term here",
+                        "back": "Concise answer or definition here"
+                    }
+                ]
+            }
         }
     """,
     output_schema=SummaryAgentOutput,
@@ -984,9 +1133,13 @@ category_tags_description_agent = LlmAgent(
 
         Required JSON schema:
         {
-            "selected_category": "category_id_string",
-            "short_description": "exactly 10 words or fewer describing the topic",
-            "generated_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+            "step": "category_tags_description",
+            "type": "metadata",
+            "data": {
+                "selected_category": "category_id_string",
+                "short_description": "exactly 10 words or fewer describing the topic",
+                "generated_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+            }
         }
     """,
     # output_schema=CategoryTagsDescriptionOutput,
@@ -1018,8 +1171,12 @@ thumbnail_generator_agent = LlmAgent(
 
         Required JSON schema:
         {
-            "thumbnail_url": "https://example.com/image.jpg",
-            "alt_text": "Descriptive alt text for accessibility"
+            "step": "thumbnail",
+            "type": "media",
+            "data": {
+                "thumbnail_url": "https://example.com/image.jpg",
+                "alt_text": "Descriptive alt text for accessibility"
+            }
         }
     """,
     # output_schema=ThumbnailOutput,
@@ -1037,7 +1194,7 @@ assembler_agent = LlmAgent(
         Process:
         - The user input will contain: topic, difficulty, created_by (optional), and publish_immediately (optional).
         - Gather data from all previous agent outputs: {research_brief_output}, {research_deep_output}, {quiz_output}, {reorder_output}, {final_quiz_output}, {impact_output}, {summary_output}, {thumbnail_output}, {category_tags_description_output}.
-        - Assemble these components into the final JSON structure.
+        - Extract the "data" field from each agent output and assemble into the final structure.
 
         CRITICAL FORMATTING REQUIREMENTS:
         - You must respond with ONLY a valid JSON object.
@@ -1045,7 +1202,8 @@ assembler_agent = LlmAgent(
         - DO NOT output any explanation, commentary, or extra text outside the JSON.
         - Your entire response must start with "{" and end with "}".
         - The JSON must exactly match the required schema.
-        - Extract only the flash_cards array from summary_output.
+        - Extract only the "data" field from each agent output.
+        - Extract only the flash_cards array from summary_output.data.
         - Use null for created_by if not provided.
         - publish_immediately must contain only one of the two following values [case-sensitive] - True (or) False. By default use True if not provided. 
 
@@ -1055,15 +1213,15 @@ assembler_agent = LlmAgent(
             "difficulty": "The difficulty level from user input",
             "created_by": "The user ID from user input (or null if not provided)",
             "publish_immediately": "The publish flag from user input (either True or False [case-sensitive]. Default to True if not provided)",
-            "research_brief": {research_brief_output},
-            "research_deep": {research_deep_output},
-            "quiz": {quiz_output},
-            "reorder": {reorder_output},
-            "final_quiz": {final_quiz_output},
-            "real_world_impact": {impact_output},
-            "flash_cards": [{summary_output flash_cards}],
-            "thumbnail": {thumbnail_output},
-            "category_tags_description": {category_tags_description_output}
+            "research_brief": {research_brief_output.data},
+            "research_deep": {research_deep_output.data},
+            "quiz": {quiz_output.data},
+            "reorder": {reorder_output.data},
+            "final_quiz": {final_quiz_output.data},
+            "real_world_impact": {impact_output.data},
+            "flash_cards": [{summary_output.data.flash_cards}],
+            "thumbnail": {thumbnail_output.data},
+            "category_tags_description": {category_tags_description_output.data}
         }
     """,
     output_schema=FinalAssemblyOutput,
@@ -1098,10 +1256,14 @@ convex_inserter_agent = LlmAgent(
 
     Required JSON schema:
     {
-        "success": "Whether the insertion was successful",
-        "topic_id": "The ID of the created topic if successful",
-        "message": "Success message or error description",
-        "metadata": "Additional metadata about the insertion"
+        "step": "convex_insertion",
+        "type": "result",
+        "data": {
+            "success": "Whether the insertion was successful",
+            "topic_id": "The ID of the created topic if successful",
+            "message": "Success message or error description",
+            "metadata": "Additional metadata about the insertion"
+        }
     }
     """,
     # output_schema=ConvexInsertionResult,

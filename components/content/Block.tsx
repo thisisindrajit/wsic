@@ -5,10 +5,14 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Bookmark, Heart, Clock, Eye } from 'lucide-react';
 import { DIFFICULTY_COLORS } from '@/constants/common';
+import { useTopicInteractions } from '@/hooks/useTopicInteractions';
+import { Id } from '@/convex/_generated/dataModel';
+import { cn } from '@/lib/utils';
+import { formatViews, formatLikes, formatShares } from '@/lib/format';
 import Link from 'next/link';
 
 interface TrendingBlockProps {
-    id: string;
+    id: Id<"topics">;
     imageUrl?: string;
     title: string;
     description: string;
@@ -19,12 +23,7 @@ interface TrendingBlockProps {
     viewCount?: number;
 }
 
-const formatCount = (count: number): string => {
-    if (count >= 1000) {
-        return `${(count / 1000).toFixed(1)}K`;
-    }
-    return count.toString();
-};
+
 
 const getDifficultyPillStyle = (difficulty: string) => {
     return DIFFICULTY_COLORS[difficulty as keyof typeof DIFFICULTY_COLORS]?.pill || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
@@ -42,6 +41,25 @@ const Block: React.FC<TrendingBlockProps> = ({
     viewCount
 }) => {
     const [imageError, setImageError] = useState(false);
+    const { interactions, handleLike, handleSave } = useTopicInteractions(id);
+    const [localLikeCount, setLocalLikeCount] = useState<number | null>(null);
+
+    const handleLikeClick = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const result = await handleLike();
+        if (result) {
+            setLocalLikeCount(result.newCount);
+        }
+    };
+
+    const handleSaveClick = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        await handleSave();
+    };
+
+    const displayLikeCount = localLikeCount !== null ? localLikeCount : likes;
     return (
         <div
             className="group relative overflow-hidden rounded-3xl backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-neutral-200 dark:border-neutral-900 hover:bg-white/20 dark:hover:bg-black/30 transition-all w-full shadow-xl"
@@ -64,7 +82,6 @@ const Block: React.FC<TrendingBlockProps> = ({
             {/* Content Overlay */}
             <div className="relative z-10 p-6 h-full flex flex-col gap-3 justify-end aspect-[2/2.5]">
                 <h3 className="text-2xl/normal font-medium text-white drop-shadow-lg line-clamp-2">{title}</h3>
-
                 <p className="text-white/90 text-sm leading-relaxed drop-shadow-md line-clamp-2">
                     {description}
                 </p>
@@ -81,7 +98,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                         {viewCount && viewCount >= 0 ? (
                             <div className="flex items-center gap-1">
                                 <Eye className="w-3 h-3" />
-                                <span>{formatCount(viewCount)}</span>
+                                <span>{formatViews(viewCount)}</span>
                             </div>
                         ) : null}
                         {/* Difficulty badge */}
@@ -97,32 +114,32 @@ const Block: React.FC<TrendingBlockProps> = ({
 
                 {/* Likes and Shares */}
                 <div className="flex items-center gap-2 text-sm text-white/80">
-                    <span><strong className="text-white">{formatCount(likes)}</strong> Likes</span>
-                    <span><strong className="text-white">{formatCount(shares)}</strong> Shares</span>
+                    <span className="text-white">{formatLikes(displayLikeCount)}</span>
+                    <span className="text-white">{formatShares(shares)}</span>
                 </div>
 
                 <div className="flex items-center gap-2 w-full mt-2">
                     <Button
-                        className="rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]"
+                        className={cn(
+                            "rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]",
+                            interactions?.hasLiked && "bg-red-500/30 border-red-400/50 dark:bg-red-500/30 dark:border-red-400/50"
+                        )}
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle like action
-                        }}
+                        onClick={handleLikeClick}
                     >
-                        <Heart className="w-5 h-5 text-white" />
+                        <Heart className={cn("w-5 h-5 text-white", interactions?.hasLiked && "fill-current")} />
                     </Button>
                     <Button
-                        className="rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]"
+                        className={cn(
+                            "rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]",
+                            interactions?.hasSaved && "bg-orange-500/30 border-orange-400/50 dark:bg-orange-500/30 dark:border-orange-400/50"
+                        )}
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle bookmark action
-                        }}
+                        onClick={handleSaveClick}
                     >
-                        <Bookmark className="w-5 h-5 text-white" />
+                        <Bookmark className={cn("w-5 h-5 text-white", interactions?.hasSaved && "fill-current")} />
                     </Button>
                     <Link
                         href={`/topic/${id}`}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
-import Footer from "@/components/layout/Footer";
+
 import { Toaster } from "sonner";
 import TopBar from "@/components/layout/TopBar";
 import { auth } from "@/lib/auth";
@@ -12,6 +12,7 @@ import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Footer } from "@/components/layout";
 
 import "./globals.css";
 
@@ -53,7 +54,7 @@ export default async function RootLayout({
         <link rel="manifest" href="/favicons/site.webmanifest" />
       </head>
       <body
-        className={`${geistSans.className} antialiased max-w-[1440px] mx-auto`}
+        className={`${geistSans.className} antialiased min-w-full max-w-[1440px] mx-auto bg-background`}
       >
         <ThemeProvider
           attribute="class"
@@ -65,7 +66,7 @@ export default async function RootLayout({
           <QueryClientProvider>
             <ConvexClientProvider>
               <TopBar session={session} />
-              <div className="flex flex-col gap-8 min-h-[100dvh] pt-20 p-4 relative z-10 bg-background">
+              <div className="flex flex-col gap-8 p-4 w-full mx-auto max-w-[1440px] relative z-10 bg-background">
                 {children}
               </div>
               <Footer />
