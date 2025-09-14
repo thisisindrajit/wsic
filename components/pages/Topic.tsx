@@ -480,7 +480,7 @@ const Topic = () => {
         )}
 
         {/* Summary */}
-        {contentBlocks.summary && (
+        {canShowStage("summary") && contentBlocks.summary && (
           <>
             <div data-stage="summary">
               <Summary flashCards={contentBlocks.summary.content.data.flash_cards} />
