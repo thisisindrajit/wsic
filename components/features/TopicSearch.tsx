@@ -83,7 +83,7 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearInput}
-                className="absolute right-0 top-[40%] -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-0 top-[40%] sm:top-[45%] -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="size-6" />
               </Button>
