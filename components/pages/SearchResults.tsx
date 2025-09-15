@@ -115,9 +115,14 @@ const SearchContent = () => {
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
       !foundTopics.some(foundTopic => foundTopic._id === topic._id) &&
-      !searchRelatedTopics.some(searchTopic => searchTopic._id === topic._id)
+      !searchRelatedTopics.some(searchTopic => searchTopic._id === topic._id) &&
+      // Ensure it's not in ANY of the exact matches (both true exact and search related)
+      !(exactMatches || []).some(exactTopic => exactTopic._id === topic._id)
     )
-  ];
+  ].filter((topic, index, array) => 
+    // Remove duplicates by checking if this is the first occurrence of this _id
+    array.findIndex(t => t._id === topic._id) === index
+  );
 
   const shouldShowResults = foundTopics.length > 0;
 

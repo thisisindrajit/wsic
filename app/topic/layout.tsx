@@ -82,8 +82,8 @@ export default function TopicLayout({
   }, [lastScrollY]);
 
   useEffect(() => {
-      // Scroll to top on page load
-      window.scrollTo(0, 0);
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   // Calculate sidebar height based on scroll state
@@ -227,10 +227,10 @@ export default function TopicLayout({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.back()}
+            onClick={() => router.push("/user/dashboard")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Home
           </Button>
 
           <div className="flex items-center gap-2">
