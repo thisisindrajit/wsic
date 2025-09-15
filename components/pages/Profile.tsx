@@ -5,7 +5,7 @@ import { useUserTopics } from "@/hooks/useUserTopics";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ErrorContext } from "better-auth/react";
 import { Loader2, FileText } from "lucide-react";
@@ -15,9 +15,33 @@ const Profile = () => {
     const { data: session } = useSession();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const router = useRouter();
+    const loadMoreRef = useRef<HTMLDivElement>(null);
 
     // Get user's topics with pagination
     const { data: userTopics, isLoading: topicsLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useUserTopics();
+
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        const currentRef = loadMoreRef.current;
+        if (currentRef) {
+            observer.observe(currentRef);
+        }
+
+        return () => {
+            if (currentRef) {
+                observer.unobserve(currentRef);
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleLogout = async () => {
         await signOut({
@@ -109,23 +133,12 @@ const Profile = () => {
                                 ))}
                             </div>
                             
+                            {/* Load more trigger */}
                             {hasNextPage && (
-                                <div className="flex justify-center">
-                                    <Button 
-                                        onClick={fetchNextPage}
-                                        variant="outline"
-                                        className="w-full sm:w-auto"
-                                        disabled={isFetchingNextPage}
-                                    >
-                                        {isFetchingNextPage ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                Loading...
-                                            </>
-                                        ) : (
-                                            "Load More Topics"
-                                        )}
-                                    </Button>
+                                <div ref={loadMoreRef} className="flex items-center justify-center py-8">
+                                    {isFetchingNextPage && (
+                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    )}
                                 </div>
                             )}
                         </div>

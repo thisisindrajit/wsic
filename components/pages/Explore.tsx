@@ -13,7 +13,7 @@ const Explore = () => {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl xs:text-4xl lg:text-4xl/normal font-light">Explore</h1>
-                    <p className="text-muted-foreground">Discover topics</p>
+                    <p className="text-muted-foreground">Discover topics by categories</p>
                 </div>
                 <div className="flex items-center justify-center py-12">
                     <div className="text-center">
@@ -29,7 +29,7 @@ const Explore = () => {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl xs:text-4xl lg:text-4xl/normal font-light">Explore</h1>
-                <p className="text-muted-foreground">Discover topics</p>
+                <p className="text-muted-foreground">Discover topics by categories</p>
             </div>
 
             {isLoading ? (

@@ -211,7 +211,14 @@ def insert_topic_to_convex(agent_output: str) -> dict:
     # Initialize variables for error handling
     topic_title = "WSIC Topic"
     created_by = None
-    client = None
+    
+    # Get Convex URL from environment
+    convex_url = os.environ.get("CONVEX_URL")
+    if not convex_url:
+        return {"success": False, "error": "CONVEX_URL environment variable not set"}
+    
+    # Initialize Convex client
+    client = ConvexClient(convex_url)
     
     try:
         # Parse the agent output JSON
@@ -225,15 +232,7 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         difficulty = output_data.get("difficulty", "beginner").lower()
         created_by = output_data.get("created_by")
         publish_immediately = output_data.get("publish_immediately", False)
-        
-        # Get Convex URL from environment
-        convex_url = os.environ.get("CONVEX_URL")
-        if not convex_url:
-            return {"success": False, "error": "CONVEX_URL environment variable not set"}
-        
-        # Initialize Convex client
-        client = ConvexClient(convex_url)
-        
+            
         research_brief = output_data.get("research_brief", {})
         research_deep = output_data.get("research_deep", {})
         real_world_impact = output_data.get("real_world_impact", {})
@@ -996,54 +995,7 @@ reorder_agent = LlmAgent(
     output_key="reorder_output"
 )
 
-# 5. Final Quiz Agent (5 questions, difficulty-adaptive)
-final_quiz_agent = LlmAgent(
-    name="FinalQuizAgent", 
-    model="gemini-2.0-flash-lite",
-    instruction="""
-        You are an expert educational content designer creating the FINAL QUIZ. Your goal is to create 5 comprehensive questions that test all learned concepts.
-
-        Use ALL available research data from {research_brief_output} and {research_deep_output}. Ensure your questions are COMPLETELY DIFFERENT from {quiz_output}.
-
-        Adapt your questions to the user's specified difficulty level (BEGINNER, INTERMEDIATE, ADVANCED).
-
-        Create exactly 5 multiple-choice questions that:
-        - Match the difficulty level
-        - Cover the full breadth of concepts from both research sections
-        - Are COMPLETELY DIFFERENT from the questions in {quiz_output}
-        - Have 4 answer options each
-        - Include detailed explanations for the correct answer
-
-        IMPORTANT: Review the questions from {quiz_output} and ensure your 5 questions cover entirely different aspects of the topic.
-
-        CRITICAL FORMATTING REQUIREMENTS:
-        - You must respond with ONLY a valid JSON object.
-        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
-        - DO NOT output any explanation, commentary, or extra text outside the JSON.
-        - Your entire response must start with "{" and end with "}".
-        - The JSON must exactly match the required schema.
-
-        Required JSON schema:
-        {
-            "step": "final_quiz",
-            "type": "activity",
-            "data": {
-                "questions": [
-                    {
-                        "question": "Your question text here",
-                        "options": ["Option A", "Option B", "Option C", "Option D"],
-                        "correct_answer": "Option A",
-                        "explanation": "Detailed explanation why this is correct"
-                    }
-                ]
-            }
-        }
-    """,
-    output_schema=FinalQuizAgentOutput,
-    output_key="final_quiz_output"
-)
-
-# 6. Real-World Impact Agent
+# 5. Real-World Impact Agent
 real_world_impact_agent = LlmAgent(
     name="RealWorldImpactAgent",
     model="gemini-2.5-flash", 
@@ -1108,6 +1060,53 @@ real_world_impact_agent = LlmAgent(
     # output_schema=RealWorldImpactOutput,
     output_key="impact_output",
     tools=[exa_search]
+)
+
+# 6. Final Quiz Agent (5 questions, difficulty-adaptive)
+final_quiz_agent = LlmAgent(
+    name="FinalQuizAgent", 
+    model="gemini-2.0-flash-lite",
+    instruction="""
+        You are an expert educational content designer creating the FINAL QUIZ. Your goal is to create 5 comprehensive questions that test all learned concepts.
+
+        Use ALL available research data from {research_brief_output} and {research_deep_output}. Ensure your questions are COMPLETELY DIFFERENT from {quiz_output}.
+
+        Adapt your questions to the user's specified difficulty level (BEGINNER, INTERMEDIATE, ADVANCED).
+
+        Create exactly 5 multiple-choice questions that:
+        - Match the difficulty level
+        - Cover the full breadth of concepts from both research sections
+        - Are COMPLETELY DIFFERENT from the questions in {quiz_output}
+        - Have 4 answer options each
+        - Include detailed explanations for the correct answer
+
+        IMPORTANT: Review the questions from {quiz_output} and ensure your 5 questions cover entirely different aspects of the topic.
+
+        CRITICAL FORMATTING REQUIREMENTS:
+        - You must respond with ONLY a valid JSON object.
+        - DO NOT wrap the JSON in code fences (no ```json or ``` at all).
+        - DO NOT output any explanation, commentary, or extra text outside the JSON.
+        - Your entire response must start with "{" and end with "}".
+        - The JSON must exactly match the required schema.
+
+        Required JSON schema:
+        {
+            "step": "final_quiz",
+            "type": "activity",
+            "data": {
+                "questions": [
+                    {
+                        "question": "Your question text here",
+                        "options": ["Option A", "Option B", "Option C", "Option D"],
+                        "correct_answer": "Option A",
+                        "explanation": "Detailed explanation why this is correct"
+                    }
+                ]
+            }
+        }
+    """,
+    output_schema=FinalQuizAgentOutput,
+    output_key="final_quiz_output"
 )
 
 # 7. Summary Agent (difficulty-adaptive)
@@ -1300,14 +1299,10 @@ convex_inserter_agent = LlmAgent(
 
     Required JSON schema:
     {
-        "step": "convex_insertion",
-        "type": "result",
-        "data": {
-            "success": "Whether the insertion was successful",
-            "topic_id": "The ID of the created topic if successful",
-            "message": "Success message or error description",
-            "metadata": "Additional metadata about the insertion"
-        }
+        "success": "Whether the insertion was successful",
+        "topic_id": "The ID of the created topic if successful",
+        "message": "Success message or error description",
+        "metadata": "Additional metadata about the insertion"
     }
     """,
     # output_schema=ConvexInsertionResult,

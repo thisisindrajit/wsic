@@ -81,6 +81,11 @@ export default function TopicLayout({
     };
   }, [lastScrollY]);
 
+  useEffect(() => {
+      // Scroll to top on page load
+      window.scrollTo(0, 0);
+  }, [pathname]);
+
   // Calculate sidebar height based on scroll state
   const getSidebarHeight = () => {
     if (isAtTop) {

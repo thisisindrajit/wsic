@@ -6,6 +6,7 @@ import { ArrowRight, X } from 'lucide-react';
 import SuggestedTopics from '@/components/content/SuggestedTopics';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import SelectHolder from '../content/SelectHolder';
 
 interface TopicSearchProps {
   className?: string;
@@ -15,11 +16,12 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
   const [searchTopic, setSearchTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [difficulty, setDifficulty] = useState('Beginner'); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const handleSearch = (topic: string) => {
     // TODO: Implement search functionality
     console.log('Searching for:', topic);
-};
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +56,11 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
 
   return (
     <div className={cn("flex flex-col gap-4 mb-4", className)}>
-      <form onSubmit={handleSubmit} className="flex flex-col">
+      <form onSubmit={handleSubmit} className="flex flex-col mb-6">
         <div className="text-2xl xs:text-4xl lg:text-4xl/normal font-light mb-2 xs:mb-3">
           <span className={gradientTextClass}>W</span>hy <span className={gradientTextClass}>S</span>hould <span className={gradientTextClass}>I</span> <span className={gradientTextClass}>C</span>are about
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-8">
           <div className="relative flex-1">
             <Input
               type="text"
@@ -92,23 +94,37 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
           <Button
             type="submit"
             disabled={!searchTopic.trim() || isSubmitting}
-            className="bg-teal-500 flex items-center justify-center m-auto mr-0 size-12 xs:size-14 sm:size-16 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+            className="hidden bg-teal-500 sm:flex items-center justify-center size-12 xs:size-14 sm:size-16 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
           >
             <ArrowRight className="size-5 xs:size-6 sm:size-7" />
           </Button>
+          <div className="sm:hidden flex items-baseline justify-between w-full">
+            <SelectHolder
+              label="Difficulty"
+              placeholder="Select difficulty"
+              values={["Beginner", "Intermediate", "Advanced"]}
+              onValueChange={(value: string) => setDifficulty(value)}
+            />
+            <Button
+              type="submit"
+              disabled={!searchTopic.trim() || isSubmitting}
+              className="bg-teal-500 flex items-center justify-center size-12 xs:size-14 sm:size-16 text-background hover:bg-teal-500/90 transition-all cursor-pointer border border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+            >
+              <ArrowRight className="size-5 xs:size-6 sm:size-7" />
+            </Button>
+          </div>
         </div>
+        <SelectHolder
+          label="Difficulty"
+          placeholder="Select difficulty"
+          values={["Beginner", "Intermediate", "Advanced"]}
+          onValueChange={(value: string) => setDifficulty(value)}
+          className="hidden sm:block"
+        />
       </form>
       <div className="text-lg font-light flex flex-col gap-3">
         <div>Suggested topics</div>
-        <SuggestedTopics
-          topics={[
-            "Climate Change",
-            "Artificial Intelligence",
-            "Mental Health",
-            "Cryptocurrency",
-            "Space Exploration"
-          ]}
-          onTopicClick={handleSuggestedTopicClick}
+        <SuggestedTopics onTopicClick={handleSuggestedTopicClick}
         />
       </div>
     </div>
