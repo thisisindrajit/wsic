@@ -72,8 +72,6 @@ export const getSimilarTopics = action({
         // filter: (q) => q.eq("contentType", "research_brief"), // Only search brief content
       });
 
-    console.log(vectorResults);
-
     // Filter out the current topic and keep the scores
     const filteredResults = vectorResults
       .filter((result) => result._id !== currentTopicEmbedding._id)

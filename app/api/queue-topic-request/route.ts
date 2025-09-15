@@ -7,23 +7,23 @@ export const POST = async (req: Request) => {
   try {
     const { topic, difficulty, user_id } = await req.json();
 
-    // const result = await client.publishJSON({
-    //   url: process.env.TOPIC_GENERATOR_RENDER_URL!,
-    //   body: {
-    //     topic: topic,
-    //     difficulty: difficulty,
-    //     user_id: user_id,
-    //     publish_immediately: "True",
-    //   },
-    //   retries: 3,
-    //   retryDelay: "30000" // 30 seconds in ms
-    // });
+    const result = await client.publishJSON({
+      url: process.env.TOPIC_GENERATOR_RENDER_URL!,
+      body: {
+        topic: topic,
+        difficulty: difficulty,
+        user_id: user_id,
+        publish_immediately: "True",
+      },
+      retries: 3,
+      retryDelay: "30000" // 30 seconds in ms
+    });
 
-    console.log(topic, difficulty, user_id);
+    // console.log(topic, difficulty, user_id);
 
     return NextResponse.json({
       message: "Topic queued for generation!",
-      // qstashMessageId: result.messageId,
+      qstashMessageId: result.messageId,
     });
   } catch (error) {
     return NextResponse.json({

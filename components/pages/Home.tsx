@@ -57,14 +57,8 @@ const Home = () => {
 
   const handleSuggestedTopicClick = (topic: string) => {
     setSearchTopic(topic);
-    // Auto-submit when clicking suggested topic
-    const searchParams = new URLSearchParams({
-      topic: topic,
-      difficulty: difficulty.toLowerCase()
-    });
-    router.push(`/user/search?${searchParams.toString()}`);
   };
-
+  
   const handleClearInput = () => {
     setSearchTopic('');
   };
