@@ -263,40 +263,223 @@ Better Auth automatically manages the following tables in PostgreSQL:
 - `account` - OAuth provider accounts
 - `verification` - Email verification tokens (if used)
 
+## Topic Generation API
+
+WSIC includes a sophisticated topic generation system that creates educational content on-demand using AI agents.
+
+### Queue Topic Request Endpoint
+
+**POST `/api/queue-topic-request`**
+
+Queues a topic generation request using QStash for asynchronous processing.
+
+```typescript
+// Request body
+{
+  topic: string;        // Topic to generate content for
+  difficulty: string;   // "beginner" | "intermediate" | "advanced"
+  user_id: string;      // Better Auth user ID
+}
+
+// Response
+{
+  message: string;           // Success/error message
+  qstashMessageId: string;   // QStash message ID for tracking
+}
+```
+
+**Implementation:**
+```typescript
+import { Client } from "@upstash/qstash";
+
+const client = new Client({ token: process.env.QSTASH_TOKEN! });
+
+export const POST = async (req: Request) => {
+  const { topic, difficulty, user_id } = await req.json();
+
+  const result = await client.publishJSON({
+    url: process.env.TOPIC_GENERATOR_RENDER_URL!,
+    body: {
+      topic,
+      difficulty,
+      user_id,
+      publish_immediately: "True",
+    },
+    retries: 3,
+    retryDelay: "30000" // 30 seconds
+  });
+
+  return NextResponse.json({
+    message: "Topic queued for generation!",
+    qstashMessageId: result.messageId,
+  });
+};
+```
+
+### Topic Generation Pipeline
+
+The topic generation system uses a multi-agent architecture deployed across multiple cloud services:
+
+```mermaid
+graph LR
+    A[/api/queue-topic-request] --> B[QStash Messaging Queue]
+    B --> C[generator_api - Render Long Running Workers]
+    C --> D[Google Cloud Run - AI Agents Hosted]
+    D --> E[Convex Database]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+    style E fill:#f1f8e9
+```
+
+**Infrastructure Flow:**
+
+1. **Next.js API Route** (`/api/queue-topic-request`): Receives and validates user requests
+2. **QStash Messaging Queue**: Ensures reliable delivery with automatic retries
+3. **Render Long Running Workers** (`generator_api`): Flask API that orchestrates the generation process
+4. **Google Cloud Run**: Auto-scaling platform hosting the AI agents
+5. **Convex Database**: Real-time database storing generated content
+
+**AI Agents:**
+
+1. **Topic Checker Agent**: Validates topic appropriateness
+2. **Topic Generator Agent**: Creates educational content
+3. **Research Agent**: Gathers factual information
+4. **Interactive Content Agent**: Creates quizzes and activities
+5. **Real-World Impact Agent**: Connects topics to current events
+6. **Validator Agent**: Fact-checks all claims
+7. **Summary Agent**: Creates flash cards
+8. **Thumbnail Generator Agent**: Finds relevant images
+9. **Assembler Agent**: Combines all components
+
+**Generator API Endpoints:**
+
+- `POST /check-topic`: Validates topic appropriateness
+- `POST /generate-topic`: Full topic generation pipeline
+- `GET /ok`: Health check endpoint
+
 ## Convex API Integration
 
 WSIC uses Convex for real-time data management and API operations. The application integrates with Convex through React hooks and server functions.
 
-### Convex Functions
+### Search API
 
-#### Topics API
+#### Simple Text Search
 
-**Search Topics:**
+**Simple Search Topics:**
+```typescript
+// convex/search.ts
+export const simpleSearchTopics = query({
+  args: {
+    searchTerm: v.string(),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    )),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Simple text matching on title, description, and tags
+    const searchTerm = args.searchTerm.toLowerCase();
+    const matchingTopics = allTopics.filter(topic => 
+      topic.title.toLowerCase().includes(searchTerm) ||
+      topic.description.toLowerCase().includes(searchTerm) ||
+      topic.tagIds.some(tag => tag.toLowerCase().includes(searchTerm))
+    );
+    // Returns filtered and paginated results
+  },
+});
+```
+
+#### Vector Semantic Search
+
+**Search Similar Topics by Term:**
+```typescript
+// convex/embeddings.ts
+export const searchSimilarTopicsByTerm = action({
+  args: {
+    searchTerm: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // 1. Generate embedding for search term using Google Gemini
+    const embedding = await generateEmbedding(args.searchTerm);
+    
+    // 2. Perform vector search
+    const vectorResults = await ctx.vectorSearch("embeddings", "by_embedding", {
+      vector: embedding,
+    });
+    
+    // 3. Return topics with similarity scores
+    return similarTopics.filter(topic => topic.score !== undefined);
+  },
+});
+```
+
+### Topics API
+
+**Get Trending Topics:**
 ```typescript
 // convex/topics.ts
+export const getTrendingTopics = query({
+  args: {
+    limit: v.optional(v.number()),
+    categoryId: v.optional(v.id("categories")),
+  },
+  handler: async (ctx, args) => {
+    // Dynamic trending algorithm based on engagement metrics
+    const topicsWithScores = topics.map((topic) => {
+      const ageInDays = (now - topic._creationTime) / (24 * 60 * 60 * 1000);
+      const ageFactor = Math.max(0.1, 1 - ageInDays / 30);
+      const totalEngagement = topic.viewCount * 1 + topic.likeCount * 5 + topic.shareCount * 10;
+      const trendingScore = totalEngagement * ageFactor;
+      return { ...topic, trendingScore };
+    });
+    
+    return topicsWithScores
+      .sort((a, b) => b.trendingScore - a.trendingScore)
+      .slice(0, limit);
+  },
+});
+```
+
+**Full-Text Search Topics:**
+```typescript
 export const searchTopics = query({
   args: {
     searchTerm: v.string(),
     categoryId: v.optional(v.id("categories")),
     difficulty: v.optional(v.union(
       v.literal("beginner"),
-      v.literal("intermediate"), 
+      v.literal("intermediate"),
       v.literal("advanced")
     )),
     limit: v.optional(v.number()),
   },
-  // Returns array of topic objects with metadata
-});
-```
-
-**Get Trending Topics:**
-```typescript
-export const getTrendingTopics = query({
-  args: {
-    limit: v.optional(v.number()),
-    categoryId: v.optional(v.id("categories")),
+  handler: async (ctx, args) => {
+    // Uses Convex search index for fast full-text search
+    let searchQuery = ctx.db
+      .query("topics")
+      .withSearchIndex("search_topics", (q) => {
+        let search = q.search("title", args.searchTerm).eq("isPublished", true);
+        if (args.categoryId) {
+          search = search.eq("categoryId", args.categoryId);
+        }
+        return search;
+      });
+    
+    const results = await searchQuery.take(limit);
+    
+    // Filter by difficulty if specified
+    if (args.difficulty) {
+      return results.filter((topic) => topic.difficulty === args.difficulty);
+    }
+    
+    return results;
   },
-  // Returns trending topics for homepage display
 });
 ```
 
@@ -304,7 +487,23 @@ export const getTrendingTopics = query({
 ```typescript
 export const getTopicBySlug = query({
   args: { slug: v.string() },
-  // Returns topic with associated blocks for detailed view
+  handler: async (ctx, args) => {
+    const topic = await ctx.db
+      .query("topics")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .filter((q) => q.eq(q.field("isPublished"), true))
+      .unique();
+
+    if (!topic) return null;
+
+    const blocks = await ctx.db
+      .query("blocks")
+      .withIndex("by_topic_and_order", (q) => q.eq("topicId", topic._id))
+      .order("asc")
+      .collect();
+
+    return { topic, blocks };
+  },
 });
 ```
 

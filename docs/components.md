@@ -293,13 +293,85 @@ interface GoogleSignInButtonProps {
 - Popup blocking
 - Generic authentication failures
 
+### SearchResults (`SearchResults.tsx`)
+
+Comprehensive search results page with dual search strategy and topic generation capabilities.
+
+```typescript
+interface SimilarTopicsType {
+  _id: Id<"topics">;
+  title: string;
+  description: string;
+  slug: string;
+  imageUrl?: string;
+  estimatedReadTime: number;
+  viewCount: number;
+  likeCount: number;
+  shareCount: number;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  score: number;
+}
+
+const SearchContent = () => {
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const topic = searchParams.get("topic") || "";
+  const difficulty = searchParams.get("difficulty") || "beginner";
+  
+  // Dual search strategy
+  const exactMatches = useQuery(api.search.simpleSearchTopics, /* ... */);
+  const [similarTopics, setSimilarTopics] = useState<SimilarTopicsType[]>([]);
+  const searchSimilarTopics = useAction(api.embeddings.searchSimilarTopicsByTerm);
+  
+  // Topic generation for missing content
+  const startBrewingTopic = async () => {
+    const response = await fetch("/api/queue-topic-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, difficulty, user_id: session.user.id })
+    });
+    // Handle response and update UI state
+  };
+};
+```
+
+**Features:**
+- **Dual Search Strategy**: Combines exact text matching with vector semantic search
+- **Smart Result Categorization**: High-score similar topics (>0.85) mixed with exact matches
+- **Topic Generation**: "Brew Your Topic" feature for missing content
+- **Real-time Status Updates**: Shows brewing progress and completion
+- **Responsive Design**: Adapts to mobile and desktop layouts
+- **Error Handling**: Comprehensive error states and retry mechanisms
+- **Loading States**: Smooth loading animations during search and generation
+
+**Search Algorithm:**
+1. **Exact Matches**: Full-text search using Convex search index
+2. **Vector Search**: Semantic similarity using Google Gemini embeddings
+3. **Score-based Filtering**: High-score similar topics (>0.85) promoted to "Found Topics"
+4. **Fallback Generation**: Topic brewing when no relevant content exists
+
+**Topic Generation Flow:**
+1. User searches for non-existent topic
+2. "Brew Your Topic" interface appears with estimated time (3-4 minutes)
+3. Request queued via QStash to topic generation API
+4. Real-time status updates via brewing state management
+5. Success/error handling with navigation options
+
+**UI States:**
+- **Loading**: Animated spinner during search operations
+- **Found Results**: Grid display of exact and high-score similar topics
+- **Related Topics**: Lower-score similar topics as suggestions
+- **No Results**: Topic brewing interface with generation option
+- **Brewing**: Progress indicator with estimated completion time
+- **Error**: Retry options and fallback navigation
+
 ### SuggestedTopics (`SuggestedTopics.tsx`)
 
 Component displaying suggested search topics as interactive buttons with click handling.
 
 ```typescript
 interface SuggestedTopicsProps {
-  topics: string[];
+  topics?: string[];
   onTopicClick?: (topic: string) => void;
 }
 
@@ -310,20 +382,26 @@ interface SuggestedTopicsProps {
 ```
 
 **Features:**
-- Customizable topic list via props
-- Click handler for topic selection
-- Interactive button styling with hover effects
-- Responsive flexbox layout with wrapping
-- Scale animation on hover
-- Teal accent color on hover
-- Rounded pill design
-- Integration with TopicSearch component
+- **Default Topics**: Pre-configured popular topics if none provided
+- **Customizable List**: Accept custom topic arrays via props
+- **Click Handler**: Callback for topic selection events
+- **Interactive Styling**: Hover effects with scale animations
+- **Touch Optimization**: 44px minimum touch targets for mobile
+- **Responsive Design**: Flexible wrapping layout
+- **Visual Feedback**: Scale and shadow effects on interaction
 
-**Usage in TopicSearch:**
-- Automatically populates search input when topic is clicked
-- Triggers search callback immediately on topic selection
-- Provides quick access to popular topics
-- Enhances user experience with suggested content
+**Default Topics:**
+- Climate Change
+- Artificial Intelligence  
+- Mental Health
+- Renewable Energy
+- Virtual Reality
+
+**Usage Patterns:**
+- **TopicSearch Integration**: Auto-populates search input on click
+- **Home Page**: Quick access to popular topics
+- **Dashboard**: Personalized topic suggestions
+- **Search Results**: Alternative topic suggestions
 
 ## Layout Components
 

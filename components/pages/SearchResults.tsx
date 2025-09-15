@@ -78,8 +78,8 @@ const SearchContent = () => {
   const isLoading = (exactMatches === undefined) || vectorLoading;
 
   // Combine results
-  const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.85);
-  const lowScoreSimilar = similarTopics.filter(topic => topic.score <= 0.85);
+  const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.8);
+  const lowScoreSimilar = similarTopics.filter(topic => topic.score <= 0.8);
 
   const foundTopics = [
     ...(exactMatches || []),
@@ -128,7 +128,7 @@ const SearchContent = () => {
     return (
       <div className="text-center py-8">
         <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">No search topic provided</h2>
+        <h2 className="text-xl mb-2">No search topic provided</h2>
         <p className="text-muted-foreground">Please go back and enter a topic to search for.</p>
       </div>
     );
@@ -138,7 +138,7 @@ const SearchContent = () => {
     return (
       <div className="flex flex-col items-center justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-teal-500 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">{`Searching for "${topic}"`}</h2>
+        <h2 className="text-xl mb-2">{`Searching for "${topic}"`}</h2>
         <p className="text-muted-foreground">Finding the best content for you...</p>
       </div>
     );
@@ -148,11 +148,11 @@ const SearchContent = () => {
     <div>
       {/* Search Header */}
       <div className="mb-10">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-3xl/snug mb-2">
           {`Search Results for "${topic}"`}
         </h1>
         <p className="text-muted-foreground">
-          Difficulty: <span className="capitalize font-medium">{difficulty}</span>
+          Difficulty: <span className="capitalize">{difficulty}</span>
         </p>
       </div>
 
@@ -160,7 +160,7 @@ const SearchContent = () => {
         <div className="space-y-12">
           {/* Found Topics */}
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Found Topics</h2>
+            <h2 className="text-2xl mb-4">Found Topics</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               {foundTopics.map((topic) => (
                 <Block
@@ -182,7 +182,7 @@ const SearchContent = () => {
           {/* Related Topics */}
           {lowScoreSimilar.length > 0 && (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Related Topics</h2>
+              <h2 className="text-2xl mb-4">Related Topics</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 {lowScoreSimilar.slice(0, 6).map((topic) => (
                   <Block
@@ -206,9 +206,9 @@ const SearchContent = () => {
         <div>
           {/* No Results - Show Brewing Message */}
           <div className="mx-auto text-center">
-            <div className="my-6">
+            <div className="mt-12 mb-6">
               <Beaker className="h-16 w-16 mx-auto text-teal-500 mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Brew Your Topic</h2>
+              <h2 className="text-2xl mb-4">Brew Your Topic</h2>
               <p className="text-muted-foreground mb-4">
                 {`We don't have content for "${topic}" yet, but we're can start to brew it for you!`}
               </p>
@@ -229,7 +229,7 @@ const SearchContent = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-center gap-2 text-teal-600 mb-4">
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="font-medium">Brewing started!</span>
+                  <span className="">Brewing started!</span>
                 </div>
                 <p className="text-muted-foreground mb-4">
                   {`Your topic is now being brewed. You'll be notified when it's ready.`}
@@ -246,7 +246,7 @@ const SearchContent = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-center gap-2 text-red-600 mb-4">
                   <AlertCircle className="h-5 w-5" />
-                  <span className="font-medium">Brewing failed</span>
+                  <span className="">Brewing failed</span>
                 </div>
                 <p className="text-muted-foreground mb-4">
                   {brewingError || "Something went wrong while starting to brew your topic."}
@@ -275,7 +275,7 @@ const SearchContent = () => {
           {/* Show Similar Topics if Available */}
           {lowScoreSimilar.length > 0 && (
             <section className="mt-12">
-              <h3 className="text-xl font-semibold mb-4">Meanwhile, check out these topics</h3>
+              <h3 className="text-xl mb-4">Also check out these topics</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 {lowScoreSimilar.slice(0, 6).map((topic) => (
                   <Block

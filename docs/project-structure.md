@@ -136,21 +136,67 @@ convex/
 ├── topics.ts             # Topic queries and mutations
 ├── users.ts              # User interaction tracking
 ├── notifications.ts      # Notification system
-├── rewards.ts            # Gamification and rewards
-├── recommendations.ts    # Content recommendation engine
-├── search.ts             # Search functionality
-├── tags.ts               # Tag management
+├── embeddings.ts         # Vector embeddings and semantic search
+├── search.ts             # Simple text search functionality
 ├── seed.ts               # Database seeding functions
 ├── constants.ts          # Convex-specific constants
-└── index.ts              # Main exports
+├── crons.ts              # Scheduled jobs and maintenance
+└── types.ts              # Shared type definitions
 ```
 
 **Key Files:**
-- `schema.ts`: Defines all database tables, indexes, and relationships
-- `topics.ts`: Core content queries including search and trending topics
-- `users.ts`: User interaction tracking and engagement metrics
+- `schema.ts`: Defines all database tables, indexes, and vector search configuration
+- `topics.ts`: Core content queries including trending algorithm and full-text search
+- `search.ts`: Simple text-based search with filtering capabilities
+- `embeddings.ts`: Vector embeddings management and semantic search using Google Gemini
+- `blocks.ts`: Multi-agent generated content blocks (research, quizzes, summaries)
 - `notifications.ts`: Real-time notification system with Convex integration
-- `blocks.ts`: Content block management for topics (text, exercises, media, code)
+- `users.ts`: User interaction tracking and engagement metrics
+
+### `/generator_api` - Topic Generation Service
+
+```
+generator_api/
+├── .env                  # Environment variables for Python services
+├── .venv/                # Python virtual environment
+├── __pycache__/          # Python bytecode cache
+├── app.py                # Flask API for topic generation orchestration
+└── requirements.txt      # Python dependencies
+```
+
+**Key Features:**
+- **Topic Validation**: Checks topic appropriateness before generation
+- **Multi-Agent Orchestration**: Coordinates research, content creation, and validation
+- **Convex Integration**: Stores generated content directly in database
+- **Error Handling**: Comprehensive error management and retry logic
+
+### `/agents` - AI Agent Services
+
+```
+agents/
+├── .venv/                # Shared Python virtual environment
+├── topic-checker/        # Topic validation agent
+│   ├── .env             # Agent-specific environment variables
+│   ├── README.md        # Agent documentation
+│   ├── __init__.py      # Python package initialization
+│   ├── __pycache__/     # Python bytecode cache
+│   ├── agent.py         # Main agent implementation
+│   └── requirements.txt # Agent dependencies
+└── topic-generator/      # Content generation agent
+    ├── .env             # Agent-specific environment variables
+    ├── README.md        # Agent documentation
+    ├── __init__.py      # Python package initialization
+    ├── __pycache__/     # Python bytecode cache
+    ├── agent.py         # Main agent implementation
+    ├── requirements.txt # Agent dependencies
+    └── test_insertion.py # Testing utilities
+```
+
+**Agent Architecture:**
+- **Topic Checker**: Validates topic appropriateness and educational value
+- **Topic Generator**: Creates comprehensive educational content using multi-agent workflow
+- **Modular Design**: Each agent is independently deployable and scalable
+- **Testing Support**: Comprehensive testing utilities for agent validation
 
 ### `/interfaces` - TypeScript Interfaces
 
@@ -241,28 +287,42 @@ import { APP_NAME } from "@/constants/common";
 
 ## Recent Changes
 
-**Convex Integration:**
-- Comprehensive database schema with 12+ tables for topics, blocks, users, notifications
-- Real-time notification system with unread count and mark-as-read functionality
-- User interaction tracking for likes, saves, shares, and completions
-- Gamification system with rewards and achievement notifications
-- Full-text search capabilities with filtering and categorization
-- Content generation request tracking and status management
+**Search System Implementation:**
+- **Dual Search Strategy**: Combined text search and vector semantic search
+- **Vector Embeddings**: Google Gemini 768-dimensional embeddings for semantic similarity
+- **Smart Result Categorization**: High-score similar topics promoted to main results
+- **Topic Generation**: "Brew Your Topic" feature for missing content with QStash integration
+- **Real-time Search**: Instant text search with debounced vector search
+
+**AI-Powered Content Generation:**
+- **Multi-Agent Architecture**: 8 specialized agents for content creation pipeline
+- **Topic Validation**: Automated appropriateness checking before generation
+- **Comprehensive Content**: Research briefs, deep dives, real-world impact, quizzes, summaries
+- **Fact Verification**: Automated fact-checking using Google Search API
+- **Thumbnail Generation**: Automated image selection using Serper API
+
+**Enhanced Database Schema:**
+- **Vector Search Support**: Convex vector index with 768 dimensions
+- **Embeddings Table**: Semantic search capabilities with filtering
+- **Block Content Types**: 7 different content types from multi-agent generation
+- **Notification System**: Real-time notifications with expiration and archiving
+- **User Interactions**: Comprehensive tracking of engagement metrics
 
 **Component Enhancements:**
-- Block component now features glassmorphism design with backdrop blur effects
-- SuggestedTopics component includes default topics and customizable props
-- Notification component with real-time Convex integration and dropdown interface
-- Enhanced hover animations and visual effects across components
-- MetaThemeAndBgColor component for dynamic browser UI theming
+- **SearchResults Component**: Sophisticated search interface with dual strategy
+- **Topic Generation UI**: Brewing interface with progress tracking and error handling
+- **Block Component**: Glassmorphism design with backdrop blur effects
+- **Enhanced Navigation**: Responsive sidebar and mobile bottom navigation
+- **Real-time Updates**: Convex integration for live data synchronization
+
+**API Integration:**
+- **QStash Integration**: Asynchronous topic generation with retry logic
+- **Google APIs**: Gemini embeddings and search for content generation
+- **Serper API**: Image search for thumbnail generation
+- **Better Auth**: Secure user authentication with PostgreSQL sessions
 
 **Configuration Updates:**
-- TypeScript target updated to ES2017
-- PostCSS configuration simplified for Tailwind CSS 4
-- All configuration files aligned with latest Next.js 15 standards
-- Convex 1.26.2 integration with type-safe API generation
-
-**Navigation System:**
-- Comprehensive navigation constants with desktop and mobile configurations
-- NavigationSidebar and MobileBottomNavigation components
-- TopBar visibility hook for scroll-based interactions
+- **Next.js 15.4.6**: Latest App Router with server components
+- **Convex 1.26.2**: Vector search and real-time synchronization
+- **TypeScript 5**: Enhanced type safety with strict configuration
+- **Tailwind CSS 4**: Modern utility-first styling with custom components
