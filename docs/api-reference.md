@@ -291,28 +291,36 @@ Queues a topic generation request using QStash for asynchronous processing.
 **Implementation:**
 ```typescript
 import { Client } from "@upstash/qstash";
+import { NextResponse } from "next/server";
 
 const client = new Client({ token: process.env.QSTASH_TOKEN! });
 
 export const POST = async (req: Request) => {
-  const { topic, difficulty, user_id } = await req.json();
+  try {
+    const { topic, difficulty, user_id } = await req.json();
 
-  const result = await client.publishJSON({
-    url: process.env.TOPIC_GENERATOR_RENDER_URL!,
-    body: {
-      topic,
-      difficulty,
-      user_id,
-      publish_immediately: "True",
-    },
-    retries: 3,
-    retryDelay: "30000" // 30 seconds
-  });
+    const result = await client.publishJSON({
+      url: process.env.TOPIC_GENERATOR_RENDER_URL!,
+      body: {
+        topic: topic,
+        difficulty: difficulty,
+        user_id: user_id,
+        publish_immediately: "True",
+      },
+      retries: 3,
+      retryDelay: "30000" // 30 seconds in ms
+    });
 
-  return NextResponse.json({
-    message: "Topic queued for generation!",
-    qstashMessageId: result.messageId,
-  });
+    return NextResponse.json({
+      message: "Topic queued for generation!",
+      qstashMessageId: result.messageId,
+    });
+  } catch (error) {
+    return NextResponse.json({
+      message: "Error queuing topic for generation!",
+      error: error,
+    });
+  }
 };
 ```
 
@@ -381,7 +389,36 @@ export const simpleSearchTopics = query({
     )),
     limit: v.optional(v.number()),
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("topics"),
+      _creationTime: v.number(),
+      title: v.string(),
+      description: v.string(),
+      slug: v.string(),
+      categoryId: v.optional(v.id("categories")),
+      tagIds: v.array(v.string()),
+      imageUrl: v.optional(v.string()),
+      difficulty: v.union(
+        v.literal("beginner"),
+        v.literal("intermediate"),
+        v.literal("advanced")
+      ),
+      estimatedReadTime: v.number(),
+      viewCount: v.number(),
+      likeCount: v.number(),
+      shareCount: v.number(),
+    })
+  ),
   handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+
+    // Get all published topics
+    const allTopics = await ctx.db
+      .query("topics")
+      .withIndex("by_published", (q) => q.eq("isPublished", true))
+      .collect();
+
     // Simple text matching on title, description, and tags
     const searchTerm = args.searchTerm.toLowerCase();
     const matchingTopics = allTopics.filter(topic => 
@@ -389,7 +426,13 @@ export const simpleSearchTopics = query({
       topic.description.toLowerCase().includes(searchTerm) ||
       topic.tagIds.some(tag => tag.toLowerCase().includes(searchTerm))
     );
-    // Returns filtered and paginated results
+
+    // Filter by difficulty if specified
+    const filteredTopics = args.difficulty 
+      ? matchingTopics.filter(topic => topic.difficulty === args.difficulty)
+      : matchingTopics;
+
+    return filteredTopics.slice(0, limit);
   },
 });
 ```
@@ -404,17 +447,52 @@ export const searchSimilarTopicsByTerm = action({
     searchTerm: v.string(),
     limit: v.optional(v.number()),
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("topics"),
+      title: v.string(),
+      description: v.string(),
+      slug: v.string(),
+      imageUrl: v.optional(v.string()),
+      difficulty: v.union(
+        v.literal("beginner"),
+        v.literal("intermediate"),
+        v.literal("advanced")
+      ),
+      estimatedReadTime: v.number(),
+      viewCount: v.number(),
+      likeCount: v.number(),
+      shareCount: v.number(),
+      score: v.number(),
+    })
+  ),
   handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+
     // 1. Generate embedding for search term using Google Gemini
     const embedding = await generateEmbedding(args.searchTerm);
-    
+    if (!embedding) return [];
+
     // 2. Perform vector search
     const vectorResults = await ctx.vectorSearch("embeddings", "by_embedding", {
       vector: embedding,
     });
-    
-    // 3. Return topics with similarity scores
-    return similarTopics.filter(topic => topic.score !== undefined);
+
+    // 3. Get topic data with similarity scores
+    const similarTopics = await ctx.runQuery(
+      internal.embeddings.getTopicsByEmbeddingIdsInternal,
+      {
+        embeddingResults: vectorResults.map((r) => ({
+          embeddingId: r._id,
+          score: r._score,
+        })),
+      }
+    );
+
+    // 4. Return topics with similarity scores
+    return similarTopics
+      .filter((topic) => topic.score !== undefined)
+      .slice(0, limit);
   },
 });
 ```
@@ -429,16 +507,76 @@ export const getTrendingTopics = query({
     limit: v.optional(v.number()),
     categoryId: v.optional(v.id("categories")),
   },
+  returns: v.array(
+    v.object({
+      _id: v.id("topics"),
+      _creationTime: v.number(),
+      title: v.string(),
+      description: v.string(),
+      slug: v.string(),
+      categoryId: v.optional(v.id("categories")),
+      tagIds: v.array(v.string()),
+      imageUrl: v.optional(v.string()),
+      difficulty: v.union(
+        v.literal("beginner"),
+        v.literal("intermediate"),
+        v.literal("advanced")
+      ),
+      estimatedReadTime: v.number(),
+      isPublished: v.boolean(),
+      isTrending: v.boolean(),
+      viewCount: v.number(),
+      likeCount: v.number(),
+      shareCount: v.number(),
+      createdBy: v.optional(v.string()),
+      lastUpdated: v.number(),
+      isAIGenerated: v.boolean(),
+      generationPrompt: v.optional(v.string()),
+      sources: v.optional(v.array(v.string())),
+      metadata: v.optional(
+        v.object({
+          wordCount: v.number(),
+          readingLevel: v.any(),
+          estimatedTime: v.optional(v.number()),
+          exerciseCount: v.optional(v.number()),
+        })
+      ),
+      trendingScore: v.number(),
+    })
+  ),
   handler: async (ctx, args) => {
-    // Dynamic trending algorithm based on engagement metrics
+    const limit = args.limit ?? 10;
+
+    // Get all published topics with optional category filtering
+    let baseQuery = ctx.db
+      .query("topics")
+      .withIndex("by_published", (q) => q.eq("isPublished", true));
+
+    if (args.categoryId) {
+      baseQuery = ctx.db
+        .query("topics")
+        .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId!))
+        .filter((q) => q.eq(q.field("isPublished"), true));
+    }
+
+    const topics = await baseQuery.collect();
+
+    // Calculate trending score for each topic
+    const now = Date.now();
     const topicsWithScores = topics.map((topic) => {
+      // Age factor (newer topics get a boost)
       const ageInDays = (now - topic._creationTime) / (24 * 60 * 60 * 1000);
-      const ageFactor = Math.max(0.1, 1 - ageInDays / 30);
-      const totalEngagement = topic.viewCount * 1 + topic.likeCount * 5 + topic.shareCount * 10;
+      const ageFactor = Math.max(0.1, 1 - ageInDays / 30); // Decay over 30 days
+
+      // Calculate trending score based on total engagement
+      const totalEngagement =
+        topic.viewCount * 1 + topic.likeCount * 5 + topic.shareCount * 10;
       const trendingScore = totalEngagement * ageFactor;
+
       return { ...topic, trendingScore };
     });
-    
+
+    // Sort by trending score and return top results
     return topicsWithScores
       .sort((a, b) => b.trendingScore - a.trendingScore)
       .slice(0, limit);

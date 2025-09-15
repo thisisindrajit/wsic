@@ -8,11 +8,23 @@
 - [Architecture](#architecture)
 - [Technology Stack](#technology-stack)
 - [Database Schema](#database-schema)
+- [Search System](#search-system)
 - [AI Content Generation](#ai-content-generation)
 - [API Reference](#api-reference)
 - [Development Setup](#development-setup)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
+
+## 📖 Documentation Files
+
+- **[Getting Started](./getting-started.md)** - Setup and installation guide
+- **[Project Structure](./project-structure.md)** - Codebase organization and architecture
+- **[API Reference](./api-reference.md)** - Authentication and database integration
+- **[Components](./components.md)** - React component documentation
+- **[Hooks Reference](./hooks-reference.md)** - Custom React hooks documentation
+- **[Search System](./search-system.md)** - Dual search strategy with vector embeddings
+- **[Topic Generation](./topic-generation.md)** - AI-powered content creation pipeline
+- **[Configuration](./configuration.md)** - Environment and build configuration
 
 ## 🎯 Overview
 
@@ -45,9 +57,11 @@
 
 ### Backend Services
 
-- **Convex**: Real-time database for main application data
+- **Convex**: Real-time database with vector search for main application data
 - **PostgreSQL**: User sessions and analytics (Better Auth)
-- **AI Agents**: Multi-agent content generation system
+- **QStash**: Message queuing for asynchronous topic generation
+- **Render**: Long-running workers for AI agent orchestration
+- **Google Cloud Run**: Auto-scaling platform for AI agents
 
 ### Authentication
 
@@ -61,16 +75,42 @@
 
 #### Convex Database (Main Application Data)
 
-- **Topics**: Educational content with metadata
-- **Blocks**: Individual content pieces (text, exercises, media)
-- **Categories**: 26 comprehensive topic categories
-- **User Interactions**: Views, likes, saves, completions
-- **Generation Requests**: AI content generation tracking
+- **Topics**: Educational content with metadata and AI generation tracking
+- **Blocks**: Individual content pieces (research, quizzes, summaries, real-world impact)
+- **Categories**: 26 comprehensive topic categories with color schemes
+- **Embeddings**: 768-dimensional vectors for semantic search (Google Gemini)
+- **User Interactions**: Views, likes, saves, shares, completions with metadata
+- **Notifications**: Real-time user notifications with expiration
 
 #### PostgreSQL (Authentication & Analytics)
 
-- **User Sessions**: Better Auth session management
+- **User Sessions**: Better Auth session management with Google OAuth
 - **Analytics Data**: User behavior and engagement metrics
+
+## 🔍 Search System
+
+### Dual Search Strategy
+
+WSIC implements a sophisticated search system combining:
+
+1. **Simple Text Search**: Fast exact matching on titles, descriptions, and tags
+2. **Vector Semantic Search**: AI-powered semantic similarity using Google Gemini embeddings
+
+### Search Flow
+
+1. **User Query**: Search input with difficulty filter
+2. **Parallel Execution**: Text and vector searches run simultaneously
+3. **Result Categorization**: 
+   - High-score similar topics (>0.8) promoted to "Found Topics"
+   - Lower-score topics shown as "Related Topics"
+4. **Topic Generation**: "Brew Your Topic" for missing content
+
+### Vector Embeddings
+
+- **Model**: Google Gemini `gemini-embedding-001`
+- **Dimensions**: 768
+- **Task Type**: `SEMANTIC_SIMILARITY`
+- **Storage**: Convex vector index with filtering capabilities
 
 ### Categories (26 Total)
 

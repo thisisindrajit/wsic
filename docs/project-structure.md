@@ -209,7 +209,12 @@ interfaces/
 
 ```
 hooks/
-└── useTopBarVisibility.ts # TopBar scroll-based visibility hook
+├── useTopBarVisibility.ts    # TopBar scroll-based visibility hook
+├── useTrendingTopics.ts      # Trending topics data fetching
+├── useTopic.ts               # Individual topic data management
+├── useTopicInteractions.ts   # User interaction handling (like, save, share)
+├── useTopics.ts              # General topics data fetching
+└── useUserTopics.ts          # User-specific topic data
 ```
 
 ### `/providers` - React Context Providers
@@ -244,6 +249,9 @@ docs/
 ├── project-structure.md   # This file
 ├── api-reference.md       # API endpoints and authentication
 ├── components.md          # Component documentation
+├── hooks-reference.md     # Custom React hooks documentation
+├── search-system.md       # Search system architecture
+├── topic-generation.md    # AI-powered content generation
 └── configuration.md       # Environment and build configuration
 ```
 
@@ -288,11 +296,11 @@ import { APP_NAME } from "@/constants/common";
 ## Recent Changes
 
 **Search System Implementation:**
-- **Dual Search Strategy**: Combined text search and vector semantic search
+- **Dual Search Strategy**: Combined text search (`convex/search.ts`) and vector semantic search (`convex/embeddings.ts`)
 - **Vector Embeddings**: Google Gemini 768-dimensional embeddings for semantic similarity
-- **Smart Result Categorization**: High-score similar topics promoted to main results
+- **Smart Result Categorization**: High-score similar topics (>0.8) promoted to main results
 - **Topic Generation**: "Brew Your Topic" feature for missing content with QStash integration
-- **Real-time Search**: Instant text search with debounced vector search
+- **Real-time Search**: Instant text search with async vector search
 
 **AI-Powered Content Generation:**
 - **Multi-Agent Architecture**: 8 specialized agents for content creation pipeline
@@ -300,23 +308,30 @@ import { APP_NAME } from "@/constants/common";
 - **Comprehensive Content**: Research briefs, deep dives, real-world impact, quizzes, summaries
 - **Fact Verification**: Automated fact-checking using Google Search API
 - **Thumbnail Generation**: Automated image selection using Serper API
+- **Flask API**: `generator_api/app.py` orchestrates the generation process
 
 **Enhanced Database Schema:**
-- **Vector Search Support**: Convex vector index with 768 dimensions
-- **Embeddings Table**: Semantic search capabilities with filtering
+- **Vector Search Support**: Convex vector index with 768 dimensions for semantic search
+- **Embeddings Table**: Semantic search capabilities with difficulty and category filtering
 - **Block Content Types**: 7 different content types from multi-agent generation
 - **Notification System**: Real-time notifications with expiration and archiving
-- **User Interactions**: Comprehensive tracking of engagement metrics
+- **User Interactions**: Comprehensive tracking of engagement metrics (views, likes, shares)
 
 **Component Enhancements:**
-- **SearchResults Component**: Sophisticated search interface with dual strategy
-- **Topic Generation UI**: Brewing interface with progress tracking and error handling
-- **Block Component**: Glassmorphism design with backdrop blur effects
+- **SearchResults Component**: Sophisticated search interface with dual strategy and brewing UI
+- **Block Component**: Glassmorphism design with interactive buttons and real-time updates
+- **TopicSearch Component**: Integrated navigation with difficulty selection and suggested topics
 - **Enhanced Navigation**: Responsive sidebar and mobile bottom navigation
 - **Real-time Updates**: Convex integration for live data synchronization
 
+**Custom Hooks:**
+- **useTrendingTopics**: React Query integration with Convex for trending topics
+- **useTopicInteractions**: User interaction handling (like, save, share) with optimistic updates
+- **useTopic**: Individual topic data management with real-time updates
+- **useTopics**: General topics data fetching with filtering and pagination
+
 **API Integration:**
-- **QStash Integration**: Asynchronous topic generation with retry logic
+- **QStash Integration**: Asynchronous topic generation with retry logic (`/api/queue-topic-request`)
 - **Google APIs**: Gemini embeddings and search for content generation
 - **Serper API**: Image search for thumbnail generation
 - **Better Auth**: Secure user authentication with PostgreSQL sessions
@@ -324,5 +339,8 @@ import { APP_NAME } from "@/constants/common";
 **Configuration Updates:**
 - **Next.js 15.4.6**: Latest App Router with server components
 - **Convex 1.26.2**: Vector search and real-time synchronization
+- **React 19.1.0**: Latest React with improved performance
 - **TypeScript 5**: Enhanced type safety with strict configuration
 - **Tailwind CSS 4**: Modern utility-first styling with custom components
+- **@google/genai 1.19.0**: Google AI integration for embeddings
+- **@upstash/qstash 2.8.2**: Reliable message queuing for topic generation

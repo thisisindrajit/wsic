@@ -21,6 +21,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "Source code has been modified in this Next.js TypeScript project. Please analyze the changes and update the documentation in the /docs folder accordingly. Focus on:\n\n1. API changes and new endpoints\n2. Component updates and new components\n3. Configuration changes\n4. New features or functionality\n5. Updated dependencies or project structure\n\nEnsure the documentation remains accurate, comprehensive, and helpful for developers working on this project. Create or update relevant documentation files in the /docs folder as needed."
+    "prompt": "Source code has been modified in the project. Please analyze the changes and update the documentation in the /docs folder accordingly. Focus on:\n\n1. API changes and new endpoints\n2. Component updates and new components\n3. Configuration changes\n4. New features or functionality\n5. Updated dependencies or project structure\n\nEnsure the documentation remains accurate, comprehensive, and helpful for developers working on this project. Create or update relevant documentation files in the /docs folder as needed."
   }
 }

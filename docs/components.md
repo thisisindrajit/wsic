@@ -107,50 +107,59 @@ import { Separator } from "@/components/ui/separator";
 
 ### TopicSearch (`TopicSearch.tsx`)
 
-Main search component for topic exploration with "Why Should I Care about" branding.
+Main search component for topic exploration with "Why Should I Care about" branding and integrated navigation.
 
 ```typescript
 interface TopicSearchProps {
-  onSearch?: (topic: string) => void;
   className?: string;
 }
 
-<TopicSearch 
-  onSearch={(topic) => console.log('Searching for:', topic)}
-  className="custom-class"
-/>
+<TopicSearch className="custom-class" />
 ```
 
 **Features:**
-- Branded "Why Should I Care about" heading with gradient text effects
-- Large, responsive input field with custom styling
-- Submit button with arrow icon and loading states
-- Form validation (prevents empty submissions)
-- Integrated suggested topics component
-- Async search handling with error management
-- Responsive design for mobile and desktop
-- Touch-optimized interactions
-- Auto-capitalization and spell-check enabled
+- **Branded Heading**: "Why Should I Care about" with gradient text effects on W, S, I, C
+- **Responsive Input**: Large, borderless input with bottom border focus states
+- **Difficulty Selection**: Integrated SelectHolder component for difficulty levels
+- **Navigation Integration**: Uses Next.js router for search page navigation
+- **Suggested Topics**: Quick-select buttons for popular topics
+- **Form Validation**: Prevents empty submissions with disabled states
+- **Loading States**: Submit button disabled during navigation
+- **Clear Functionality**: X button to clear input with smooth animations
+- **Touch Optimization**: 44px minimum touch targets for mobile interactions
 
-**Styling Details:**
-- Gradient text effects on key letters (W, S, I, C)
-- Borderless input with bottom border focus states
-- Teal color scheme matching app branding
-- Responsive typography scaling (4xl → 5xl → 6xl)
-- Custom focus states with teal accent colors
-- Disabled states with opacity and cursor changes
+**Responsive Behavior:**
+- **Mobile**: Stacked layout with difficulty selector below input
+- **Desktop**: Horizontal layout with difficulty selector and submit button
+- **Typography**: Scales from 2xl on mobile to 4xl on desktop
+- **Button Sizing**: Responsive sizing from 12x12 to 16x16 pixels
 
-**Form Behavior:**
-- Prevents submission of empty/whitespace-only searches
-- Shows loading state during async operations
-- Calls onSearch callback with trimmed topic string
-- Integrates with SuggestedTopics for quick topic selection
-- Supports both form submission and suggested topic clicks
+**Form Handling:**
+```typescript
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  const trimmedTopic = searchTopic.trim();
+  if (!trimmedTopic) return;
 
-**Implementation Notes:**
-- The `onSearch` callback is currently synchronous but wrapped in async/await for future API integration
-- TypeScript may show a hint about `await` having no effect - this is intentional for forward compatibility
-- Error handling is implemented for future async search operations
+  setIsSubmitting(true);
+  
+  // Navigate to search page with topic and difficulty as search params
+  const searchParams = new URLSearchParams({
+    topic: trimmedTopic,
+    difficulty: difficulty.toLowerCase()
+  });
+  
+  router.push(`/user/search?${searchParams.toString()}`);
+};
+```
+
+**Styling Features:**
+- **Gradient Text**: Teal gradient on brand letters (W, S, I, C)
+- **Focus States**: Teal border color on input focus
+- **Hover Effects**: Scale animations on suggested topic buttons
+- **Disabled States**: Opacity and cursor changes for form validation
+- **Clear Button**: Positioned absolutely with hover effects
+- **Responsive Typography**: Fluid scaling across breakpoints
 
 ### Notification (`Notification.tsx`)
 
@@ -232,35 +241,54 @@ Dynamic meta tag management for browser UI theming.
 
 ### Block (`Block.tsx`)
 
-Content block component for displaying topic information with glassmorphism design.
+Content block component for displaying topic information with glassmorphism design and interactive features.
 
 ```typescript
 interface TrendingBlockProps {
-  imageUrl: string;
+  id: Id<"topics">;
+  imageUrl?: string;
   title: string;
   description: string;
   likes: number;
   shares: number;
+  difficulty?: string;
+  estimatedReadTime?: number;
+  viewCount?: number;
 }
 
 <Block
+  id={topicId}
   imageUrl="https://example.com/image.jpg"
   title="Climate Change"
   description="Understanding global warming effects..."
   likes={2340}
   shares={650}
+  difficulty="intermediate"
+  estimatedReadTime={15}
+  viewCount={12500}
 />
 ```
 
 **Features:**
-- Full background image with gradient overlay
-- Glassmorphism design with backdrop blur
-- Social engagement metrics (likes, shares)
-- Responsive aspect ratio (2/2.5)
-- Hover animations with scale and glow effects
-- View button with glassmorphism styling
-- Text with drop shadows for readability
-- Line clamping for title and description
+- **Full Background Image**: Gradient overlay with fallback gradient background
+- **Glassmorphism Design**: Backdrop blur effects with rim lighting
+- **Interactive Buttons**: Like, save, share, and view actions with real-time updates
+- **Social Engagement**: Live metrics with formatted display (12.5K views, 2.3K likes)
+- **Difficulty Badges**: Color-coded difficulty indicators
+- **Reading Time**: Estimated completion time with clock icon
+- **View Count**: Formatted view statistics with eye icon
+- **Responsive Design**: Aspect ratio 2/2.5 with touch-optimized interactions
+- **Error Handling**: Image error fallback with gradient background
+- **Share Dialog**: Integrated share functionality with platform options
+- **Real-time Updates**: Local state management for immediate UI feedback
+
+**Interactive Features:**
+- **Like Button**: Heart icon with fill animation and color change
+- **Save Button**: Bookmark icon with fill animation
+- **Share Button**: Opens share dialog with multiple platform options
+- **View Button**: Navigation to topic detail page
+- **Hover Effects**: Scale animations and glow effects
+- **Touch Optimization**: 44px minimum touch targets for mobile
 
 ### GoogleSignInButton (`GoogleSignInButton.tsx`)
 
@@ -593,6 +621,87 @@ const UserDashboard = () => {
 - Session-based content personalization
 - User-specific notifications and interactions
 - Convex integration for real-time updates
+
+## Custom Hooks
+
+### useTrendingTopics (`useTrendingTopics.ts`)
+
+Hook for fetching trending topics with caching and error handling.
+
+```typescript
+import { useTrendingTopics, useTrendingUpdate } from "@/hooks/useTrendingTopics";
+
+function TrendingSection() {
+  const { data: trendingTopics, isLoading, isError } = useTrendingTopics({
+    categoryId: undefined,
+    limit: 5
+  });
+  
+  const { updateTrending } = useTrendingUpdate();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading trending topics</div>;
+
+  return (
+    <div>
+      {trendingTopics?.map(topic => (
+        <Block key={topic._id} {...topic} />
+      ))}
+      <button onClick={updateTrending}>Refresh Trending</button>
+    </div>
+  );
+}
+```
+
+**Features:**
+- **React Query Integration**: Automatic caching and background updates
+- **Convex Integration**: Real-time data synchronization
+- **Error Handling**: Graceful error states with toast notifications
+- **Manual Updates**: Trigger trending algorithm recalculation
+- **Configurable**: Optional category filtering and result limits
+- **Performance**: 2-minute stale time, 10-minute garbage collection
+
+### useTopicInteractions (`useTopicInteractions.ts`)
+
+Hook for managing user interactions with topics (like, save, share).
+
+```typescript
+import { useTopicInteractions } from "@/hooks/useTopicInteractions";
+
+function InteractiveBlock({ topicId }: { topicId: Id<"topics"> }) {
+  const { interactions, handleLike, handleSave, handleShare } = useTopicInteractions(topicId);
+
+  return (
+    <div>
+      <button 
+        onClick={handleLike}
+        className={interactions?.hasLiked ? "liked" : ""}
+      >
+        {interactions?.hasLiked ? "❤️" : "🤍"} Like
+      </button>
+      
+      <button 
+        onClick={handleSave}
+        className={interactions?.hasSaved ? "saved" : ""}
+      >
+        {interactions?.hasSaved ? "📌" : "📍"} Save
+      </button>
+      
+      <button onClick={() => handleShare("twitter")}>
+        Share on Twitter
+      </button>
+    </div>
+  );
+}
+```
+
+**Features:**
+- **Real-time State**: Tracks user interaction status (liked, saved)
+- **Optimistic Updates**: Immediate UI feedback with server synchronization
+- **Error Handling**: Automatic retry and error recovery
+- **Authentication**: Handles unauthenticated users gracefully
+- **Multiple Platforms**: Share functionality for various social platforms
+- **Return Values**: Provides updated counts for immediate UI updates
 
 ## Component Patterns
 

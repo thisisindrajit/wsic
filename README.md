@@ -1,122 +1,192 @@
 # Why Should I Care (WSIC)
 
-**Discover and understand topics you might not initially find interesting.**
+**Transform any topic into engaging, personalized learning experiences with AI-powered content generation.**
 
-WSIC is a modern web application that helps users explore new topics and expand their knowledge through engaging, accessible content. The platform presents information in a visually appealing format designed to spark curiosity and encourage learning.
+WSIC is an innovative educational platform that helps users discover why any topic matters to them personally. Using advanced AI agents and semantic search, the platform creates comprehensive, interactive learning modules on-demand, making even the most obscure subjects accessible and engaging.
 
-## ✨ Features
+## 🎯 Key Features
 
-- **Topic Discovery** - Search and explore a wide range of subjects
-- **Engaging Content Blocks** - Beautifully designed content with glassmorphism effects
-- **Google Authentication** - Secure sign-in with Google OAuth
-- **Personalized Dashboard** - Customized experience for authenticated users
-- **Social Engagement** - Like, save, and share interesting content
-- **Responsive Design** - Optimized for desktop and mobile devices
+### 🤖 **AI-Powered Content Generation**
 
-## 🚀 Quick Start
+- **Multi-Agent System**: 8 specialized AI agents create comprehensive educational content
+- **On-Demand Learning**: Generate complete learning modules for any topic in 3-4 minutes
+- **Fact-Checked Content**: Automated verification using Google Search API
+- **Real-World Connections**: Links topics to current events and practical applications
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd wsic
+### 🔍 **Advanced Search System**
 
-# Install dependencies
-npm install
+- **Dual Search Strategy**: Combines text search with semantic vector search
+- **Google Gemini Embeddings**: 768-dimensional vectors for contextual understanding
+- **Smart Results**: High-relevance similar topics promoted alongside exact matches
+- **Instant Discovery**: Find existing content or trigger new content creation
 
-# Set up environment variables
-cp .env.example .env
-# Configure your .env file with database and OAuth credentials
+### 📚 **Comprehensive Learning Modules**
 
-# Start development server
-npm run dev
-```
+- **Research Briefs**: Foundational and deep-dive information
+- **Interactive Quizzes**: Multiple choice and reorder activities
+- **Flash Cards**: Key concepts for quick review
+- **Real-World Impact**: Current relevance and applications
+- **Visual Content**: AI-selected thumbnails and rich media
 
-Visit `http://localhost:3000` to see the application in action.
+### 🎨 **Modern User Experience**
+
+- **Glassmorphism Design**: Beautiful, modern interface with backdrop blur effects
+- **Responsive Layout**: Optimized for desktop, tablet, and mobile devices
+- **Real-Time Updates**: Live notifications and content synchronization
+- **Personalized Dashboard**: Track learning progress and saved content
+
+## 🌟 What Makes WSIC Unique
+
+### **"Brew Your Topic" Technology**
+
+When you search for content that doesn't exist, WSIC doesn't just say "no results found." Instead, it offers to "brew" a complete learning module tailored to your interests, creating comprehensive educational content from scratch.
+
+### **Semantic Understanding**
+
+Unlike traditional search engines, WSIC understands the meaning behind your queries. Search for "climate change" and discover related topics like "renewable energy" or "carbon footprint" through intelligent semantic matching.
+
+### **Educational Focus**
+
+Every piece of content is designed for learning, not just information consumption. Interactive elements, assessments, and real-world connections ensure you truly understand why each topic matters.
+
+### **Quality Assurance**
+
+All AI-generated content goes through automated fact-checking, source verification, and quality assessment to ensure accuracy and educational value.
+
+## � How It oWorks
+
+### 1. **Search & Discover**
+
+Start by searching for any topic that interests you. WSIC's dual search system finds existing content or identifies opportunities for new content creation.
+
+### 2. **AI Content Generation**
+
+If your topic doesn't exist, WSIC's multi-agent AI system springs into action:
+
+- **Topic Validation**: Ensures educational appropriateness
+- **Research Phase**: Gathers information from reliable sources
+- **Content Creation**: Generates comprehensive learning materials
+- **Quality Assurance**: Fact-checks and verifies all claims
+- **Assembly**: Combines everything into a cohesive learning experience
+
+### 3. **Interactive Learning**
+
+Engage with rich, interactive content including:
+
+- Foundational overviews and detailed deep-dives
+- Multiple-choice quizzes and reorder activities
+- Flash cards for key concepts
+- Real-world applications and current relevance
+- Visual aids and thumbnails
+
+### 4. **Track Progress**
+
+Your personalized dashboard tracks your learning journey, saves favorite topics, and suggests related content based on your interests.
 
 ## 🛠 Technology Stack
 
-- **Framework**: Next.js 15.4.6 with App Router
-- **Frontend**: React 19.1.0, TypeScript 5
-- **Styling**: Tailwind CSS 4, Radix UI, Class Variance Authority
-- **Authentication**: Better Auth 1.3.6 with Google OAuth
-- **Database**: PostgreSQL (auth sessions), Convex (main data)
-- **Icons**: Lucide React
-- **Notifications**: Sonner
+**Frontend & Framework:**
 
-## 📚 Documentation
+- Next.js 15.4.6 with App Router for optimal performance
+- React 19.1.0 with TypeScript 5 for type safety
+- Tailwind CSS 4 with Radix UI for modern, accessible design
 
-Comprehensive documentation is available in the `/docs` folder:
+**AI & Search:**
 
-- **[Getting Started](./docs/getting-started.md)** - Complete setup and installation guide
-- **[Project Structure](./docs/project-structure.md)** - Codebase organization and file structure
-- **[API Reference](./docs/api-reference.md)** - Authentication system and API endpoints
-- **[Components](./docs/components.md)** - UI component library and usage examples
-- **[Configuration](./docs/configuration.md)** - Environment variables and build configuration
-- **[Styling Guide](./docs/styling-guide.md)** - Design system and styling patterns
-- **[Changelog](./docs/CHANGELOG.md)** - Project updates and version history
+- Google Gemini for embeddings and content generation
+- Vector search with 768-dimensional semantic understanding
+- Multi-agent AI system for content creation
 
-## 🏗 Architecture
+**Backend & Database:**
 
-WSIC uses a modern, scalable architecture:
+- Convex for real-time data synchronization
+- PostgreSQL for authentication sessions
+- QStash for reliable message queuing
 
-- **Dual Database System**: PostgreSQL for authentication data, Convex for real-time application data
-- **Server Components**: Leverages Next.js 15 App Router for optimal performance
-- **Route Protection**: Middleware-based authentication for secure user areas
-- **Glassmorphism Design**: Modern UI with backdrop blur effects and smooth animations
+**Authentication & Security:**
 
-## 🔧 Development
+- Better Auth with Google OAuth integration
+- Route protection and session management
+- Secure API endpoints and data handling
 
-```bash
-# Development commands
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint checks
-```
+## 🎯 Use Cases
 
-## 🌟 Key Components
+### **Students & Learners**
 
-- **Block Component** - Content display with glassmorphism design and hover effects
-- **GoogleSignInButton** - OAuth authentication with loading states and error handling
-- **SuggestedTopics** - Interactive topic suggestions with customizable lists
-- **TopBar** - Navigation header with user authentication state
-- **Footer** - Site footer with branding and social links
+- Explore new subjects before choosing courses
+- Get quick overviews of complex topics
+- Understand real-world applications of academic concepts
 
-## 📱 User Experience
+### **Professionals**
 
-1. **Anonymous Browsing** - Explore trending content without signing in
-2. **Search & Discovery** - Find topics of interest (requires authentication)
-3. **Personalized Dashboard** - Access saved content and personalized recommendations
-4. **Social Features** - Engage with content through likes, shares, and saves
+- Stay updated on industry trends and technologies
+- Learn about adjacent fields and interdisciplinary topics
+- Prepare for meetings or presentations on unfamiliar subjects
 
-## 🔒 Security
+### **Curious Minds**
 
-- Google OAuth integration for secure authentication
-- Session management with Better Auth
-- Protected routes with Next.js middleware
-- Environment-based configuration for sensitive data
+- Satisfy curiosity about random topics
+- Discover connections between different fields
+- Expand general knowledge in an engaging way
 
-## 🤝 Contributing
+### **Educators**
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Find teaching materials and explanations
+- Understand how to make topics relevant to students
+- Discover current applications of academic subjects
 
-## 📄 License
+## � Getting Started
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### **Sign In Required**
 
-## 🆘 Support
+WSIC requires Google authentication to access all features. This ensures:
 
-For questions, issues, or contributions:
+- Personalized learning experiences
+- Progress tracking and saved content
+- Quality content generation tailored to your interests
+- Secure user data and privacy protection
 
-- Check the [documentation](./docs/README.md) for detailed guides
-- Review [troubleshooting](./docs/getting-started.md#troubleshooting) for common issues
-- Open an issue for bug reports or feature requests
+### **User Journey**
+
+1. **Sign In**: Use your Google account for instant access
+2. **Search**: Enter any topic you're curious about
+3. **Discover or Create**: Find existing content or trigger AI generation
+4. **Learn**: Engage with interactive, comprehensive learning modules
+5. **Track**: Monitor your learning progress and explore related topics
+
+## 🌍 Real-World Impact
+
+WSIC bridges the gap between curiosity and understanding by:
+
+- **Making Learning Accessible**: Complex topics become approachable through clear explanations and visual design
+- **Connecting Knowledge**: Semantic search reveals unexpected connections between different fields
+- **Staying Current**: Real-world impact sections link topics to current events and applications
+- **Encouraging Exploration**: Beautiful design and engaging content motivate continued learning
+- **Saving Time**: AI-generated content provides comprehensive overviews without hours of research
+
+## � Builtr for Innovation
+
+**Created for the Code with Kiro Hackathon**
+
+WSIC represents the future of personalized education, combining:
+
+- Advanced AI and machine learning
+- Modern web technologies
+- User-centered design
+- Real-time data synchronization
+- Scalable cloud infrastructure
+
+## 📚 Learn More
+
+Explore the comprehensive documentation to understand WSIC's architecture and capabilities:
+
+- **[Search System](./docs/search-system.md)** - Dual search strategy with vector embeddings
+- **[Topic Generation](./docs/topic-generation.md)** - AI-powered content creation pipeline
+- **[API Reference](./docs/api-reference.md)** - Authentication and database integration
+- **[Project Structure](./docs/project-structure.md)** - Codebase organization and architecture
 
 ---
 
-**Built for Code with Kiro hackathon**
-**Built with ❤️ using Next.js, React, and modern web technologies.**
+**WSIC - Making learning engaging, one topic at a time! 🎓✨**
+
+_Transform your curiosity into knowledge with AI-powered educational content._

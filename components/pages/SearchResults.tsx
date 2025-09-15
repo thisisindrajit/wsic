@@ -79,7 +79,6 @@ const SearchContent = () => {
 
   // Combine results
   const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.8);
-  const lowScoreSimilar = similarTopics.filter(topic => topic.score <= 0.8);
 
   const foundTopics = [
     ...(exactMatches || []),
@@ -87,6 +86,11 @@ const SearchContent = () => {
       !(exactMatches || []).some(exactTopic => exactTopic._id === similarTopic._id)
     )
   ];
+
+  const lowScoreSimilar = similarTopics.filter(topic =>
+    topic.score <= 0.8 &&
+    !foundTopics.some(foundTopic => foundTopic._id === topic._id)
+  );
 
   const shouldShowResults = foundTopics.length > 0;
 
@@ -275,7 +279,7 @@ const SearchContent = () => {
           {/* Show Similar Topics if Available */}
           {lowScoreSimilar.length > 0 && (
             <section className="mt-12">
-              <h3 className="text-xl mb-4">Also check out these topics</h3>
+              <h3 className="text-xl mb-4">You might like these</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 {lowScoreSimilar.slice(0, 6).map((topic) => (
                   <Block

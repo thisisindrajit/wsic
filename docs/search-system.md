@@ -213,16 +213,16 @@ The search system categorizes results based on similarity scores:
 
 ### Score Interpretation
 
-- **Score > 0.85**: Highly relevant, promoted to "Found Topics"
-- **Score 0.70-0.85**: Moderately relevant, shown as "Related Topics"
-- **Score < 0.70**: Low relevance, filtered out or shown last
+- **Score > 0.8**: Highly relevant, promoted to "Found Topics"
+- **Score 0.6-0.8**: Moderately relevant, shown as "Related Topics"
+- **Score < 0.6**: Low relevance, filtered out or shown last
 
 ### Result Combination Logic
 
 ```typescript
 // Combine results in SearchResults component
-const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.85);
-const lowScoreSimilar = similarTopics.filter(topic => topic.score <= 0.85);
+const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.8);
+const lowScoreSimilar = similarTopics.filter(topic => topic.score <= 0.8);
 
 const foundTopics = [
   ...(exactMatches || []),
@@ -230,6 +230,8 @@ const foundTopics = [
     !(exactMatches || []).some(exactTopic => exactTopic._id === similarTopic._id)
   )
 ];
+
+const shouldShowResults = foundTopics.length > 0;
 ```
 
 ## Client-Side Integration
@@ -242,24 +244,37 @@ The main search interface implements the dual search strategy:
 
 ```typescript
 const SearchContent = () => {
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const topic = searchParams.get("topic") || "";
-  const difficulty = searchParams.get("difficulty") || "beginner";
+  let difficulty = searchParams.get("difficulty") || "beginner";
+  const [isBrewing, setIsBrewing] = useState(false);
+  const [brewingError, setBrewingError] = useState<string | null>(null);
+
+  // Validate difficulty parameter
+  if (!["beginner", "intermediate", "advanced"].includes(difficulty)) {
+    difficulty = "beginner";
+  }
 
   // Text search for exact matches
   const exactMatches = useQuery(
     api.search.simpleSearchTopics,
-    topic ? { searchTerm: topic, difficulty, limit: 10 } : "skip"
+    topic ? {
+      searchTerm: topic,
+      difficulty: difficulty as "beginner" | "intermediate" | "advanced",
+      limit: 10,
+    } : "skip"
   );
 
-  // Vector search for similar topics
-  const [similarTopics, setSimilarTopics] = useState([]);
+  // Vector search for similar topics using the search term directly
+  const [similarTopics, setSimilarTopics] = useState<SimilarTopicsType[]>([]);
+  const [vectorLoading, setVectorLoading] = useState(false);
   const searchSimilarTopics = useAction(api.embeddings.searchSimilarTopicsByTerm);
 
   useEffect(() => {
     const fetchSimilarTopics = async () => {
       if (!topic) return;
-      
+
       try {
         setVectorLoading(true);
         const results = await searchSimilarTopics({
@@ -277,6 +292,40 @@ const SearchContent = () => {
 
     fetchSimilarTopics();
   }, [topic, difficulty, searchSimilarTopics]);
+
+  // Topic generation for missing content
+  const startBrewingTopic = async () => {
+    setBrewingError(null);
+
+    try {
+      if (session?.user) {
+        const response = await fetch("/api/queue-topic-request", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            topic: topic,
+            difficulty: difficulty,
+            user_id: session.user.id
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Topic request queued:", data);
+        setIsBrewing(true);
+      } else {
+        throw new Error("User not authenticated");
+      }
+    } catch (error) {
+      console.error("Error queuing topic request:", error);
+      setBrewingError("Failed to start brewing topic");
+    }
+  };
 };
 ```
 
