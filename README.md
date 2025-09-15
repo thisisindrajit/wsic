@@ -2,7 +2,7 @@
 
 **Transform any topic into engaging, personalized learning experiences with AI-powered content generation.**
 
-WSIC is an innovative educational platform that helps users discover why any topic matters to them personally. Using advanced AI agents and semantic search, the platform creates comprehensive, interactive learning modules on-demand, making even the most obscure subjects accessible and engaging.
+WSIC is an innovative educational platform that helps users discover interesting topics. Using advanced multi AI agent architecture and intelligent search, the platform creates comprehensive, interactive learning modules on-demand, making even the most obscure subjects accessible and engaging.
 
 ## 🎯 Key Features
 
@@ -10,8 +10,8 @@ WSIC is an innovative educational platform that helps users discover why any top
 
 - **Multi-Agent System**: 8 specialized AI agents create comprehensive educational content
 - **On-Demand Learning**: Generate complete learning modules for any topic in 3-4 minutes
-- **Fact-Checked Content**: Automated verification using Google Search API
-- **Real-World Connections**: Links topics to current events and practical applications
+- **Fact-Checked Content**: Fact checked and enriched web content using Exa API
+- **Real-World Connections**: Links topics to real-world and practical applications
 
 ### 🔍 **Advanced Search System**
 
@@ -23,7 +23,7 @@ WSIC is an innovative educational platform that helps users discover why any top
 ### 📚 **Comprehensive Learning Modules**
 
 - **Research Briefs**: Foundational and deep-dive information
-- **Interactive Quizzes**: Multiple choice and reorder activities
+- **Interactive Quizzes and Reorder**: Multiple choice and reorder activities
 - **Flash Cards**: Key concepts for quick review
 - **Real-World Impact**: Current relevance and applications
 - **Visual Content**: AI-selected thumbnails and rich media
@@ -33,7 +33,7 @@ WSIC is an innovative educational platform that helps users discover why any top
 - **Glassmorphism Design**: Beautiful, modern interface with backdrop blur effects
 - **Responsive Layout**: Optimized for desktop, tablet, and mobile devices
 - **Real-Time Updates**: Live notifications and content synchronization
-- **Personalized Dashboard**: Track learning progress and saved content
+- **Personalized Dashboard**: Track topic metrics and saved content
 
 ## 🌟 What Makes WSIC Unique
 
@@ -53,7 +53,7 @@ Every piece of content is designed for learning, not just information consumptio
 
 All AI-generated content goes through automated fact-checking, source verification, and quality assessment to ensure accuracy and educational value.
 
-## � How It oWorks
+## ❓ How It Works
 
 ### 1. **Search & Discover**
 
@@ -66,7 +66,6 @@ If your topic doesn't exist, WSIC's multi-agent AI system springs into action:
 - **Topic Validation**: Ensures educational appropriateness
 - **Research Phase**: Gathers information from reliable sources
 - **Content Creation**: Generates comprehensive learning materials
-- **Quality Assurance**: Fact-checks and verifies all claims
 - **Assembly**: Combines everything into a cohesive learning experience
 
 ### 3. **Interactive Learning**
@@ -95,13 +94,14 @@ Your personalized dashboard tracks your learning journey, saves favorite topics,
 
 - Google Gemini for embeddings and content generation
 - Vector search with 768-dimensional semantic understanding
-- Multi-agent AI system for content creation
+- Multi-agent AI system for content creation using Google ADK
 
 **Backend & Database:**
 
 - Convex for real-time data synchronization
 - PostgreSQL for authentication sessions
 - QStash for reliable message queuing
+- Render for long running workers
 
 **Authentication & Security:**
 
@@ -135,7 +135,7 @@ Your personalized dashboard tracks your learning journey, saves favorite topics,
 - Understand how to make topics relevant to students
 - Discover current applications of academic subjects
 
-## � Getting Started
+## Getting Started
 
 ### **Sign In Required**
 
@@ -164,7 +164,7 @@ WSIC bridges the gap between curiosity and understanding by:
 - **Encouraging Exploration**: Beautiful design and engaging content motivate continued learning
 - **Saving Time**: AI-generated content provides comprehensive overviews without hours of research
 
-## � Builtr for Innovation
+## Built for Innovation
 
 **Created for the Code with Kiro Hackathon**
 

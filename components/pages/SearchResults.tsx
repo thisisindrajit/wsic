@@ -196,7 +196,7 @@ const SearchContent = () => {
         <div className="space-y-12">
           {/* Found Topics */}
           <section>
-            <h2 className="text-2xl mb-4">Found Topics</h2>
+            <h2 className="text-2xl mb-4">Search Results</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               {foundTopics.map((topic) => (
                 <Block
@@ -274,7 +274,7 @@ const SearchContent = () => {
                   <Button
                     variant="outline"
                   >
-                    Go Back to Home
+                    Back to Home
                   </Button>
                 </Link>
               </div>
