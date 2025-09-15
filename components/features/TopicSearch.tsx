@@ -7,45 +7,37 @@ import SuggestedTopics from '@/components/content/SuggestedTopics';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import SelectHolder from '../content/SelectHolder';
+import { useRouter } from 'next/navigation';
 
 interface TopicSearchProps {
   className?: string;
 }
 
 const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
+  const router = useRouter();
   const [searchTopic, setSearchTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [difficulty, setDifficulty] = useState('Beginner'); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [difficulty, setDifficulty] = useState('Beginner');
 
-  const handleSearch = (topic: string) => {
-    // TODO: Implement search functionality
-    console.log('Searching for:', topic);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validate input
     const trimmedTopic = searchTopic.trim();
-    if (!trimmedTopic) {
-      return;
-    }
+    if (!trimmedTopic) return;
 
     setIsSubmitting(true);
-
-    try {
-      handleSearch(trimmedTopic);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    // Navigate to search page with topic and difficulty as search params
+    const searchParams = new URLSearchParams({
+      topic: trimmedTopic,
+      difficulty: difficulty.toLowerCase()
+    });
+    
+    router.push(`/user/search?${searchParams.toString()}`);
   };
 
   const handleSuggestedTopicClick = (topic: string) => {
     setSearchTopic(topic);
-    handleSearch(topic);
   };
 
   const handleClearInput = () => {

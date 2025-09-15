@@ -6,15 +6,34 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mouse, Loader2, AlertCircle, X } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useTrendingTopics } from "@/hooks/useTrendingTopics";
 import SelectHolder from "../content/SelectHolder";
+import { Id } from "@/convex/_generated/dataModel";
+
+interface TrendingTopic {
+  _id: Id<"topics">;
+  _creationTime: number;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  estimatedReadTime: number;
+  viewCount: number;
+  likeCount: number;
+  shareCount: number;
+  slug: string;
+  categoryId?: Id<"categories">;
+  tagIds: string[];
+}
 
 const Home = () => {
   const [searchTopic, setSearchTopic] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [difficulty, setDifficulty] = useState('Beginner'); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [isSubmitting, setIsSubmitting] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [difficulty, setDifficulty] = useState('Beginner');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
   const gradientTextClass = "text-transparent bg-clip-text bg-gradient-to-br from-teal-600 to-teal-400";
 
   // Get trending topics
@@ -25,12 +44,25 @@ const Home = () => {
     const trimmedTopic = searchTopic.trim();
     if (!trimmedTopic) return;
 
-    // Handle search logic here
-    console.log('Searching for:', trimmedTopic);
+    setIsSubmitting(true);
+    
+    // Navigate to search page with topic and difficulty as search params
+    const searchParams = new URLSearchParams({
+      topic: trimmedTopic,
+      difficulty: difficulty.toLowerCase()
+    });
+    
+    router.push(`/user/search?${searchParams.toString()}`);
   };
 
   const handleSuggestedTopicClick = (topic: string) => {
     setSearchTopic(topic);
+    // Auto-submit when clicking suggested topic
+    const searchParams = new URLSearchParams({
+      topic: topic,
+      difficulty: difficulty.toLowerCase()
+    });
+    router.push(`/user/search?${searchParams.toString()}`);
   };
 
   const handleClearInput = () => {
@@ -146,7 +178,7 @@ const Home = () => {
             </div>
           ) : trendingTopics && trendingTopics.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {trendingTopics.slice(0, 5).map((topic) => (
+              {trendingTopics.slice(0, 5).map((topic: TrendingTopic) => (
                 <Block
                   key={topic._id}
                   id={topic._id}

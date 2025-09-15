@@ -18,6 +18,7 @@ interface TrendingTopic {
   _creationTime: number;
   title: string;
   description: string;
+  imageUrl?: string;
   difficulty: "beginner" | "intermediate" | "advanced";
   estimatedReadTime: number;
   viewCount: number;

@@ -118,15 +118,21 @@ def check_topic():
         
         data = request.get_json()
         if not data:
-            return jsonify({"error": "No JSON data provided"}), 400
+            response = jsonify({"error": "No JSON data provided"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         
         topic = data.get('topic')
         user_id = data.get('user_id')
         
         if not topic:
-            return jsonify({"error": "Topic is required"}), 400
+            response = jsonify({"error": "Topic is required"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         if not user_id:
-            return jsonify({"error": "User ID is required"}), 400
+            response = jsonify({"error": "User ID is required"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         
         topic = topic.strip()
         user_id = user_id.strip()
@@ -189,7 +195,9 @@ def generate_topic():
 
         data = request.get_json()
         if not data:
-            return jsonify({"error": "No JSON data provided"}), 400
+            response = jsonify({"error": "No JSON data provided"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         
         topic = data.get('topic')
         difficulty = data.get('difficulty', 'Beginner')
@@ -197,9 +205,13 @@ def generate_topic():
         publish_immediately = data.get('publish_immediately', 'True')
         
         if not topic:
-            return jsonify({"error": "Topic is required"}), 400
+            response = jsonify({"error": "Topic is required"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         if not user_id:
-            return jsonify({"error": "User ID is required"}), 400
+            response = jsonify({"error": "User ID is required"})
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         
         topic = topic.strip()
         user_id = user_id.strip()
@@ -214,10 +226,12 @@ def generate_topic():
         # Check if topic is invalid
         if validation_result.get('status') == 'INVALID':
             print(f"Topic '{topic}' is invalid: {validation_result.get('reason')}", flush=True)
-            return jsonify({
+            response = jsonify({
                 "error": "Topic is invalid",
                 "validation": validation_result
-            }), 400
+            })
+            response.headers['Upstash-NonRetryable-Error'] = 'true'
+            return response, 489
         
         print(f"Topic '{topic}' is valid. Proceeding with generation...", flush=True)
         

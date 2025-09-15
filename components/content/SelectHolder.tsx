@@ -32,7 +32,7 @@ const SelectHolder: FC<SelectHolderProps> = ({
     <div className={cn("group relative", className)}>
       <label
         htmlFor={id}
-        className="bg-background text-teal-500 font-bold absolute start-1 top-0 z-10 block -translate-y-1/2 px-2 text-xs group-has-disabled:opacity-50 uppercase"
+        className="bg-background text-teal-500 absolute start-1 top-0 z-10 block -translate-y-1/2 px-2 text-xs group-has-disabled:opacity-50 uppercase"
       >
         {label}
       </label>

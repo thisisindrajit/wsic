@@ -1,8 +1,15 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalMutation,
+  internalQuery,
+  action,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { blockContentValidator } from "./schema";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 
 /**
  * Get trending topics for the homepage
@@ -130,6 +137,21 @@ export const searchTopics = query({
       viewCount: v.number(),
       likeCount: v.number(),
       shareCount: v.number(),
+      createdBy: v.optional(v.string()),
+      isPublished: v.boolean(),
+      isTrending: v.boolean(),
+      lastUpdated: v.number(),
+      isAIGenerated: v.boolean(),
+      generationPrompt: v.optional(v.string()),
+      sources: v.optional(v.array(v.string())),
+      metadata: v.optional(
+        v.object({
+          wordCount: v.number(),
+          readingLevel: v.any(),
+          estimatedTime: v.optional(v.number()),
+          exerciseCount: v.optional(v.number()),
+        })
+      ),
     })
   ),
   handler: async (ctx, args) => {
@@ -574,3 +596,196 @@ export const triggerTrendingUpdate = mutation({
     return null;
   },
 });
+
+// /**
+//  * Search for topics using both full text search and vector search
+//  */
+// export const searchTopicsAction = action({
+//   args: {
+//     searchTerm: v.string(),
+//     difficulty: v.optional(
+//       v.union(
+//         v.literal("beginner"),
+//         v.literal("intermediate"),
+//         v.literal("advanced")
+//       )
+//     ),
+//     limit: v.optional(v.number()),
+//   },
+//   returns: v.object({
+//     exactMatches: v.array(
+//       v.object({
+//         _id: v.id("topics"),
+//         _creationTime: v.number(),
+//         title: v.string(),
+//         description: v.string(),
+//         slug: v.string(),
+//         categoryId: v.optional(v.id("categories")),
+//         tagIds: v.array(v.string()),
+//         imageUrl: v.optional(v.string()),
+//         difficulty: v.union(
+//           v.literal("beginner"),
+//           v.literal("intermediate"),
+//           v.literal("advanced")
+//         ),
+//         estimatedReadTime: v.number(),
+//         viewCount: v.number(),
+//         likeCount: v.number(),
+//         shareCount: v.number(),
+//         matchType: v.literal("exact"),
+//       })
+//     ),
+//     similarTopics: v.array(
+//       v.object({
+//         _id: v.id("topics"),
+//         title: v.string(),
+//         description: v.string(),
+//         slug: v.string(),
+//         imageUrl: v.optional(v.string()),
+//         difficulty: v.union(
+//           v.literal("beginner"),
+//           v.literal("intermediate"),
+//           v.literal("advanced")
+//         ),
+//         estimatedReadTime: v.number(),
+//         viewCount: v.number(),
+//         likeCount: v.number(),
+//         shareCount: v.number(),
+//         score: v.number(),
+//         matchType: v.literal("similar"),
+//       })
+//     ),
+//   }),
+//   handler: async (ctx, args) => {
+//     const limit = args.limit ?? 20;
+
+//     // 1. Full text search for exact matches
+//     const exactMatches: Id<"topics">[] = await ctx.runQuery(
+//       internal.topics.searchTopicsInternal,
+//       {
+//         searchTerm: args.searchTerm,
+//         difficulty: args.difficulty,
+//         limit,
+//       }
+//     );
+
+//     // 2. Vector search for similar topics
+//     const similarTopics = await ctx.runQuery(
+//       internal.topics.vectorSearchTopicsInternal,
+//       {
+//         searchTerm: args.searchTerm,
+//         difficulty: args.difficulty,
+//         limit: 5,
+//       }
+//     );
+
+//     return {
+//       exactMatches: exactMatches.map((topic) => ({
+//         ...topic,
+//         matchType: "exact" as const,
+//       })),
+//       similarTopics: similarTopics.map((topic) => ({
+//         ...topic,
+//         matchType: "similar" as const,
+//       })),
+//     };
+//   },
+// });
+
+// /**
+//  * Internal query for full text search
+//  */
+// export const searchTopicsInternal = internalQuery({
+//   args: {
+//     searchTerm: v.string(),
+//     difficulty: v.optional(
+//       v.union(
+//         v.literal("beginner"),
+//         v.literal("intermediate"),
+//         v.literal("advanced")
+//       )
+//     ),
+//     limit: v.optional(v.number()),
+//   },
+//   returns: v.array(
+//     v.object({
+//       _id: v.id("topics"),
+//       _creationTime: v.number(),
+//       title: v.string(),
+//       description: v.string(),
+//       slug: v.string(),
+//       categoryId: v.optional(v.id("categories")),
+//       tagIds: v.array(v.string()),
+//       imageUrl: v.optional(v.string()),
+//       difficulty: v.union(
+//         v.literal("beginner"),
+//         v.literal("intermediate"),
+//         v.literal("advanced")
+//       ),
+//       estimatedReadTime: v.number(),
+//       viewCount: v.number(),
+//       likeCount: v.number(),
+//       shareCount: v.number(),
+//     })
+//   ),
+//   handler: async (ctx, args) => {
+//     const limit = args.limit ?? 20;
+
+//     let searchQuery = ctx.db
+//       .query("topics")
+//       .withSearchIndex("search_topics", (q) => {
+//         return q.search("title", args.searchTerm).eq("isPublished", true);
+//       });
+
+//     const results = await searchQuery.take(limit);
+
+//     // Filter by difficulty if specified
+//     if (args.difficulty) {
+//       return results.filter((topic) => topic.difficulty === args.difficulty);
+//     }
+
+//     return results;
+//   },
+// });
+
+// /**
+//  * Internal query for vector search using embeddings
+//  */
+// export const vectorSearchTopicsInternal = internalQuery({
+//   args: {
+//     searchTerm: v.string(),
+//     difficulty: v.optional(
+//       v.union(
+//         v.literal("beginner"),
+//         v.literal("intermediate"),
+//         v.literal("advanced")
+//       )
+//     ),
+//     limit: v.optional(v.number()),
+//   },
+//   returns: v.array(
+//     v.object({
+//       _id: v.id("topics"),
+//       title: v.string(),
+//       description: v.string(),
+//       slug: v.string(),
+//       imageUrl: v.optional(v.string()),
+//       difficulty: v.union(
+//         v.literal("beginner"),
+//         v.literal("intermediate"),
+//         v.literal("advanced")
+//       ),
+//       estimatedReadTime: v.number(),
+//       viewCount: v.number(),
+//       likeCount: v.number(),
+//       shareCount: v.number(),
+//       score: v.number(),
+//     })
+//   ),
+//   handler: async (ctx, args) => {
+//     // For now, return empty array as we need embeddings to be generated first
+//     // This would need to be implemented with actual vector search once embeddings are available
+//     // The vector search would require generating an embedding for the search term first
+//     return [];
+//   },
+// });
