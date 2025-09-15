@@ -111,7 +111,8 @@ const SearchContent = () => {
   ];
 
   const lowScoreSimilar = [
-    ...searchRelatedTopics,
+    // Remove found results that are shown in search results
+    ...searchRelatedTopics.filter(topic => !foundTopics.some(foundTopic => foundTopic._id === topic._id)),
     // Add low-score similar topics that aren't already used anywhere
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
