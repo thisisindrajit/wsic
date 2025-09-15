@@ -56,7 +56,7 @@ const SearchContent = () => {
     api.search.simpleSearchTopics,
     topic ? {
       searchTerm: topic,
-      // difficulty: difficulty,
+      difficulty: difficulty,
       limit: 10,
     } : "skip"
   );

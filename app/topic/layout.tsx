@@ -172,7 +172,7 @@ export default function TopicLayout({
               className="w-full"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              Home
             </Button>
 
             <div className="space-y-2">
