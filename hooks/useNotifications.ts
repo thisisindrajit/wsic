@@ -48,9 +48,13 @@ export function useNotifications(userId: string | undefined) {
       if (isInitializedRef.current && unreadCount > previousCountRef.current) {
         const newNotificationCount = unreadCount - previousCountRef.current;
         if (newNotificationCount === 1) {
-          toast.info("You have a new notification!");
+          toast.info("You have a new notification!", {
+            duration: Infinity
+          });
         } else {
-          toast.info(`You have ${newNotificationCount} new notifications!`);
+          toast.info(`You have ${newNotificationCount} new notifications!`, {
+            duration: Infinity
+          });
         }
       }
 

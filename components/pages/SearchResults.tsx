@@ -78,7 +78,7 @@ const SearchContent = () => {
   const isLoading = (exactMatches === undefined) || vectorLoading;
 
   // Combine results
-  const highScoreSimilar = similarTopics.filter(topic => topic.score > 0.8);
+  const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85));
 
   const foundTopics = [
     ...(exactMatches || []),
@@ -88,7 +88,7 @@ const SearchContent = () => {
   ];
 
   const lowScoreSimilar = similarTopics.filter(topic =>
-    topic.score <= 0.8 &&
+    topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
     !foundTopics.some(foundTopic => foundTopic._id === topic._id)
   );
 
