@@ -59,7 +59,7 @@ const SearchContent = () => {
       difficulty: difficulty,
       limit: 10,
     } : "skip"
-  );
+  ) ?? [];
 
   // Vector search for similar topics using the search term directly
   const [similarTopics, setSimilarTopics] = useState<SimilarTopicsType[]>([]);
@@ -90,48 +90,34 @@ const SearchContent = () => {
 
   const isLoading = (exactMatches === undefined) || vectorLoading;
 
-  // Filter exact matches to only include topics with exact title AND difficulty matches
-  const trueExactMatches = (exactMatches || []).filter(exactTopic =>
-    exactTopic.title.toLowerCase() === topic.toLowerCase() &&
-    exactTopic.difficulty === difficulty
-  );
+  // Similarity score results that have higher priority
+  const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() === difficulty.toLowerCase());
 
-  // Move non-exact matches from search results to related topics
-  const searchRelatedTopics = (exactMatches || []).filter(exactTopic =>
-    exactTopic.title.toLowerCase() !== topic.toLowerCase() ||
-    exactTopic.difficulty !== difficulty
-  );
-
-  // Combine results
-  const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85));
-
+  // Combining results
   const foundTopics = [
-    ...trueExactMatches,
+    ...exactMatches,
     ...highScoreSimilar.filter(similarTopic =>
-      !trueExactMatches.some(exactTopic => exactTopic._id === similarTopic._id)
+      !exactMatches.some(exactTopic => exactTopic._id === similarTopic._id)
     )
   ];
 
-  // Create a set of all IDs that are already in search results or found topics for efficient lookup
-  const usedTopicIds = new Set([
-    ...trueExactMatches.map(t => t._id),
-    ...highScoreSimilar.map(t => t._id)
-  ]);
+  // Move non-exact matches from search results to related topics
+  const searchRelatedTopics = [
+    ...exactMatches.filter(exactTopic =>
+      exactTopic.title.toLowerCase() !== topic.toLowerCase() ||
+      exactTopic.difficulty.toLowerCase() !== difficulty.toLowerCase()
+    ),
+    ...similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() !== difficulty.toLowerCase())
+  ];
 
   const lowScoreSimilar = [
-    // Add search-related topics that aren't already in found topics
-    ...searchRelatedTopics.filter(topic => !usedTopicIds.has(topic._id)),
+    ...searchRelatedTopics,
     // Add low-score similar topics that aren't already used anywhere
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
-      !usedTopicIds.has(topic._id) &&
-      // Also exclude from all exact matches to be extra safe
-      !(exactMatches || []).some(exactTopic => exactTopic._id === topic._id)
+      !foundTopics.some(foundTopic => foundTopic._id === topic._id)
     )
-  ].filter((topic, index, array) =>
-    // Final deduplication by checking if this is the first occurrence of this _id
-    array.findIndex(t => t._id === topic._id) === index
-  );
+  ];
 
   const shouldShowResults = foundTopics.length > 0;
 
@@ -203,7 +189,7 @@ const SearchContent = () => {
 
       {/* Search Header */}
       <div className="mb-10">
-        <h1 className="text-3xl/snug mb-4">
+        <h1 className="text-3xl/normal mb-6">
           {`Search Results for "${topic}"`}
         </h1>
         <SelectHolder
