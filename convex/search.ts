@@ -40,27 +40,23 @@ export const simpleSearchTopics = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 20;
 
-    // Get all published topics
-    const allTopics = await ctx.db
+    // Use the search index for full-text search
+    let query = ctx.db
       .query("topics")
-      .withIndex("by_published", (q) => q.eq("isPublished", true))
-      .collect();
+      .withSearchIndex("search_topics", (q) =>
+        q.search("title", args.searchTerm).eq("isPublished", true)
+      );
 
-    // Simple text matching
-    const searchTerm = args.searchTerm.toLowerCase();
-    const matchingTopics = allTopics.filter(topic => 
-      topic.title.toLowerCase().includes(searchTerm) ||
-      topic.description.toLowerCase().includes(searchTerm) ||
-      topic.tagIds.some(tag => tag.toLowerCase().includes(searchTerm))
-    );
+    // Apply difficulty filter if specified
+    if (args.difficulty) {
+      query = query.filter((q) => q.eq(q.field("difficulty"), args.difficulty));
+    }
 
-    // Filter by difficulty if specified
-    const filteredTopics = args.difficulty 
-      ? matchingTopics.filter(topic => topic.difficulty === args.difficulty)
-      : matchingTopics;
+    // Get results with limit
+    const searchResults = await query.take(limit);
 
     // Return only the fields specified in the validator
-    return filteredTopics.slice(0, limit).map(topic => ({
+    return searchResults.map((topic) => ({
       _id: topic._id,
       _creationTime: topic._creationTime,
       title: topic.title,

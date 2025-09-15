@@ -3,10 +3,11 @@
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, AlertCircle, Clock, Beaker } from "lucide-react";
 import Block from "@/components/content/Block";
 import { Button } from "@/components/ui/button";
+import SelectHolder from "@/components/content/SelectHolder";
 import { Id } from "@/convex/_generated/dataModel";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
@@ -28,22 +29,34 @@ type SimilarTopicsType = {
 const SearchContent = () => {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const topic = searchParams.get("topic") || "";
-  let difficulty = searchParams.get("difficulty") || "beginner";
+  const urlDifficulty = searchParams.get("difficulty") || "beginner";
   const [isBrewing, setIsBrewing] = useState(false);
   const [brewingError, setBrewingError] = useState<string | null>(null);
 
-  // If difficulty is not beginner, intermediate, or advanced, just update to beginner
-  if (!["beginner", "intermediate", "advanced"].includes(difficulty)) {
-    difficulty = "beginner";
-  }
+  // State for difficulty selection
+  const [difficulty, setDifficulty] = useState<"beginner" | "intermediate" | "advanced">(
+    ["beginner", "intermediate", "advanced"].includes(urlDifficulty)
+      ? urlDifficulty as "beginner" | "intermediate" | "advanced"
+      : "beginner"
+  );
+
+  // Handle difficulty change
+  const handleDifficultyChange = (newDifficulty: "beginner" | "intermediate" | "advanced") => {
+    setDifficulty(newDifficulty);
+    // Update URL without page reload
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set("difficulty", newDifficulty);
+    router.replace(`/user/search?${newSearchParams.toString()}`, { scroll: false });
+  };
 
   // Text search for exact matches
   const exactMatches = useQuery(
     api.search.simpleSearchTopics,
     topic ? {
       searchTerm: topic,
-      difficulty: difficulty as "beginner" | "intermediate" | "advanced",
+      // difficulty: difficulty,
       limit: 10,
     } : "skip"
   );
@@ -77,20 +90,34 @@ const SearchContent = () => {
 
   const isLoading = (exactMatches === undefined) || vectorLoading;
 
+  // Filter exact matches to only include topics with exact title matches
+  const trueExactMatches = (exactMatches || []).filter(exactTopic =>
+    exactTopic.title.toLowerCase() === topic.toLowerCase()
+  );
+
+  // Move non-exact matches from search results to related topics
+  const searchRelatedTopics = (exactMatches || []).filter(exactTopic =>
+    exactTopic.title.toLowerCase() !== topic.toLowerCase()
+  );
+
   // Combine results
   const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85));
 
   const foundTopics = [
-    ...(exactMatches || []),
+    ...trueExactMatches,
     ...highScoreSimilar.filter(similarTopic =>
-      !(exactMatches || []).some(exactTopic => exactTopic._id === similarTopic._id)
+      !trueExactMatches.some(exactTopic => exactTopic._id === similarTopic._id)
     )
   ];
 
-  const lowScoreSimilar = similarTopics.filter(topic =>
-    topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
-    !foundTopics.some(foundTopic => foundTopic._id === topic._id)
-  );
+  const lowScoreSimilar = [
+    ...searchRelatedTopics,
+    ...similarTopics.filter(topic =>
+      topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
+      !foundTopics.some(foundTopic => foundTopic._id === topic._id) &&
+      !searchRelatedTopics.some(searchTopic => searchTopic._id === topic._id)
+    )
+  ];
 
   const shouldShowResults = foundTopics.length > 0;
 
@@ -152,12 +179,17 @@ const SearchContent = () => {
     <div>
       {/* Search Header */}
       <div className="mb-10">
-        <h1 className="text-3xl/snug mb-2">
+        <h1 className="text-3xl/snug mb-4">
           {`Search Results for "${topic}"`}
         </h1>
-        <p className="text-muted-foreground">
-          Difficulty: <span className="capitalize">{difficulty}</span>
-        </p>
+        <SelectHolder
+          label="Difficulty"
+          placeholder="Select difficulty"
+          values={["beginner", "intermediate", "advanced"]}
+          onValueChange={handleDifficultyChange}
+          defaultValue={difficulty}
+          className="w-40"
+        />
       </div>
 
       {shouldShowResults ? (
@@ -214,7 +246,7 @@ const SearchContent = () => {
               <Beaker className="h-16 w-16 mx-auto text-teal-500 mb-4" />
               <h2 className="text-2xl mb-4">Brew Your Topic</h2>
               <p className="text-muted-foreground mb-4">
-                {`We don't have content for "${topic}" yet, but we're can start to brew it for you!`}
+                {`We don't have content for "${topic}" yet, but we can start to brew it for you!`}
               </p>
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />

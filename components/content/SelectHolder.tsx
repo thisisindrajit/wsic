@@ -15,7 +15,9 @@ interface SelectHolderProps {
   label: string;
   placeholder: string;
   values: string[];
-  onValueChange: (value:string) => void,
+  defaultValue?: string;
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  onValueChange: (value: any) => void,
   className?: string
 }
 
@@ -23,6 +25,7 @@ const SelectHolder: FC<SelectHolderProps> = ({
   label,
   placeholder,
   values,
+  defaultValue,
   onValueChange,
   className
 }) => {
@@ -36,7 +39,7 @@ const SelectHolder: FC<SelectHolderProps> = ({
       >
         {label}
       </label>
-      <Select defaultValue={values[0]} onValueChange={onValueChange}>
+      <Select defaultValue={defaultValue ?? values[0]} onValueChange={onValueChange}>
         <SelectTrigger
           id={id}
           className="bg-background dark:bg-background dark:hover:bg-background min-w-32"
@@ -47,7 +50,7 @@ const SelectHolder: FC<SelectHolderProps> = ({
           {values.map((val: string, index: number) => {
             return (
               <SelectItem key={index} value={val}>
-                {val}
+                <span className="capitalize">{val}</span>
               </SelectItem>
             );
           })}
