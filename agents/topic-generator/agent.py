@@ -207,11 +207,7 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         
     Returns:
         dict: Result with topic_id if successful, error message if failed
-    """
-    # Initialize variables for error handling
-    topic_title = "WSIC Topic"
-    created_by = None
-    
+    """    
     # Get Convex URL from environment
     convex_url = os.environ.get("CONVEX_URL")
     if not convex_url:
@@ -506,7 +502,7 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         # Create success notification if notification type exists
         if topic_generated_type:
             notification_data = {
-                "userId": created_by or "system",
+                "userId": created_by,
                 "notificationTypeKey": topic_generated_type["_id"],
                 "title": "Topic Generated Successfully",
                 "message": f"Your topic '{topic_title}' has been generated and is ready to explore!",
@@ -595,7 +591,7 @@ def insert_topic_to_convex(agent_output: str) -> dict:
                 # Create error notification if notification type exists
                 if error_notification_type:
                     error_notification_data = {
-                        "userId": created_by or "system",
+                        "userId": created_by,
                         "notificationTypeKey": error_notification_type["_id"],
                         "title": "Topic Generation Failed",
                         "message": f"An error occurred while generating information for the topic '{topic_title}'. The system will retry up to 3 times automatically.",
@@ -621,9 +617,12 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         except Exception as notification_error:
             print(f"Warning: Failed to create error notification: {str(notification_error)}")
         
+        # Return failure response after creating notification
         return {
             "success": False,
-            "error": f"Error inserting topic: {str(e)}"
+            "topic_id": None,
+            "message": f"Error inserting topic: {str(e)}",
+            "metadata": None
         }
 
 # =============================================================================
@@ -1235,7 +1234,7 @@ assembler_agent = LlmAgent(
         You are a meticulous JSON formatter. Your job is to take all the content components and assemble them into a single, final JSON object.
 
         Process:
-        - The user input will contain: topic, difficulty, created_by (optional), and publish_immediately (optional).
+        - The user input will contain: topic, difficulty, created_by, and publish_immediately (optional).
         - Gather data from all previous agent outputs: {research_brief_output}, {research_deep_output}, {quiz_output}, {reorder_output}, {final_quiz_output}, {impact_output}, {summary_output}, {thumbnail_output}, {category_tags_description_output}.
         - Extract the "data" field from each agent output and assemble into the final structure.
 
@@ -1247,14 +1246,13 @@ assembler_agent = LlmAgent(
         - The JSON must exactly match the required schema.
         - Extract only the "data" field from each agent output.
         - Extract only the flash_cards array from summary_output.data.
-        - Use null for created_by if not provided.
         - publish_immediately must contain only one of the two following values [case-sensitive] - True (or) False. By default use True if not provided. 
 
         Required JSON schema:
         {
             "topic": "The educational topic name from user input",
             "difficulty": "The difficulty level from user input",
-            "created_by": "The user ID from user input (or null if not provided)",
+            "created_by": "The user ID from user input",
             "publish_immediately": "The publish flag from user input (either True or False [case-sensitive]. Default to True if not provided)",
             "research_brief": {research_brief_output.data},
             "research_deep": {research_deep_output.data},
@@ -1286,8 +1284,9 @@ convex_inserter_agent = LlmAgent(
     IMPORTANT: You must use the `insert_topic_to_convex` tool to interact with the Convex database. Do not try to output the database insertion command yourself.
 
     YOUR RESPONSE:
-    - If the insertion is successful, report the topic ID and metadata.
-    - If there are errors, clearly explain what went wrong and stop.
+    - If the insertion is successful (tool returns success: true), set success to true and report the topic ID and metadata.
+    - If there are errors (tool returns success: false), set success to false and clearly explain what went wrong.
+    - Always mirror the success status from the tool's response.
 
     CRITICAL FORMATTING REQUIREMENTS:
     - You must respond with ONLY a valid JSON object.
@@ -1296,13 +1295,14 @@ convex_inserter_agent = LlmAgent(
     - Your entire response must start with "{" and end with "}".
     - The JSON must exactly match the required schema.
     - All string values must be properly quoted.
+    - The success field must be a boolean (true or false), not a string.
 
     Required JSON schema:
     {
-        "success": "Whether the insertion was successful",
-        "topic_id": "The ID of the created topic if successful",
+        "success": true or false,
+        "topic_id": "The ID of the created topic if successful, null if failed",
         "message": "Success message or error description",
-        "metadata": "Additional metadata about the insertion"
+        "metadata": "Additional metadata about the insertion, null if failed"
     }
     """,
     # output_schema=ConvexInsertionResult,

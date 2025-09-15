@@ -71,10 +71,26 @@ def extract_model_response(response_data):
         return None
 
 def parse_json_from_markdown(text):
-    """Parse JSON from markdown code blocks or plain text"""
+    """Parse JSON from markdown code blocks or plain text
+    
+    The JSON schema must be in this format:
+    {
+        "success": "Whether the insertion was successful",
+        "topic_id": "The ID of the created topic if successful",
+        "message": "Success message or error description",
+        "metadata": "Additional metadata about the insertion"
+    }
+    
+    Returns:
+        tuple: (parsed_json, should_retry)
+        - parsed_json: The parsed JSON object or None if parsing failed
+        - should_retry: True if success is false (triggers 500 error for QStash retry)
+    """
     try:
         # First, try to parse as direct JSON
-        return json.loads(text)
+        parsed_json = json.loads(text)
+        should_retry = parsed_json.get('success') is False
+        return parsed_json, should_retry
     except json.JSONDecodeError:
         try:
             # If that fails, look for JSON within markdown code blocks
@@ -86,7 +102,9 @@ def parse_json_from_markdown(text):
             
             if match:
                 json_content = match.group(1)
-                return json.loads(json_content)
+                parsed_json = json.loads(json_content)
+                should_retry = parsed_json.get('success') is False
+                return parsed_json, should_retry
             
             # Pattern to match ```\n...content...\n``` (without json specifier)
             generic_pattern = r'```\s*\n(.*?)\n```'
@@ -94,15 +112,19 @@ def parse_json_from_markdown(text):
             
             if match:
                 json_content = match.group(1)
-                return json.loads(json_content)
+                parsed_json = json.loads(json_content)
+                should_retry = parsed_json.get('success') is False
+                return parsed_json, should_retry
             
             # If no code blocks found, try parsing the text directly
-            return json.loads(text)
+            parsed_json = json.loads(text)
+            should_retry = parsed_json.get('success') is False
+            return parsed_json, should_retry
             
         except (json.JSONDecodeError, AttributeError) as e:
             print(f"Failed to parse JSON from text: {e}", flush=True)
             print(f"Text content: {text[:500]}...", flush=True)  # Print first 500 chars for debugging
-            return None
+            return None, True # Retry if not able to decode JSON
 
 @app.route('/ok')
 def ok():
@@ -176,7 +198,7 @@ def check_topic_validity(topic, user_id):
         
         if model_response:
             # Parse the JSON response from the model (handles markdown code blocks)
-            parsed_response = parse_json_from_markdown(model_response)
+            parsed_response, should_retry = parse_json_from_markdown(model_response)
             if parsed_response:
                 return parsed_response, 200
             else:
@@ -266,10 +288,14 @@ def generate_topic():
         
         if model_response:
             # Parse the JSON response from the model (handles markdown code blocks)
-            parsed_response = parse_json_from_markdown(model_response)
+            parsed_response, should_retry = parse_json_from_markdown(model_response)
             if parsed_response:
-                print(f"Successfully generated content for topic '{topic}'", flush=True)
-                return jsonify(parsed_response)
+                if should_retry:
+                    print(f"Topic generation failed for '{topic}': {parsed_response.get('message', 'Error occurred while generating topic')}", flush=True)
+                    return jsonify(parsed_response), 500  # Return 500 to trigger QStash retry
+                else:
+                    print(f"Successfully generated content for topic '{topic}'", flush=True)
+                    return jsonify(parsed_response), 200
             else:
                 return jsonify({"error": "Invalid JSON response from model"}), 500
         else:
