@@ -4,7 +4,7 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, Clock, Beaker } from "lucide-react";
+import { Loader2, AlertCircle, Clock, Beaker, Home } from "lucide-react";
 import Block from "@/components/content/Block";
 import { Button } from "@/components/ui/button";
 import SelectHolder from "@/components/content/SelectHolder";
@@ -90,14 +90,16 @@ const SearchContent = () => {
 
   const isLoading = (exactMatches === undefined) || vectorLoading;
 
-  // Filter exact matches to only include topics with exact title matches
+  // Filter exact matches to only include topics with exact title AND difficulty matches
   const trueExactMatches = (exactMatches || []).filter(exactTopic =>
-    exactTopic.title.toLowerCase() === topic.toLowerCase()
+    exactTopic.title.toLowerCase() === topic.toLowerCase() &&
+    exactTopic.difficulty === difficulty
   );
 
   // Move non-exact matches from search results to related topics
   const searchRelatedTopics = (exactMatches || []).filter(exactTopic =>
-    exactTopic.title.toLowerCase() !== topic.toLowerCase()
+    exactTopic.title.toLowerCase() !== topic.toLowerCase() ||
+    exactTopic.difficulty !== difficulty
   );
 
   // Combine results
@@ -110,17 +112,24 @@ const SearchContent = () => {
     )
   ];
 
+  // Create a set of all IDs that are already in search results or found topics for efficient lookup
+  const usedTopicIds = new Set([
+    ...trueExactMatches.map(t => t._id),
+    ...highScoreSimilar.map(t => t._id)
+  ]);
+
   const lowScoreSimilar = [
-    ...searchRelatedTopics,
+    // Add search-related topics that aren't already in found topics
+    ...searchRelatedTopics.filter(topic => !usedTopicIds.has(topic._id)),
+    // Add low-score similar topics that aren't already used anywhere
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
-      !foundTopics.some(foundTopic => foundTopic._id === topic._id) &&
-      !searchRelatedTopics.some(searchTopic => searchTopic._id === topic._id) &&
-      // Ensure it's not in ANY of the exact matches (both true exact and search related)
+      !usedTopicIds.has(topic._id) &&
+      // Also exclude from all exact matches to be extra safe
       !(exactMatches || []).some(exactTopic => exactTopic._id === topic._id)
     )
   ].filter((topic, index, array) => 
-    // Remove duplicates by checking if this is the first occurrence of this _id
+    // Final deduplication by checking if this is the first occurrence of this _id
     array.findIndex(t => t._id === topic._id) === index
   );
 
@@ -182,6 +191,16 @@ const SearchContent = () => {
 
   return (
     <div>
+      {/* Back to Home Button */}
+      <div className="mb-6">
+        <Link href="/user/dashboard">
+          <Button variant="secondary" className="flex items-center gap-2">
+            <Home className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+
       {/* Search Header */}
       <div className="mb-10">
         <h1 className="text-3xl/snug mb-4">
