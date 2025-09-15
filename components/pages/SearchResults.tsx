@@ -128,7 +128,7 @@ const SearchContent = () => {
       // Also exclude from all exact matches to be extra safe
       !(exactMatches || []).some(exactTopic => exactTopic._id === topic._id)
     )
-  ].filter((topic, index, array) => 
+  ].filter((topic, index, array) =>
     // Final deduplication by checking if this is the first occurrence of this _id
     array.findIndex(t => t._id === topic._id) === index
   );
