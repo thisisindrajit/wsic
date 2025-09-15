@@ -118,4 +118,5 @@ For questions, issues, or contributions:
 
 ---
 
+**Built for Code with Kiro hackathon**
 **Built with ❤️ using Next.js, React, and modern web technologies.**
