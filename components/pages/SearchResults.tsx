@@ -257,7 +257,7 @@ const SearchContent = () => {
               <Beaker className="h-16 w-16 mx-auto text-teal-500 mb-4" />
               <h2 className="text-2xl mb-4">Brew Your Topic</h2>
               <p className="text-muted-foreground mb-4">
-                {`We don't have content for "${topic}" yet, but we can start to brew it for you!`}
+                {`We don't have content for "${topic}" for ${difficulty} difficulty yet, but we can start to brew it for you!`}
               </p>
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
