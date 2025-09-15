@@ -45,20 +45,20 @@ const Home = () => {
     if (!trimmedTopic) return;
 
     setIsSubmitting(true);
-    
+
     // Navigate to search page with topic and difficulty as search params
     const searchParams = new URLSearchParams({
       topic: trimmedTopic,
       difficulty: difficulty.toLowerCase()
     });
-    
+
     router.push(`/user/search?${searchParams.toString()}`);
   };
 
   const handleSuggestedTopicClick = (topic: string) => {
     setSearchTopic(topic);
   };
-  
+
   const handleClearInput = () => {
     setSearchTopic('');
   };
@@ -135,7 +135,13 @@ const Home = () => {
           </form>
           <div className="mt-4 md:mt-10 text-lg font-light flex flex-col gap-3">
             <div>Suggested topics</div>
-            <SuggestedTopics onTopicClick={handleSuggestedTopicClick} />
+            <SuggestedTopics topics={[
+              "Ocean Conservation",
+              "Autonomous Vehicles",
+              "Digital Privacy",
+              "Biotechnology",
+              "Smart cities"]}
+              onTopicClick={handleSuggestedTopicClick} />
           </div>
         </div>
         {/* Scroll indicator */}

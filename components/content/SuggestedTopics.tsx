@@ -10,11 +10,11 @@ interface SuggestedTopicsProps {
 
 const SuggestedTopics: React.FC<SuggestedTopicsProps> = ({
     topics = [
-        "Climate Change",
-        "Artificial Intelligence",
-        "Mental Health",
-        "Renewable Energy",
-        "Virtual Reality"
+        "Quantum Computing",
+        "Space Exploration",
+        "Sustainable Agriculture",
+        "Blockchain",
+        "Gene Therapy"
     ],
     onTopicClick
 }) => {
