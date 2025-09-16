@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import { APP_SHORT_NAME, TOPBAR_SCROLL_THRESHOLD } from "@/constants/common";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Heart, Bookmark, Share2, Loader2 } from "lucide-react";
+import { ArrowLeft, Heart, Bookmark, Loader2, Share } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useTopicInteractions } from "@/hooks/useTopicInteractions";
 import { ShareDialog } from "@/components/ui/share-dialog";
@@ -172,7 +172,7 @@ export default function TopicLayout({
               className="w-full"
             >
               <ArrowLeft className="h-4 w-4" />
-              Home
+              Back to Home
             </Button>
 
             <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function TopicLayout({
                 {interactions?.hasSaved ? "Saved" : "Save"}
               </Button>
               <Button variant="outline" className="w-full" onClick={handleShareClick}>
-                <Share2 className="h-4 w-4" />
+                <Share className="h-4 w-4" />
                 {localShareCount !== null ? formatShares(localShareCount) : 'Share'}
               </Button>
             </div>
@@ -222,36 +222,36 @@ export default function TopicLayout({
       </div>
 
       {/* Mobile Actions Bar */}
-      <div className="lg:hidden sticky bottom-4 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full border border-teal-500 p-2 w-full shadow-xl">
+      <div className="lg:hidden sticky bottom-4 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-full border border-foreground/50 p-2 w-full shadow-xl">
         <div className="flex items-center justify-between">
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
             onClick={() => router.push("/user/dashboard")}
+            className="rounded-full"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Home
+            <ArrowLeft className="size-5" />
+            Back to Home
           </Button>
 
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
               className={cn(interactions?.hasLiked && "text-red-500")}
               onClick={handleLikeClick}
             >
-              <Heart className={cn("h-4 w-4", interactions?.hasLiked && "fill-current")} />
+              <Heart className={cn("size-5", interactions?.hasLiked && "fill-current")} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
               className={cn(interactions?.hasSaved && "text-orange-500")}
               onClick={handleSaveClick}
             >
-              <Bookmark className={cn("h-4 w-4", interactions?.hasSaved && "fill-current")} />
+              <Bookmark className={cn("size-5", interactions?.hasSaved && "fill-current")} />
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleShareClick}>
-              <Share2 className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              onClick={handleShareClick}>
+              <Share className="size-5" />
             </Button>
           </div>
         </div>

@@ -90,12 +90,13 @@ const TopicSearch: React.FC<TopicSearchProps> = ({ className }) => {
           >
             <ArrowRight className="size-5 xs:size-6 sm:size-7" />
           </Button>
-          <div className="sm:hidden flex items-baseline justify-between w-full">
+          <div className="sm:hidden flex items-center justify-between w-full">
             <SelectHolder
               label="Difficulty"
               placeholder="Select difficulty"
               values={["Beginner", "Intermediate", "Advanced"]}
               onValueChange={(value: string) => setDifficulty(value)}
+              className='mt-2'
             />
             <Button
               type="submit"

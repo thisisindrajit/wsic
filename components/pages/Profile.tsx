@@ -92,7 +92,7 @@ const Profile = () => {
                         </div>
                     </div>
                     <Button
-                        variant="destructive"
+                        variant="outline"
                         size="lg"
                         onClick={handleLogout}
                         disabled={isLoggingOut}

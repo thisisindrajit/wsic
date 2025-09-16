@@ -4,7 +4,7 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, Clock, Beaker, Home } from "lucide-react";
+import { Loader2, AlertCircle, Clock, Coffee, ArrowLeft } from "lucide-react";
 import Block from "@/components/content/Block";
 import { Button } from "@/components/ui/button";
 import SelectHolder from "@/components/content/SelectHolder";
@@ -182,7 +182,7 @@ const SearchContent = () => {
       <div className="mb-6">
         <Link href="/user/dashboard">
           <Button variant="secondary" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
         </Link>
@@ -254,7 +254,7 @@ const SearchContent = () => {
           {/* No Results - Show Brewing Message */}
           <div className="mx-auto text-center">
             <div className="mt-12 mb-6">
-              <Beaker className="h-16 w-16 mx-auto text-teal-500 mb-4" />
+              <Coffee className="h-16 w-16 mx-auto text-teal-500 mb-4" />
               <h2 className="text-2xl mb-4">Brew Your Topic</h2>
               <p className="text-muted-foreground mb-4">
                 {`We don't have content for "${topic}" for ${difficulty} difficulty yet, but we can start to brew it for you!`}
@@ -281,11 +281,11 @@ const SearchContent = () => {
                 <p className="text-muted-foreground mb-4">
                   {`Your topic is now being brewed. You'll be notified when it's ready.`}
                 </p>
-                <Link href="/user/dashboard">
+                <Link href="/user/explore">
                   <Button
                     variant="outline"
                   >
-                    Back to Home
+                    Explore trending topics
                   </Button>
                 </Link>
               </div>
@@ -307,11 +307,11 @@ const SearchContent = () => {
                   >
                     Try Again
                   </Button>
-                  <Link href="/user/dashboard">
+                  <Link href="/user/explore">
                     <Button
                       variant="outline"
                     >
-                      Go Back to Home
+                      Explore trending topics
                     </Button>
                   </Link>
                 </div>

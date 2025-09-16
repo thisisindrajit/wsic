@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Bookmark, Heart, Clock, Eye, Share2 } from 'lucide-react';
+import { Bookmark, Heart, Clock, Eye, Share } from 'lucide-react';
 import { DIFFICULTY_COLORS } from '@/constants/common';
 import { useTopicInteractions } from '@/hooks/useTopicInteractions';
 import { Id } from '@/convex/_generated/dataModel';
@@ -169,7 +169,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                             size="icon"
                             onClick={handleShareClick}
                         >
-                            <Share2 className="w-5 h-5 text-white" />
+                            <Share className="w-5 h-5 text-white" />
                         </Button>
                         <Link
                             href={`/topic/${id}`}
