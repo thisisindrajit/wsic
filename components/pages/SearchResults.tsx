@@ -51,13 +51,13 @@ const SearchContent = () => {
     router.replace(`/user/search?${newSearchParams.toString()}`, { scroll: false });
   };
 
-  // Text search for exact matches
-  const exactMatches = useQuery(
+  // Text search for full-text search approximate matches
+  const fullTextMatches = useQuery(
     api.search.simpleSearchTopics,
     topic ? {
       searchTerm: topic,
       difficulty: difficulty,
-      limit: 10,
+      limit: 5,
     } : "skip"
   ) ?? [];
 
@@ -86,39 +86,55 @@ const SearchContent = () => {
     };
 
     fetchSimilarTopics();
-  }, [topic, difficulty, searchSimilarTopics]);
+  }, [topic, searchSimilarTopics]);
 
-  const isLoading = (exactMatches === undefined) || vectorLoading;
+  const isLoading = (fullTextMatches === undefined) || vectorLoading;
+
+  // PART 1
+
+  // Finding out only exact matches (topic name and difficulty)
+  const exactMatches = fullTextMatches.filter(t => t.title.toLowerCase() === topic.toLowerCase()
+  && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Similarity score results that have higher priority
-  const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() === difficulty.toLowerCase());
+  const highScoreSimilar = similarTopics.filter(t => t.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) 
+  && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Combining results
   const foundTopics = [
     ...exactMatches,
-    ...highScoreSimilar.filter(similarTopic =>
-      !exactMatches.some(exactTopic => exactTopic._id === similarTopic._id)
+    ...highScoreSimilar.filter(st =>
+      // Removing topics that are already part of the first array
+      !exactMatches.some(t => t._id === st._id)
     )
   ];
 
-  // Move non-exact matches from search results to related topics
-  const searchRelatedTopics = [
-    ...exactMatches.filter(exactTopic =>
-      exactTopic.title.toLowerCase() !== topic.toLowerCase() ||
-      exactTopic.difficulty.toLowerCase() !== difficulty.toLowerCase()
-    ),
-    ...similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() !== difficulty.toLowerCase())
+  // PART 2
+
+  // Moving non-exact matches from search results to related topics
+  const relatedTopics = [
+    ...fullTextMatches.filter(ft => !exactMatches.some(t => t._id === ft._id) 
+    // Removing topics that are already part of the found topics array
+    && !foundTopics.some(t => t._id === ft._id)),
+    ...similarTopics.filter(st => !highScoreSimilar.some(t => t._id === st._id) 
+    // Removing topics that are already part of the first array
+    && !fullTextMatches.some(t => t._id === st._id)
+    // Removing topics that are already part of the found topics array
+    && !foundTopics.some(t => t._id === st._id)
+    ) 
   ];
 
+  /*
   const lowScoreSimilar = [
     // Remove found results that are shown in search results
-    ...searchRelatedTopics.filter(topic => !foundTopics.some(foundTopic => foundTopic._id === topic._id)),
+    ...relatedTopics.filter(topic => !foundTopics.some(foundTopic => foundTopic._id === topic._id)),
     // Add low-score similar topics that aren't already used anywhere
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
       !foundTopics.some(foundTopic => foundTopic._id === topic._id)
     )
   ];
+  */
 
   const shouldShowResults = foundTopics.length > 0;
 
@@ -227,11 +243,11 @@ const SearchContent = () => {
           </section>
 
           {/* Related Topics */}
-          {lowScoreSimilar.length > 0 && (
+          {relatedTopics.length > 0 && (
             <div>
               <h2 className="text-2xl mb-4">Related Topics</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                {lowScoreSimilar.slice(0, 6).map((topic) => (
+                {relatedTopics.slice(0, 10).map((topic) => (
                   <Block
                     key={topic._id}
                     id={topic._id}
@@ -320,11 +336,11 @@ const SearchContent = () => {
           </div>
 
           {/* Show Similar Topics if Available */}
-          {lowScoreSimilar.length > 0 && (
+          {relatedTopics.length > 0 && (
             <section className="mt-12">
               <h3 className="text-xl mb-4">You might like these</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                {lowScoreSimilar.slice(0, 6).map((topic) => (
+                {relatedTopics.slice(0, 10).map((topic) => (
                   <Block
                     key={topic._id}
                     id={topic._id}
