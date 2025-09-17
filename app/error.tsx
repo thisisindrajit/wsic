@@ -9,8 +9,8 @@ export default function Error() {
     <div className="min-h-[60dvh] flex flex-col items-center justify-center text-center">
       {/* Error Visual */}
       <div className="mb-8">
-        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-          <AlertTriangle className="h-10 w-10 text-red-500" />
+        <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle className="h-10 w-10 text-destructive" />
         </div>
       </div>
 

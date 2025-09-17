@@ -142,7 +142,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                         <Button
                             className={cn(
                                 "rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]",
-                                interactions?.hasLiked && "bg-red-500/30 border-red-400/50 dark:bg-red-500/30 dark:border-red-400/50"
+                                interactions?.hasLiked && "bg-destructive/30 border-red-400/50 dark:bg-destructive/30 dark:border-red-400/50"
                             )}
                             variant="ghost"
                             size="icon"

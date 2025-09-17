@@ -179,7 +179,7 @@ export default function TopicLayout({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black",
+                  "w-full border-destructive text-destructive hover:bg-destructive hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black",
                   interactions?.hasLiked && "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300"
                 )}
                 onClick={handleLikeClick}
@@ -236,7 +236,7 @@ export default function TopicLayout({
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              className={cn(interactions?.hasLiked && "text-red-500")}
+              className={cn(interactions?.hasLiked && "text-destructive")}
               onClick={handleLikeClick}
             >
               <Heart className={cn("size-5", interactions?.hasLiked && "fill-current")} />
