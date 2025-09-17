@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/common";
-
 import { Toaster } from "sonner";
 import TopBar from "@/components/layout/TopBar";
 import { auth } from "@/lib/auth";
@@ -13,6 +12,7 @@ import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Footer } from "@/components/layout";
+import MobileBottomNavigation from "@/components/navigation/MobileBottomNavigation";
 
 import "./globals.css";
 
@@ -26,11 +26,9 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover'
 };
 
@@ -54,17 +52,17 @@ export default async function RootLayout({
         <link rel="manifest" href="/favicons/site.webmanifest" />
       </head>
       <body
-        className={`${geistSans.className} antialiased min-w-full max-w-[1440px] mx-auto bg-background`}
+        className={`${geistSans.className} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <MetaThemeAndBgColor />
+        <MetaThemeAndBgColor />
+        <ConvexClientProvider>
           <QueryClientProvider>
-            <ConvexClientProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
               <TopBar session={session} />
               <div className="flex flex-col gap-8 p-4 w-full mx-auto max-w-[1440px] relative z-10 bg-background">
                 {children}
@@ -73,9 +71,9 @@ export default async function RootLayout({
               <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
               <Analytics />
               <SpeedInsights />
-            </ConvexClientProvider>
+            </ThemeProvider>
           </QueryClientProvider>
-        </ThemeProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

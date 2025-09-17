@@ -85,32 +85,30 @@ export default function UserLayout({
 
     return (
         <>
-            <div className="w-full lg:max-w-6xl lg:mx-auto mt-4 pb-24 lg:pb-0">
-                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6 lg:px-4">
-                    {/* Left Sidebar - Navigation (hidden on mobile and tablet) */}
-                    <div className={cn(
-                        "hidden lg:block lg:col-span-3 sticky transition-all mt-3",
-                        getSidebarTop(),
-                        getSidebarHeight()
-                    )}>
-                        <NavigationSidebar session={session} />
-                    </div>
+            <div className="w-full lg:max-w-6xl mx-auto mt-4 lg:grid lg:grid-cols-12 gap-4 md:gap-6 pb-24 lg:pb-0">
+                {/* Left Sidebar - Navigation (hidden on mobile and tablet) */}
+                <div className={cn(
+                    "hidden lg:block lg:col-span-3 sticky transition-all mt-3",
+                    getSidebarTop(),
+                    getSidebarHeight()
+                )}>
+                    <NavigationSidebar session={session} />
+                </div>
 
-                    {/* Center Content */}
-                    <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5">
-                        {children}
-                    </div>
+                {/* Center Content */}
+                <div className="flex flex-col gap-6 min-h-[calc(100dvh-8rem)] lg:col-span-5">
+                    {children}
+                </div>
 
-                    {/* Right Sidebar - Subscription and Trending */}
-                    <div className={cn(
-                        "hidden lg:block lg:col-span-4 lg:sticky lg:overflow-auto pr-3 transition-all mt-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500",
-                        getSidebarTop(),
-                        getSidebarHeight()
-                    )}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                            <TrendingTopics />
-                            <SubscriptionCard />
-                        </div>
+                {/* Right Sidebar - Subscription and Trending */}
+                <div className={cn(
+                    "hidden lg:block lg:col-span-4 lg:sticky lg:overflow-auto pr-3 transition-all mt-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500",
+                    getSidebarTop(),
+                    getSidebarHeight()
+                )}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                        <TrendingTopics />
+                        <SubscriptionCard />
                     </div>
                 </div>
             </div>
