@@ -12,7 +12,6 @@ import MetaThemeAndBgColor from "@/components/layout/MetaThemeAndBgColor";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Footer } from "@/components/layout";
-import MobileBottomNavigation from "@/components/navigation/MobileBottomNavigation";
 
 import "./globals.css";
 
@@ -63,14 +62,14 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <TopBar session={session} />
-              <div className="flex flex-col gap-8 p-4 w-full mx-auto max-w-[1440px] relative z-10 bg-background">
-                {children}
-              </div>
-              <Footer />
-              <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
-              <Analytics />
-              <SpeedInsights />
+                <TopBar session={session} />
+                <div className="flex flex-col gap-8 p-4 w-full mx-auto max-w-[1440px] relative z-10 bg-background">
+                  {children}
+                </div>
+                <Footer />
+                <Toaster richColors closeButton className="font-(family-name:var(--font-family))" />
+                <Analytics />
+                <SpeedInsights />
             </ThemeProvider>
           </QueryClientProvider>
         </ConvexClientProvider>

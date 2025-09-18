@@ -302,7 +302,7 @@ const Topic = () => {
           </div>
 
           <div className="flex flex-col">
-            <h1 className="text-3xl/relaxed font-bold">{topic.title}</h1>
+            <h1 className="text-3xl/relaxed font-bold capitalize">{topic.title}</h1>
             <p className="text-lg/relaxed text-muted-foreground">{topic.description}</p>
             {topic.tagIds.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">

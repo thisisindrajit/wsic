@@ -101,7 +101,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                 </div>
                 {/* Content Overlay */}
                 <div className="relative z-10 p-6 h-full flex flex-col gap-3 justify-end aspect-[2/2.5]">
-                    <h3 className="text-2xl/normal font-medium text-white drop-shadow-lg line-clamp-2">{title}</h3>
+                    <h3 className="text-2xl/normal font-medium text-white drop-shadow-lg line-clamp-2 capitalize">{title}</h3>
                     <p className="text-white/90 text-sm leading-relaxed drop-shadow-md line-clamp-2">
                         {description}
                     </p>

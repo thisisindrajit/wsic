@@ -101,7 +101,7 @@ export default function TrendingTopics({ className = '', categoryId }: TrendingT
                   <div className="text-xs text-muted-foreground">
                     {topic.estimatedReadTime} min read
                   </div>
-                  <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-1">
+                  <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-1 capitalize">
                     {topic.title}
                   </p>
                   <div className="flex items-center gap-3">

@@ -88,7 +88,7 @@ export default function SimilarTopics({ className = '' }: SimilarTopicsProps) {
                   <div className="text-xs text-muted-foreground">
                     {topic.estimatedReadTime} min read • {topic.difficulty}
                   </div>
-                  <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-2">
+                  <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-2 capitalize">
                     {topic.title}
                   </p>
                   <div className="flex items-center gap-3">

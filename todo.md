@@ -1,5 +1,5 @@
 ## Priority
-- [ ] Optimize LLMAgent outputs (post processing outputs to remove \`\`\`json{\`\`\`) and AI agent architecture to reduce number of tokens and make the generation faster
+- [ ] Optimize LLMAgent outputs and AI agent architecture to reduce errors (Check [callbacks](https://google.github.io/adk-docs/callbacks/types-of-callbacks/) - post processing outputs to remove \`\`\`json{\`\`\`) and make the generation faster (Check [Parallel agents](https://google.github.io/adk-docs/agents/multi-agents/#parallel-fan-outgather-pattern))
 - [ ] Add authentication to API routes so that only authenticated users can access the APIs
 - [ ] Change the embedding model to text-embedding-3-large for better similarity search results and write a python script to recreate all existing embeddings. Also test thoroughly.
 - [ ] Update share to have title and abstract (research_brief maybe) of the topic and make the topic page public so that the link preview is visible
