@@ -15,6 +15,8 @@
 - [ ] Create custom queue in upstash with parallelism for faster output generation (EASY BUT IMPORTANT)
 
 ## Todo
+- [ ] Add a check in thumbnail generator where if the selected image is not loading, then reselect another image (This is because some instagram image urls are redirecting to instagram post). Also if the protocol is http, change it to https and try again to see if we are able to load the image.
+- [ ] Support to add LaTeX content for physics and math topics and show syntax highlighted code for tech related stuff
 - [ ] Add option to skip quiz and unlock below content. Also add user interaction to set completed status once the user has fully gone through the topic (till flashcards)
     - [ ] This completed data will later be used for spaced repetition algorithm
 - [ ] After flashcards, add a box below to show what topics to explore next and take the topics from a mix of trending and similar topics

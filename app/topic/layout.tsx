@@ -178,8 +178,8 @@ export default function TopicLayout({
             <Button
               variant="outline"
               className={cn(
-                "w-full border-destructive text-destructive hover:bg-destructive hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black",
-                interactions?.hasLiked && "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300"
+                "w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-black",
+                interactions?.hasLiked && "bg-red-50 border-red-500 text-red-500 dark:bg-red-950 dark:border-red-400 dark:text-red-400"
               )}
               onClick={handleLikeClick}
             >
@@ -190,7 +190,7 @@ export default function TopicLayout({
               variant="outline"
               className={cn(
                 "w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-400 dark:hover:text-black",
-                interactions?.hasSaved && "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-300"
+                interactions?.hasSaved && "bg-orange-50 border-orange-500 text-orange-500 dark:bg-orange-950 dark:border-orange-400 dark:text-orange-400"
               )}
               onClick={handleSaveClick}
             >
@@ -234,7 +234,7 @@ export default function TopicLayout({
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              className={cn(interactions?.hasLiked && "text-destructive")}
+              className={cn(interactions?.hasLiked && "text-red-500")}
               onClick={handleLikeClick}
             >
               <Heart className={cn("size-5", interactions?.hasLiked && "fill-current")} />
