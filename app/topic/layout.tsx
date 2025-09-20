@@ -228,7 +228,7 @@ export default function TopicLayout({
             className="rounded-full"
           >
             <ArrowLeft className="size-5" />
-            Back to Home
+            Home
           </Button>
 
           <div className="flex items-center gap-2">
