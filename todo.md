@@ -1,5 +1,6 @@
 ## Priority
 - [ ] Optimize LLMAgent outputs and AI agent architecture to reduce errors (Check [callbacks](https://google.github.io/adk-docs/callbacks/types-of-callbacks/) - post processing outputs to remove \`\`\`json{\`\`\`) and make the generation faster (Check [Parallel agents](https://google.github.io/adk-docs/agents/multi-agents/#parallel-fan-outgather-pattern))
+- [ ] Make content more personalised to the topic type (Topic can range from movies, book overview, concepts, theorems etc. and we need to personalise the generated content accordingly. For ex: If its a movie, show some youtube clips of the movie, and also maybe a link to the OTT where it is available)
 - [ ] Add authentication to API routes so that only authenticated users can access the APIs
 - [ ] Change the embedding model to text-embedding-3-large for better similarity search results and write a python script to recreate all existing embeddings. Also test whether we are getting better results.
 - [ ] Optimize normal useQuery with convex tanstack query client to reduce re-renders and improve performance
@@ -20,6 +21,7 @@
 - [ ] Allow google bots to index WSIC by adding it in google search console
 - [ ] Update sources to be shown in a separate tab
 - [ ] Add a check in thumbnail generator where if the selected image is not loading, then reselect another image (This is because some instagram image urls are redirecting to instagram post). Also if the protocol is http, change it to https and try again to see if we are able to load the image.
+    - [ ] Also update thumbnail generator prompt to select better pictures that are more abstract than information heavy
 - [ ] Support to add LaTeX content for physics and math topics and show syntax highlighted code for tech related stuff
 - [ ] Add option to skip quiz and unlock below content. Also add user interaction to set completed status once the user has fully gone through the topic (till flashcards)
     - [ ] This completed data will later be used for spaced repetition algorithm
