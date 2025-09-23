@@ -276,7 +276,7 @@ def generate_topic():
         })
         run_response = run_service(TOPIC_GENERATOR_BASE_URL, "topic-generator", user_id, session_id, message_text)
         
-        # TODO: Sometimes even if topic is generated, it is still returning a non 200 response, which is resulting in double generation due to retry. Make the flow more robust by using a newly created table called topic_generation_requests and using that as an alternative source of truth.
+        # TODO: Sometimes even if topic is generated, it is still returning a non 200 response, which is resulting in double generation due to retry. Make the flow more robust by using a newly created table called topic_generation_requests and using that as an alternative source of truth. Maybe use the qstash_message_id in that table to keep track of whether it is in progress, error or success.
         if run_response.status_code != 200:
             return jsonify({"error": f"Failed to generate topic content. Response: {str(run_response)}"}), 500
         
