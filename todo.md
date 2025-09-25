@@ -1,6 +1,7 @@
 ## Priority
+- [ ] Move generator api from render to azure functions to reduce costs
 - [ ] Optimize LLMAgent outputs and AI agent architecture to reduce errors (Check [callbacks](https://google.github.io/adk-docs/callbacks/types-of-callbacks/) - post processing outputs to remove \`\`\`json{\`\`\`) and make the generation faster (Check [Parallel agents](https://google.github.io/adk-docs/agents/multi-agents/#parallel-fan-outgather-pattern))
-- [ ] Make content more personalised to the topic type (Topic can range from movies, book overview, concepts, theorems etc. and we need to personalise the generated content accordingly. For ex: If its a movie, show some youtube clips of the movie, and also maybe a link to the OTT where it is available)
+- [ ] Make content more personalised to the type of the topic (Topics can range from movies, book overview, concepts, theorems etc. and we need to personalise the generated content accordingly. For ex: If its a movie, show some youtube clips of the movie, and also maybe a link to the OTT where it is available)
 - [ ] Add authentication to API routes so that only authenticated users can access the APIs
 - [ ] Change the embedding model to text-embedding-3-large for better similarity search results and write a python script to recreate all existing embeddings. Also test whether we are getting better results.
 - [ ] Optimize normal useQuery with convex tanstack query client to reduce re-renders and improve performance
@@ -27,13 +28,14 @@
     - [ ] This completed data will later be used for spaced repetition algorithm
 - [ ] After flashcards, add a box below to show what topics to explore next and take the topics from a mix of trending and similar topics
 - [ ] Add notes
-    - [ ] Points can be directly added to notes by highlighting text and selecting "Add to note" option
+    - [ ] Information can be directly added to notes by highlighting text and selecting "Add to note" option
 - [ ] Add communities
 - [ ] Add new user onboarding and welcome email
 - [ ] Add buy premium near profile icon
 - [ ] Think if we need to update the topic name using AI instead of using the original topic name provided by user
 
 ## Future
+- [ ] Provide comprehensive AI-generated roadmaps to learn the topic in a structured manner (inspired from roadmap.sh)
 - [ ] Knowledge graphs with GraphRAG
 - [ ] Always available topic understanding LLM at bottom right
 - [ ] Snippets (Reels like feature)
