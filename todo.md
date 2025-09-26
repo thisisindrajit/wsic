@@ -1,4 +1,6 @@
 ## Priority
+- [ ] Buy domain wsic.app
+- [ ] Add user profile icon in topic page at the bottom in left sidebar
 - [ ] Move generator api from render to azure functions to reduce costs
 - [ ] Optimize LLMAgent outputs and AI agent architecture to reduce errors (Check [callbacks](https://google.github.io/adk-docs/callbacks/types-of-callbacks/) - post processing outputs to remove \`\`\`json{\`\`\`) and make the generation faster (Check [Parallel agents](https://google.github.io/adk-docs/agents/multi-agents/#parallel-fan-outgather-pattern))
 - [ ] Make content more personalised to the type of the topic (Topics can range from movies, book overview, concepts, theorems etc. and we need to personalise the generated content accordingly. For ex: If its a movie, show some youtube clips of the movie, and also maybe a link to the OTT where it is available)
@@ -33,6 +35,7 @@
 - [ ] Add new user onboarding and welcome email
 - [ ] Add buy premium near profile icon
 - [ ] Think if we need to update the topic name using AI instead of using the original topic name provided by user
+- [ ] CREATE A NEW SUBSET OF WSIC CALLED WSIC KIDS (kids.wsic.app) where content is personalised towards educational content for kids with a major UI overhaul.
 
 ## Future
 - [ ] Provide comprehensive AI-generated roadmaps to learn the topic in a structured manner (inspired from roadmap.sh)
