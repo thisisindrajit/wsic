@@ -26,17 +26,17 @@ interface SimilarTopic {
 export default function SimilarTopics({ className = '' }: SimilarTopicsProps) {
   const params = useParams();
   const topicId = params.id as Id<"topics">;
-  
+
   const [similarTopics, setSimilarTopics] = useState<SimilarTopic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  
+
   const getSimilarTopics = useAction(api.embeddings.getSimilarTopics);
 
   useEffect(() => {
     const fetchSimilarTopics = async () => {
       if (!topicId) return;
-      
+
       try {
         setIsLoading(true);
         setIsError(false);
@@ -86,7 +86,7 @@ export default function SimilarTopics({ className = '' }: SimilarTopicsProps) {
               <div className="flex items-center justify-between w-full">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                   <div className="text-xs text-muted-foreground">
-                    {topic.estimatedReadTime} min read • {topic.difficulty}
+                    {topic.estimatedReadTime} min read • <span className="capitalize">{topic.difficulty}</span>
                   </div>
                   <p className="font-medium text-sm text-foreground group-hover:underline line-clamp-2 capitalize">
                     {topic.title}

@@ -288,8 +288,8 @@ const Topic = () => {
                 </Button>
               </Link>
             )}
-            <span className={cn("h-8 flex items-center justify-center px-4 rounded-full border font-bold", getDifficultyColor(topic.difficulty))}>
-              {topic.difficulty.toUpperCase()}
+            <span className={cn("h-8 flex items-center justify-center px-4 rounded-full border font-bold uppercase", getDifficultyColor(topic.difficulty))}>
+              {topic.difficulty}
             </span>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
