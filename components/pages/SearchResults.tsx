@@ -94,11 +94,11 @@ const SearchContent = () => {
 
   // Finding out only exact matches (topic name and difficulty)
   const exactMatches = fullTextMatches.filter(t => t.title.toLowerCase() === topic.toLowerCase()
-  && t.difficulty.toLowerCase() === difficulty.toLowerCase());
+    && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Similarity score results that have higher priority
-  const highScoreSimilar = similarTopics.filter(t => t.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) 
-  && t.difficulty.toLowerCase() === difficulty.toLowerCase());
+  const highScoreSimilar = similarTopics.filter(t => t.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85)
+    && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Combining results
   const foundTopics = [
@@ -113,15 +113,15 @@ const SearchContent = () => {
 
   // Moving non-exact matches from search results to related topics
   const relatedTopics = [
-    ...fullTextMatches.filter(ft => !exactMatches.some(t => t._id === ft._id) 
-    // Removing topics that are already part of the found topics array
-    && !foundTopics.some(t => t._id === ft._id)),
-    ...similarTopics.filter(st => !highScoreSimilar.some(t => t._id === st._id) 
-    // Removing topics that are already part of the first array
-    && !fullTextMatches.some(t => t._id === st._id)
-    // Removing topics that are already part of the found topics array
-    && !foundTopics.some(t => t._id === st._id)
-    ) 
+    ...fullTextMatches.filter(ft => !exactMatches.some(t => t._id === ft._id)
+      // Removing topics that are already part of the found topics array
+      && !foundTopics.some(t => t._id === ft._id)),
+    ...similarTopics.filter(st => !highScoreSimilar.some(t => t._id === st._id)
+      // Removing topics that are already part of the first array
+      && !fullTextMatches.some(t => t._id === st._id)
+      // Removing topics that are already part of the found topics array
+      && !foundTopics.some(t => t._id === st._id)
+    )
   ];
 
   /*
@@ -139,6 +139,7 @@ const SearchContent = () => {
   const shouldShowResults = foundTopics.length > 0;
 
   const startBrewingTopic = async () => {
+    setIsBrewing(true);
     setBrewingError(null);
 
     // Create POST request to /api/queue-topic-request
@@ -162,13 +163,12 @@ const SearchContent = () => {
 
         const data = await response.json();
         console.log("Topic request queued:", data);
-        setIsBrewing(true);
       } else {
         throw new Error("User not authenticated");
       }
     } catch (error) {
       console.error("Error queuing topic request:", error);
-      setBrewingError("Failed to start brewing topic");
+      setBrewingError("Failed to start brewing topic. Please try again!");
     }
   }
 
@@ -281,14 +281,14 @@ const SearchContent = () => {
               </div>
             </div>
 
-            {!isBrewing && !brewingError ? (
+            {!isBrewing ? (
               <Button
                 className="mb-6"
-                onClick={startBrewingTopic}
+                onClick={isBrewing ? () => {} : () => startBrewingTopic()}
               >
                 Start Brewing Topic
               </Button>
-            ) : isBrewing ? (
+            ) : !brewingError ? (
               <div className="mb-6">
                 <div className="flex items-center justify-center gap-2 text-teal-600 mb-4">
                   <Loader2 className="h-5 w-5 animate-spin" />
