@@ -93,7 +93,7 @@ export default function Reorder({ question, items, correctOrder, explanation, on
                 "flex items-center gap-3 p-3 rounded-lg border transition-colors",
                 !showResult && "cursor-move hover:bg-muted/50",
                 showResult && isCorrect && "bg-green-50 border-green-500 dark:bg-green-950 dark:border-green-400",
-                showResult && !isCorrect && "bg-red-50 border-red-500 dark:bg-red-950 dark:border-red-400"
+                showResult && !isCorrect && "bg-red-50 border-destructive dark:bg-red-950 dark:border-red-400"
               )}
             >
               <GripVertical className={cn(
@@ -105,7 +105,7 @@ export default function Reorder({ question, items, correctOrder, explanation, on
                 isCorrect ? (
                   <CheckCircle className="h-5 min-w-5 text-green-600" />
                 ) : (
-                  <XCircle className="h-5 min-w-5 text-red-500" />
+                  <XCircle className="h-5 min-w-5 text-destructive" />
                 )
               )}
             </div>)

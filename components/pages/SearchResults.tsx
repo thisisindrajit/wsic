@@ -4,7 +4,7 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, Clock, Beaker, Home } from "lucide-react";
+import { Loader2, AlertCircle, Clock, Coffee, ArrowLeft } from "lucide-react";
 import Block from "@/components/content/Block";
 import { Button } from "@/components/ui/button";
 import SelectHolder from "@/components/content/SelectHolder";
@@ -51,13 +51,13 @@ const SearchContent = () => {
     router.replace(`/user/search?${newSearchParams.toString()}`, { scroll: false });
   };
 
-  // Text search for exact matches
-  const exactMatches = useQuery(
+  // Text search for full-text search approximate matches
+  const fullTextMatches = useQuery(
     api.search.simpleSearchTopics,
     topic ? {
       searchTerm: topic,
       difficulty: difficulty,
-      limit: 10,
+      limit: 5,
     } : "skip"
   ) ?? [];
 
@@ -86,43 +86,60 @@ const SearchContent = () => {
     };
 
     fetchSimilarTopics();
-  }, [topic, difficulty, searchSimilarTopics]);
+  }, [topic, searchSimilarTopics]);
 
-  const isLoading = (exactMatches === undefined) || vectorLoading;
+  const isLoading = (fullTextMatches === undefined) || vectorLoading;
+
+  // PART 1
+
+  // Finding out only exact matches (topic name and difficulty)
+  const exactMatches = fullTextMatches.filter(t => t.title.toLowerCase() === topic.toLowerCase()
+    && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Similarity score results that have higher priority
-  const highScoreSimilar = similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() === difficulty.toLowerCase());
+  const highScoreSimilar = similarTopics.filter(t => t.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85)
+    && t.difficulty.toLowerCase() === difficulty.toLowerCase());
 
   // Combining results
   const foundTopics = [
     ...exactMatches,
-    ...highScoreSimilar.filter(similarTopic =>
-      !exactMatches.some(exactTopic => exactTopic._id === similarTopic._id)
+    ...highScoreSimilar.filter(st =>
+      // Removing topics that are already part of the first array
+      !exactMatches.some(t => t._id === st._id)
     )
   ];
 
-  // Move non-exact matches from search results to related topics
-  const searchRelatedTopics = [
-    ...exactMatches.filter(exactTopic =>
-      exactTopic.title.toLowerCase() !== topic.toLowerCase() ||
-      exactTopic.difficulty.toLowerCase() !== difficulty.toLowerCase()
-    ),
-    ...similarTopics.filter(topic => topic.score > Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) && topic.difficulty.toLowerCase() !== difficulty.toLowerCase())
+  // PART 2
+
+  // Moving non-exact matches from search results to related topics
+  const relatedTopics = [
+    ...fullTextMatches.filter(ft => !exactMatches.some(t => t._id === ft._id)
+      // Removing topics that are already part of the found topics array
+      && !foundTopics.some(t => t._id === ft._id)),
+    ...similarTopics.filter(st => !highScoreSimilar.some(t => t._id === st._id)
+      // Removing topics that are already part of the first array
+      && !fullTextMatches.some(t => t._id === st._id)
+      // Removing topics that are already part of the found topics array
+      && !foundTopics.some(t => t._id === st._id)
+    )
   ];
 
+  /*
   const lowScoreSimilar = [
     // Remove found results that are shown in search results
-    ...searchRelatedTopics.filter(topic => !foundTopics.some(foundTopic => foundTopic._id === topic._id)),
+    ...relatedTopics.filter(topic => !foundTopics.some(foundTopic => foundTopic._id === topic._id)),
     // Add low-score similar topics that aren't already used anywhere
     ...similarTopics.filter(topic =>
       topic.score <= Number(process.env.NEXT_PUBLIC_SIMILARITY_SCORE || 0.85) &&
       !foundTopics.some(foundTopic => foundTopic._id === topic._id)
     )
   ];
+  */
 
   const shouldShowResults = foundTopics.length > 0;
 
   const startBrewingTopic = async () => {
+    setIsBrewing(true);
     setBrewingError(null);
 
     // Create POST request to /api/queue-topic-request
@@ -146,13 +163,12 @@ const SearchContent = () => {
 
         const data = await response.json();
         console.log("Topic request queued:", data);
-        setIsBrewing(true);
       } else {
         throw new Error("User not authenticated");
       }
     } catch (error) {
       console.error("Error queuing topic request:", error);
-      setBrewingError("Failed to start brewing topic");
+      setBrewingError("Failed to start brewing topic. Please try again!");
     }
   }
 
@@ -182,7 +198,7 @@ const SearchContent = () => {
       <div className="mb-6">
         <Link href="/user/dashboard">
           <Button variant="secondary" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
         </Link>
@@ -227,11 +243,11 @@ const SearchContent = () => {
           </section>
 
           {/* Related Topics */}
-          {lowScoreSimilar.length > 0 && (
+          {relatedTopics.length > 0 && (
             <div>
               <h2 className="text-2xl mb-4">Related Topics</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                {lowScoreSimilar.slice(0, 6).map((topic) => (
+                {relatedTopics.slice(0, 10).map((topic) => (
                   <Block
                     key={topic._id}
                     id={topic._id}
@@ -254,7 +270,7 @@ const SearchContent = () => {
           {/* No Results - Show Brewing Message */}
           <div className="mx-auto text-center">
             <div className="mt-12 mb-6">
-              <Beaker className="h-16 w-16 mx-auto text-teal-500 mb-4" />
+              <Coffee className="h-16 w-16 mx-auto text-teal-500 mb-4" />
               <h2 className="text-2xl mb-4">Brew Your Topic</h2>
               <p className="text-muted-foreground mb-4">
                 {`We don't have content for "${topic}" for ${difficulty} difficulty yet, but we can start to brew it for you!`}
@@ -265,14 +281,14 @@ const SearchContent = () => {
               </div>
             </div>
 
-            {!isBrewing && !brewingError ? (
+            {!isBrewing ? (
               <Button
                 className="mb-6"
-                onClick={startBrewingTopic}
+                onClick={isBrewing ? () => {} : () => startBrewingTopic()}
               >
                 Start Brewing Topic
               </Button>
-            ) : isBrewing ? (
+            ) : !brewingError ? (
               <div className="mb-6">
                 <div className="flex items-center justify-center gap-2 text-teal-600 mb-4">
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -281,11 +297,11 @@ const SearchContent = () => {
                 <p className="text-muted-foreground mb-4">
                   {`Your topic is now being brewed. You'll be notified when it's ready.`}
                 </p>
-                <Link href="/user/dashboard">
+                <Link href="/user/explore">
                   <Button
                     variant="outline"
                   >
-                    Back to Home
+                    Explore trending topics
                   </Button>
                 </Link>
               </div>
@@ -307,11 +323,11 @@ const SearchContent = () => {
                   >
                     Try Again
                   </Button>
-                  <Link href="/user/dashboard">
+                  <Link href="/user/explore">
                     <Button
                       variant="outline"
                     >
-                      Go Back to Home
+                      Explore trending topics
                     </Button>
                   </Link>
                 </div>
@@ -320,11 +336,11 @@ const SearchContent = () => {
           </div>
 
           {/* Show Similar Topics if Available */}
-          {lowScoreSimilar.length > 0 && (
+          {relatedTopics.length > 0 && (
             <section className="mt-12">
               <h3 className="text-xl mb-4">You might like these</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                {lowScoreSimilar.slice(0, 6).map((topic) => (
+                {relatedTopics.slice(0, 10).map((topic) => (
                   <Block
                     key={topic._id}
                     id={topic._id}

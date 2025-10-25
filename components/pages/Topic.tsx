@@ -288,8 +288,8 @@ const Topic = () => {
                 </Button>
               </Link>
             )}
-            <span className={cn("h-8 flex items-center justify-center px-4 rounded-full border font-bold", getDifficultyColor(topic.difficulty))}>
-              {topic.difficulty.toUpperCase()}
+            <span className={cn("h-8 flex items-center justify-center px-4 rounded-full border font-bold uppercase", getDifficultyColor(topic.difficulty))}>
+              {topic.difficulty}
             </span>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
@@ -302,7 +302,7 @@ const Topic = () => {
           </div>
 
           <div className="flex flex-col">
-            <h1 className="text-3xl/relaxed font-bold">{topic.title}</h1>
+            <h1 className="text-3xl/relaxed font-bold capitalize">{topic.title}</h1>
             <p className="text-lg/relaxed text-muted-foreground">{topic.description}</p>
             {topic.tagIds.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">

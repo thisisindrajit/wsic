@@ -102,7 +102,7 @@ export default function MultiQuiz({ questions, title = "Quiz", onComplete }: Mul
                 "hover:bg-muted/50 disabled:cursor-not-allowed",
                 selectedAnswer === option.id && !showResult && "bg-primary/10 border-primary",
                 showResult && selectedAnswer === option.id && isCorrect && "bg-green-50 border-green-500 text-green-700 dark:bg-green-950 dark:border-green-400 dark:text-green-300",
-                showResult && selectedAnswer === option.id && !isCorrect && "bg-red-50 border-red-500 text-red-700 dark:bg-red-950 dark:border-red-400 dark:text-red-200",
+                showResult && selectedAnswer === option.id && !isCorrect && "bg-red-50 border-destructive text-red-700 dark:bg-red-950 dark:border-red-400 dark:text-red-200",
                 showResult && option.id === currentQuestion.correct_answer && selectedAnswer !== currentQuestion.correct_answer && "bg-green-50 border-green-500 text-green-700 dark:bg-green-950 dark:border-green-400 dark:text-green-300"
               )}
             >
@@ -112,7 +112,7 @@ export default function MultiQuiz({ questions, title = "Quiz", onComplete }: Mul
                   isCorrect ? (
                     <CheckCircle className="h-5 min-w-5 text-green-600" />
                   ) : (
-                    <XCircle className="h-5 min-w-5 text-red-500" />
+                    <XCircle className="h-5 min-w-5 text-destructive" />
                   )
                 )}
                 {showResult && option.id === currentQuestion.correct_answer && selectedAnswer !== currentQuestion.correct_answer && (

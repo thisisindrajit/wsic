@@ -793,7 +793,7 @@ function NotificationBell({ userId }: { userId: string }) {
     <div className="relative">
       <BellIcon />
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs px-1">
+        <span className="absolute -top-1 -right-1 bg-destructive text-white rounded-full text-xs px-1">
           {unreadCount}
         </span>
       )}

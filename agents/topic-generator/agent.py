@@ -196,14 +196,16 @@ def process_tags(tag_names: List[str]) -> List[str]:
         List[str]: Cleaned tag names
     """
     return [tag.strip() for tag in tag_names if tag and tag.strip()]
-    
-    
-def insert_topic_to_convex(agent_output: str) -> dict:
+
+ 
+def insert_topic_to_convex(agent_output: str, user_id: str, topic: str) -> dict:
     """
     Insert topic data from agent output into Convex database
     
     Args:
         agent_output: JSON string of the complete agent output containing all necessary data
+        user_id: ID of the user
+        topic: The requested topic
         
     Returns:
         dict: Result with topic_id if successful, error message if failed
@@ -216,6 +218,10 @@ def insert_topic_to_convex(agent_output: str) -> dict:
     # Initialize Convex client
     client = ConvexClient(convex_url)
     
+    # Set default values for error handling
+    topic_title = topic
+    created_by = user_id
+    
     try:
         # Parse the agent output JSON
         if isinstance(agent_output, str):
@@ -224,10 +230,10 @@ def insert_topic_to_convex(agent_output: str) -> dict:
             output_data = agent_output
         
         # Extract data from agent output early for error handling
-        topic_title = output_data.get("topic", "WSIC Topic")
+        topic_title = output_data.get("topic", topic_title)
         difficulty = output_data.get("difficulty", "beginner").lower()
-        created_by = output_data.get("created_by")
-        publish_immediately = output_data.get("publish_immediately", False)
+        created_by = output_data.get("created_by", created_by)
+        publish_immediately = output_data.get("publish_immediately", True)
             
         research_brief = output_data.get("research_brief", {})
         research_deep = output_data.get("research_deep", {})
@@ -486,10 +492,9 @@ def insert_topic_to_convex(agent_output: str) -> dict:
             except Exception as cleanup_error:
                 print(f"Warning: Failed to delete topic {topic_id}: {str(cleanup_error)}")
             
-            return {
-                "success": False,
-                "error": f"Error creating blocks: {str(block_error)}. All resources have been cleaned up."
-            }
+            # Re-raise the original exception without creating notifications here
+            # The outer handler will create the error notification
+            raise block_error
         
         # Get the notification type for topic_generated
         notification_types = client.query("notifications:getNotificationTypes")
@@ -538,16 +543,10 @@ def insert_topic_to_convex(agent_output: str) -> dict:
                 "published": publish_immediately
             }
         }
-        
-    # except json.JSONDecodeError as e:
-    #     return {
-    #         "success": False,
-    #         "error": f"Invalid JSON in agent output: {str(e)}"
-    #     }
     except Exception as e:
         # If we have a topic_id in locals(), it means topic creation succeeded but something else failed
         # We should clean up the topic and any associated resources
-        if 'topic_id' in locals() and 'client' in locals():
+        if 'topic_id' in locals():
             print(f"Error during topic insertion, cleaning up topic {topic_id}: {str(e)}")
             
             try:
@@ -579,41 +578,36 @@ def insert_topic_to_convex(agent_output: str) -> dict:
         
         # Create error notification
         try:
-            if 'client' in locals():
-                # Get the notification type for errors
-                notification_types = client.query("notifications:getNotificationTypes")
-                error_notification_type = None
-                for nt in notification_types:
-                    if nt.get("key") == "error":
-                        error_notification_type = nt
-                        break
-                
-                # Create error notification if notification type exists
-                if error_notification_type:
-                    error_notification_data = {
-                        "userId": created_by,
-                        "notificationTypeKey": error_notification_type["_id"],
-                        "title": "Topic Generation Failed",
-                        "message": f"An error occurred while generating information for the topic '{topic_title}'. The system will retry up to 3 times automatically.",
-                        "data": {
-                            "error": str(e),
-                            "topic_title": topic_title if 'topic_title' in locals() else "Unknown Topic",
-                            "retry_count": 0,
-                            "max_retries": 3,
-                            "metadata": {
-                                "error_type": "topic_generation_failure",
-                                "timestamp": str(int(time.time() * 1000))
-                            }
-                        }
+            # Get the notification type for errors
+            notification_types = client.query("notifications:getNotificationTypes")
+            error_notification_type = None
+            for nt in notification_types:
+                if nt.get("key") == "error":
+                    error_notification_type = nt
+                    break
+            
+            # Create error notification if notification type exists
+            if error_notification_type and created_by:
+                error_notification_data = {
+                    "userId": created_by,
+                    "notificationTypeKey": error_notification_type["_id"],
+                    # "title": "Topic Generation Failed",
+                    # "message": f"An error occurred while generating information for the topic '{topic_title}'. The system will retry up to 3 times automatically.",
+                    "title": "Topic Generation retry In Progress",
+                    "message": f"We are retrying to generate information for '{topic_title}' due to a minor issue.",
+                    "data": {
+                        "error": str(e),
+                        "topic_title": topic_title
                     }
-                    
-                    try:
-                        notification_id = client.mutation("notifications:createNotification", error_notification_data)
-                        print(f"Successfully created error notification with ID: {notification_id}")
-                    except Exception as notification_error:
-                        print(f"Warning: Failed to create error notification: {str(notification_error)}")
-                else:
-                    print("Warning: error notification type not found in database")
+                }
+                
+                try:
+                    notification_id = client.mutation("notifications:createNotification", error_notification_data)
+                    print(f"Successfully created error notification with ID: {notification_id}")
+                except Exception as notification_error:
+                    print(f"Warning: Failed to create error notification: {str(notification_error)}")
+            else:
+                print("Warning: error notification type not found in database")
         except Exception as notification_error:
             print(f"Warning: Failed to create error notification: {str(notification_error)}")
         
@@ -760,20 +754,20 @@ research_agent_brief = LlmAgent(
         2. Search for multiple aspects: "what is [topic]", "[topic] overview", "[topic] basics", "[topic] fundamentals".
         3. Read through ALL extracted text to get a comprehensive understanding.
         4. Create a clear, descriptive title that identifies the topic.
-        5. Write content using this SPECIFIC markdown format:
+        5. Write content using this FLEXIBLE markdown format (adapt headings to be topic-specific and engaging):
         
-        ### What is [Topic]?
+        ### [Creative heading about what the topic is - e.g., "Understanding Neural Networks", "The World of Quantum Computing", "Exploring Renewable Energy"]
         [Answer paragraph explaining what the topic is]
         
-        ### Why does [Topic] matter?
+        ### [Creative heading about importance - e.g., "Why This Matters Today", "The Growing Impact", "Why You Should Care"]
         [Answer paragraph explaining importance and relevance]
         
-        ### Key Components/Features
+        ### [Topic-specific heading for components - e.g., "Core Elements", "Essential Parts", "Key Building Blocks", "Main Features"]
         - **Component 1**: Brief explanation
         - **Component 2**: Brief explanation
         - **Component 3**: Brief explanation
         
-        ### Common Applications
+        ### [Topic-specific heading for applications - e.g., "Real-World Uses", "Where We See This", "Practical Applications", "Current Examples"]
         - **Application 1**: Brief description
         - **Application 2**: Brief description
         - **Application 3**: Brief description
@@ -785,6 +779,8 @@ research_agent_brief = LlmAgent(
         - Use *italic* for emphasis where needed
         - Each answer paragraph should be 2-3 sentences maximum
         - Keep bullet points concise (1-2 sentences each)
+        - Make headings engaging and topic-specific rather than generic
+        - Vary your language and avoid repetitive phrasing
         7. Ensure content is appropriate for the specified difficulty level.
         8. CRITICAL: When creating JSON, you must properly escape all special characters:
         - Escape newlines as \\n
@@ -892,27 +888,27 @@ research_agent_deep = LlmAgent(
         Process:
         1. Use the exa_search tool with SPECIALIZED queries like "[topic] algorithms", "[topic] implementation", "[topic] industry applications". Set result_category parameter as "auto".
         2. Create a descriptive title that reflects the advanced nature of the content.
-        3. Write content using this SPECIFIC markdown format:
+        3. Write content using this FLEXIBLE markdown format (create engaging, topic-specific headings):
         
-        ### How does [Topic] work internally?
+        ### [Creative heading about internal workings - e.g., "Under the Hood", "How It Actually Works", "The Inner Mechanics", "Behind the Scenes"]
         [Answer paragraph explaining internal mechanisms/processes]
         
-        ### What are the advanced techniques/methods?
+        ### [Creative heading about advanced aspects - e.g., "Advanced Techniques", "Cutting-Edge Methods", "Professional Approaches", "Next-Level Strategies"]
         [Answer paragraph about sophisticated approaches]
         
-        ### Technical Implementation Details
+        ### [Topic-specific technical heading - e.g., "Implementation Tools", "Technical Stack", "Core Technologies", "Development Methods"]
         - **Method/Tool 1**: Technical explanation
         - **Method/Tool 2**: Technical explanation
         - **Method/Tool 3**: Technical explanation
         
-        ### Industry Best Practices
+        ### [Problem-solution heading - e.g., "Common Hurdles", "Overcoming Obstacles", "Challenges & Solutions", "Problem-Solving Approaches"]
+        - **Challenge 1**: How it's addressed
+        - **Challenge 2**: How it's addressed
+
+        ### [Industry-specific heading - e.g., "Professional Standards", "Industry Guidelines", "Best Practices", "Expert Recommendations"]
         - **Practice 1**: Professional implementation detail
         - **Practice 2**: Professional implementation detail
         - **Practice 3**: Professional implementation detail
-        
-        ### Challenges and Solutions
-        - **Challenge 1**: How it's addressed
-        - **Challenge 2**: How it's addressed
 
         4. Format requirements:
         - Use ### for all headings (exactly 3 hash symbols)
@@ -920,6 +916,8 @@ research_agent_deep = LlmAgent(
         - Use bullet points with - for ALL lists
         - Each answer paragraph should be 2-3 sentences maximum
         - Keep bullet points concise but technical (1-2 sentences each)
+        - Create engaging, topic-specific headings that avoid generic templates
+        - Use varied language and avoid repetitive phrasing across sections
         5. Ensure content is appropriate for the specified difficulty level.
         6. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
@@ -1007,25 +1005,25 @@ real_world_impact_agent = LlmAgent(
         1. Use the exa_search tool to find current news and developments. Set the `query` to focus on recent developments and `result_category` to `"news"`. 
         2. Reference data from {research_brief_output} and {research_deep_output} for context. 
         3. Create an appropriate title that captures the real-world significance. 
-        4. Write content using this SPECIFIC markdown format:
+        4. Write content using this FLEXIBLE markdown format (create compelling, topic-specific headings):
         
-        ### Why does [Topic] matter today?
+        ### [Creative heading about current relevance - e.g., "Why This Matters Now", "Today's Significance", "Current Impact", "The Modern Relevance"]
         [Answer paragraph explaining current relevance and importance]
         
-        ### Where do we see [Topic] in action?
+        ### [Creative heading about real-world presence - e.g., "Where We Encounter This", "Seeing It in Action", "Real-World Presence", "All Around Us"]
         [Answer paragraph about widespread current usage]
         
-        ### Real-World Applications
+        ### [Topic-specific applications heading - e.g., "Practical Uses", "Industry Applications", "Real-World Examples", "Current Implementations"]
         - **Industry/Field 1**: Specific example of how it's used
         - **Industry/Field 2**: Specific example of how it's used
         - **Industry/Field 3**: Specific example of how it's used
         
-        ### Current Trends and Developments
+        ### [Dynamic trends heading - e.g., "Latest Developments", "What's New", "Emerging Trends", "Recent Breakthroughs", "Current Evolution"]
         - **Trend 1**: Recent development or innovation
         - **Trend 2**: Recent development or innovation
         - **Trend 3**: Recent development or innovation
         
-        ### Impact on Daily Life
+        ### [Personal impact heading - e.g., "How It Affects You", "Personal Impact", "In Your Daily Life", "Everyday Influence"]
         - **Example 1**: How it affects ordinary people
         - **Example 2**: How it affects ordinary people
 
@@ -1036,6 +1034,8 @@ real_world_impact_agent = LlmAgent(
         - Each answer paragraph should be 2-3 sentences maximum
         - Keep bullet points concrete and specific (1-2 sentences each)
         - Focus on current, real examples that people can relate to
+        - Create compelling, topic-specific headings that capture attention
+        - Use varied language and avoid repetitive phrasing
         6. CRITICAL: When creating JSON, you must properly escape all special characters: \\n, \\", \\\\.
 
         CRITICAL FORMATTING REQUIREMENTS: 
@@ -1278,15 +1278,21 @@ convex_inserter_agent = LlmAgent(
 
     YOUR PROCESS:
     1. Receive the complete {final_module} JSON from the assembler agent.
-    2. Use the `insert_topic_to_convex` tool to insert the data into the database.
-    3. Return a detailed result about the insertion process based on the tool's output.
+    2. Extract the created_by and topic from the JSON for sending it as parameters to the `insert_topic_to_convex` tool.
+    3. Use the `insert_topic_to_convex` tool to insert the data into the database.
+    4. Return a detailed result about the insertion process based on the tool's output.
+
+    When calling the tool, you must:
+    1. Parse the JSON to extract the user_id (from created_by field) and topic name
+    2. Call the tool with these parameters: insert_topic_to_convex(json_string, user_id=extracted_user_id, topic=extracted_topic)
+    3. This ensures proper error notifications even if the main processing fails
 
     IMPORTANT: You must use the `insert_topic_to_convex` tool to interact with the Convex database. Do not try to output the database insertion command yourself.
 
     YOUR RESPONSE:
     - If the insertion is successful (tool returns success: true), set success to true and report the topic ID and metadata.
     - If there are errors (tool returns success: false), set success to false and clearly explain what went wrong.
-    - Always mirror the success status from the tool's response.
+    - ALWAYS mirror the success status from the tool's response.
 
     CRITICAL FORMATTING REQUIREMENTS:
     - You must respond with ONLY a valid JSON object.
@@ -1299,7 +1305,7 @@ convex_inserter_agent = LlmAgent(
 
     Required JSON schema:
     {
-        "success": true or false,
+        "success": "true if insertion is successful or false if some error occurred",
         "topic_id": "The ID of the created topic if successful, null if failed",
         "message": "Success message or error description",
         "metadata": "Additional metadata about the insertion, null if failed"

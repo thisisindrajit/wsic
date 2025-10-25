@@ -37,7 +37,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ className = "" }) =
                     </li>
                     <li className="flex items-start">
                         <span className="text-teal-500 mr-2">•</span>
-                        Unlimited saves (with save collections) and notes
+                        Unlimited saves and notes
                     </li>
                 </ul>
             </div>

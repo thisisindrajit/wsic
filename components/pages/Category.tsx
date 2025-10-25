@@ -32,7 +32,7 @@ const Category: FC<CategoryPageContentProps> = ({ slug }) => {
             <div className="space-y-6">
                 <div className="flex items-center gap-4 mt-3 mb-6">
                     <Link href="/user/explore">
-                        <Button variant="secondary" size="sm" className="gap-2">
+                        <Button variant="secondary" className="gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Back to Explore
                         </Button>
@@ -53,7 +53,7 @@ const Category: FC<CategoryPageContentProps> = ({ slug }) => {
             {/* Header */}
             <div className="flex items-center gap-4 mt-3 mb-6">
                 <Link href="/user/explore">
-                    <Button variant="secondary" size="sm" className="gap-2">
+                    <Button variant="secondary" className="gap-2">
                         <ArrowLeft className="h-4 w-4" />
                         Back to Explore
                     </Button>

@@ -109,12 +109,13 @@ const Home = () => {
               >
                 <ArrowRight className="size-6 md:size-8 xl:size-10" />
               </Button>
-              <div className="md:hidden flex items-baseline justify-between w-full">
+              <div className="md:hidden flex items-center justify-between w-full">
                 <SelectHolder
                   label="Difficulty"
                   placeholder="Select difficulty"
                   values={["Beginner", "Intermediate", "Advanced"]}
                   onValueChange={(value: string) => setDifficulty(value)}
+                  className="mt-2"
                 />
                 <Button
                   type="submit"

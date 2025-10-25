@@ -84,10 +84,10 @@ const Notification: FC<NotificationButtonProps> = ({ userId }) => {
                             >
                                 <div className="flex items-start justify-between w-full">
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-sm truncate">
+                                        <p className="font-medium text-sm leading-tight line-clamp-2">
                                             {notification.title}
                                         </p>
-                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                        <p className="text-xs leading-relaxed text-muted-foreground mt-1">
                                             {notification.message}
                                         </p>
                                     </div>

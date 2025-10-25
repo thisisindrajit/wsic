@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Bookmark, Heart, Clock, Eye, Share2 } from 'lucide-react';
+import { Bookmark, Heart, Clock, Eye, Share } from 'lucide-react';
 import { DIFFICULTY_COLORS } from '@/constants/common';
 import { useTopicInteractions } from '@/hooks/useTopicInteractions';
 import { Id } from '@/convex/_generated/dataModel';
@@ -101,7 +101,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                 </div>
                 {/* Content Overlay */}
                 <div className="relative z-10 p-6 h-full flex flex-col gap-3 justify-end aspect-[2/2.5]">
-                    <h3 className="text-2xl/normal font-medium text-white drop-shadow-lg line-clamp-2">{title}</h3>
+                    <h3 className="text-2xl/normal font-medium text-white drop-shadow-lg line-clamp-2 capitalize">{title}</h3>
                     <p className="text-white/90 text-sm leading-relaxed drop-shadow-md line-clamp-2">
                         {description}
                     </p>
@@ -142,24 +142,24 @@ const Block: React.FC<TrendingBlockProps> = ({
                         <Button
                             className={cn(
                                 "rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]",
-                                interactions?.hasLiked && "bg-red-500/30 border-red-400/50 dark:bg-red-500/30 dark:border-red-400/50"
+                                interactions?.hasLiked && "bg-red-500/30 border-red-400/50 dark:bg-red-500/30 dark:border-red-400/50 hover:bg-red-500/40 hover:border-red-400/60 dark:hover:bg-red-500/40 dark:hover:border-red-400/60"
                             )}
                             variant="ghost"
                             size="icon"
                             onClick={handleLikeClick}
                         >
-                            <Heart className={cn("w-5 h-5 text-white", interactions?.hasLiked && "fill-current")} />
+                            <Heart className={cn("w-5 h-5", interactions?.hasLiked && "text-red-200 fill-red-200")} />
                         </Button>
                         <Button
                             className={cn(
                                 "rounded-full backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20 text-white hover:text-white hover:bg-white/30 dark:hover:bg-white/20 hover:border-white/40 dark:hover:border-white/30 transition-all duration-200 shadow-lg touch-manipulation active:scale-95 min-h-[44px] min-w-[44px]",
-                                interactions?.hasSaved && "bg-orange-500/30 border-orange-400/50 dark:bg-orange-500/30 dark:border-orange-400/50"
+                                interactions?.hasSaved && "bg-orange-500/30 border-orange-400/50 dark:bg-orange-500/30 dark:border-orange-400/50 hover:bg-orange-500/40 hover:border-orange-400/60 dark:hover:bg-orange-500/40 dark:hover:border-orange-400/60"
                             )}
                             variant="ghost"
                             size="icon"
                             onClick={handleSaveClick}
                         >
-                            <Bookmark className={cn("w-5 h-5 text-white", interactions?.hasSaved && "fill-current")} />
+                            <Bookmark className={cn("w-5 h-5", interactions?.hasSaved && "text-orange-200 fill-orange-200")} />
                         </Button>
                         <Button
                             className={cn(
@@ -169,7 +169,7 @@ const Block: React.FC<TrendingBlockProps> = ({
                             size="icon"
                             onClick={handleShareClick}
                         >
-                            <Share2 className="w-5 h-5 text-white" />
+                            <Share className="w-5 h-5 text-white" />
                         </Button>
                         <Link
                             href={`/topic/${id}`}
