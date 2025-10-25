@@ -1,5 +1,5 @@
 ## Priority
-- [ ] Buy domain wsic.app
+- [X] Buy domain wsic.app
 - [ ] Add user profile icon in topic page at the bottom in left sidebar
 - [ ] Move generator api from render to azure functions to reduce costs
 - [ ] Optimize LLMAgent outputs and AI agent architecture to reduce errors (Check [callbacks](https://google.github.io/adk-docs/callbacks/types-of-callbacks/) - post processing outputs to remove \`\`\`json{\`\`\`) and make the generation faster (Check [Parallel agents](https://google.github.io/adk-docs/agents/multi-agents/#parallel-fan-outgather-pattern))
